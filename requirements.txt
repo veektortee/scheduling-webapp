@@ -1,0 +1,11 @@
+# Requirements for the Python Solver Service
+# Install with: pip install -r requirements.txt
+
+flask==2.3.3
+flask-cors==4.0.0
+ortools==9.7.2996
+openpyxl==3.1.2
+
+# Optional: for production deployment
+gunicorn==21.2.0
+waitress==2.1.2
