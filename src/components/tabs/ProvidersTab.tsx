@@ -21,6 +21,7 @@ export default function ProvidersTab() {
     preferred_days_soft: {},
   });
   const [selectedOffDays, setSelectedOffDays] = useState<string[]>([]);
+  // Removed selectedOnDays to fix ESLint warnings
 
   const handleProviderSelect = (index: number) => {
     dispatch({ type: 'SELECT_PROVIDER', payload: index });
