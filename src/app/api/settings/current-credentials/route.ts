@@ -19,6 +19,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       { 
         username: credentials.username,
+        backupEmail: credentials.backupEmail || '',
         updatedAt: credentials.updatedAt
       },
       { status: 200 }

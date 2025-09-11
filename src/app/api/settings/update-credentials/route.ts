@@ -1,29 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
-import { sendCredentialsEmail } from '@/lib/emailService';
+import { sendCredentialsEmail, sendCredentialsToBothEmails } from '@/lib/emailService';
 import { getCurrentCredentials, updateCredentials, validateCredentials } from '@/lib/credentialsManager';
-
-// Simple email sending function (using the email service)
-async function sendEmailBackup(email: string, username: string, password: string) {
-  try {
-    const success = await sendCredentialsEmail({
-      username,
-      password,
-      backupEmail: email
-    });
-    
-    if (success) {
-      console.log('✅ Backup email sent successfully to:', email);
-      return true;
-    } else {
-      console.log('❌ Failed to send backup email');
-      return false;
-    }
-  } catch (error) {
-    console.error('❌ Email service error:', error);
-    return false;
-  }
-}
 
 export async function POST(request: NextRequest) {
   try {
@@ -63,6 +41,9 @@ export async function POST(request: NextRequest) {
     // Verify current password with dynamic credentials
     const currentCredentials = getCurrentCredentials();
     
+    // Store the old backup email before updating
+    const oldBackupEmail = currentCredentials.backupEmail || '';
+    
     // Validate using current username from credentials file, not from token
     if (!validateCredentials(currentCredentials.username, currentPassword)) {
       return NextResponse.json(
@@ -71,8 +52,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Update credentials using credentials manager
-    const updateSuccess = updateCredentials(newUsername, newPassword);
+    // Update credentials using credentials manager (now includes backup email)
+    const updateSuccess = updateCredentials(newUsername, newPassword, backupEmail);
     
     if (!updateSuccess) {
       return NextResponse.json(
@@ -81,20 +62,42 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Send backup email
-    await sendEmailBackup(backupEmail, newUsername, newPassword);
+    // Send backup emails to both old and new addresses
+    let emailSuccess = false;
+    if (oldBackupEmail && oldBackupEmail !== backupEmail) {
+      // Different emails - send to both for security
+      emailSuccess = await sendCredentialsToBothEmails(newUsername, newPassword, oldBackupEmail, backupEmail);
+    } else {
+      // Same email or no previous email - send to current backup email only
+      emailSuccess = await sendCredentialsEmail({
+        username: newUsername,
+        password: newPassword,
+        backupEmail: backupEmail
+      });
+    }
+
+    if (!emailSuccess) {
+      console.log('❌ Failed to send backup emails, but credentials were updated');
+    }
 
     // Log the update
     console.log('🔄 Credentials updated:', {
       oldUsername: currentCredentials.username,
       newUsername: newUsername,
-      backupEmail: backupEmail,
+      oldBackupEmail: oldBackupEmail,
+      newBackupEmail: backupEmail,
+      emailsSentToBoth: oldBackupEmail && oldBackupEmail !== backupEmail,
       timestamp: new Date().toISOString()
     });
 
+    const successMessage = oldBackupEmail && oldBackupEmail !== backupEmail
+      ? 'Credentials updated successfully! Emails sent to both old and new backup addresses for security.'
+      : 'Credentials updated successfully! Email sent to your backup address.';
+
     return NextResponse.json(
       { 
-        message: 'Credentials updated successfully',
+        message: successMessage,
+        sentToBothEmails: oldBackupEmail && oldBackupEmail !== backupEmail,
         timestamp: new Date().toISOString()
       },
       { status: 200 }

@@ -4,6 +4,7 @@ import * as path from 'path';
 interface UserCredentials {
   username: string;
   password: string;
+  backupEmail?: string;
   updatedAt: string;
 }
 
@@ -45,11 +46,12 @@ export function getCurrentCredentials(): UserCredentials {
 }
 
 // Update credentials
-export function updateCredentials(username: string, password: string): boolean {
+export function updateCredentials(username: string, password: string, backupEmail?: string): boolean {
   try {
     const newCredentials: UserCredentials = {
       username,
       password,
+      backupEmail,
       updatedAt: new Date().toISOString()
     };
     
@@ -71,4 +73,36 @@ export function validateCredentials(username: string, password: string): boolean
     console.error('❌ Error validating credentials:', error);
     return false;
   }
+}
+
+// Get backup email (for security, only return if it exists)
+export function getBackupEmail(): string | null {
+  try {
+    const currentCredentials = getCurrentCredentials();
+    return currentCredentials.backupEmail || null;
+  } catch (error) {
+    console.error('❌ Error retrieving backup email:', error);
+    return null;
+  }
+}
+
+// Check if backup email is configured
+export function isBackupEmailConfigured(): boolean {
+  try {
+    const backupEmail = getBackupEmail();
+    return !!backupEmail && backupEmail.includes('@');
+  } catch (error) {
+    console.error('❌ Error checking backup email configuration:', error);
+    return false;
+  }
+}
+
+// Generate a secure recovery token (for additional security)
+export function generateRecoveryToken(): string {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  for (let i = 0; i < 32; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
 }

@@ -50,6 +50,7 @@ export default function SettingsPage() {
         if (response.ok) {
           const data = await response.json();
           setCurrentUsername(data.username);
+          setBackupEmail(data.backupEmail || ''); // Set current backup email
         }
       } catch (error) {
         console.error('Failed to fetch current credentials:', error);
@@ -135,18 +136,22 @@ export default function SettingsPage() {
         throw new Error(data.message || 'Failed to update credentials');
       }
 
-      setSuccess('Credentials updated successfully! Check the browser console for the email preview URL. You will be logged out in 3 seconds...');
+      const successMsg = data.sentToBothEmails 
+        ? `${data.message} Check the browser console for both email preview URLs. You will be logged out in 5 seconds...`
+        : `${data.message} Check the browser console for the email preview URL. You will be logged out in 5 seconds...`;
       
-      // Clear form
+      setSuccess(successMsg);
+      
+      // Clear form - but don't clear backupEmail if it was just updated
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
-      setBackupEmail('');
+      // setBackupEmail(''); // Keep the new backup email displayed
       
-      // Auto logout after 3 seconds
+      // Auto logout after 5 seconds (extended for dual emails)
       setTimeout(() => {
         signOut({ callbackUrl: '/login' });
-      }, 3000);
+      }, 5000);
 
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'An error occurred while updating credentials';
