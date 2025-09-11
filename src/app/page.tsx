@@ -169,7 +169,7 @@ export default function Home() {
         <div className="absolute inset-0 bg-gradient-to-tr from-blue-50/10 via-transparent to-teal-50/10 dark:from-blue-900/5 dark:via-transparent dark:to-teal-900/5 pointer-events-none"></div>
         <div className="relative">
         {/* Header */}
-        <header className="header-gradient shadow-lg border-b border-gray-200 dark:border-gray-700 relative overflow-hidden">
+        <header className="header-gradient shadow-lg border-b border-gray-200 dark:border-gray-700 relative">
           <div className="absolute inset-0 header-overlay"></div>
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center py-4 lg:py-8 space-y-4 lg:space-y-0">
@@ -199,7 +199,7 @@ export default function Home() {
                       <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                       <IoDocumentTextSharp className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 relative z-10 group-hover:scale-110 transition-transform duration-200 drop-shadow-lg" />
                     </button>
-                    <div className="absolute -bottom-12 sm:-bottom-14 left-1/2 transform -translate-x-1/2 bg-gray-900/90 dark:bg-gray-800/90 text-white text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl shadow-2xl opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap z-50 backdrop-blur-sm border border-gray-700/50">
+                    <div className="absolute -bottom-12 sm:-bottom-14 left-1/2 transform -translate-x-1/2 bg-gray-900/90 dark:bg-gray-800/90 text-white text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl shadow-2xl opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap z-[9999] backdrop-blur-sm border border-gray-700/50">
                       <div className="absolute -top-1.5 sm:-top-2 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-3 border-r-3 border-b-3 sm:border-l-4 sm:border-r-4 sm:border-b-4 border-transparent border-b-gray-900/90 dark:border-b-gray-800/90"></div>
                       <span className="hidden sm:inline">Export Configuration</span>
                       <span className="sm:hidden">Export Config</span>
@@ -216,7 +216,7 @@ export default function Home() {
                       <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                       <IoStatsChartSharp className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 relative z-10 group-hover:scale-110 transition-transform duration-200 drop-shadow-lg" />
                     </button>
-                    <div className="absolute -bottom-12 sm:-bottom-14 left-1/2 transform -translate-x-1/2 bg-gray-900/90 dark:bg-gray-800/90 text-white text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl shadow-2xl opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap z-50 backdrop-blur-sm border border-gray-700/50">
+                    <div className="absolute -bottom-12 sm:-bottom-14 left-1/2 transform -translate-x-1/2 bg-gray-900/90 dark:bg-gray-800/90 text-white text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl shadow-2xl opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap z-[9999] backdrop-blur-sm border border-gray-700/50">
                       <div className="absolute -top-1.5 sm:-top-2 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-3 border-r-3 border-b-3 sm:border-l-4 sm:border-r-4 sm:border-b-4 border-transparent border-b-gray-900/90 dark:border-b-gray-800/90"></div>
                       <span className="hidden sm:inline">Export Results</span>
                       <span className="sm:hidden">Export</span>
@@ -233,7 +233,7 @@ export default function Home() {
                       <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                       <IoCogSharp className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 relative z-10 group-hover:scale-110 group-hover:rotate-90 transition-all duration-300 drop-shadow-lg" />
                     </button>
-                    <div className="absolute -bottom-12 sm:-bottom-14 left-1/2 transform -translate-x-1/2 bg-gray-900/90 dark:bg-gray-800/90 text-white text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl shadow-2xl opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap z-50 backdrop-blur-sm border border-gray-700/50">
+                    <div className="absolute -bottom-12 sm:-bottom-14 left-1/2 transform -translate-x-1/2 bg-gray-900/90 dark:bg-gray-800/90 text-white text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl shadow-2xl opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap z-[9999] backdrop-blur-sm border border-gray-700/50">
                       <div className="absolute -top-1.5 sm:-top-2 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-3 border-r-3 border-b-3 sm:border-l-4 sm:border-r-4 sm:border-b-4 border-transparent border-b-gray-900/90 dark:border-b-gray-800/90"></div>
                       <span className="hidden sm:inline">Account Settings</span>
                       <span className="sm:hidden">Settings</span>
@@ -252,7 +252,7 @@ export default function Home() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                       </svg>
                     </button>
-                    <div className="absolute -bottom-12 sm:-bottom-14 left-1/2 transform -translate-x-1/2 bg-gray-900/90 dark:bg-gray-800/90 text-white text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl shadow-2xl opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap z-50 backdrop-blur-sm border border-gray-700/50">
+                    <div className="absolute -bottom-12 sm:-bottom-14 left-1/2 transform -translate-x-1/2 bg-gray-900/90 dark:bg-gray-800/90 text-white text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl shadow-2xl opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap z-[9999] backdrop-blur-sm border border-gray-700/50">
                       <div className="absolute -top-1.5 sm:-top-2 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-3 border-r-3 border-b-3 sm:border-l-4 sm:border-r-4 sm:border-b-4 border-transparent border-b-gray-900/90 dark:border-b-gray-800/90"></div>
                       Sign Out
                     </div>
