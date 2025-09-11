@@ -1,5 +1,5 @@
 import * as XLSX from 'xlsx';
-import { SchedulingCase } from '@/types/scheduling';
+import { SchedulingCase } from '@/types/scheduling'; // Removed unused Shift and Provider imports
 
 export interface ScheduleResult {
   assignments: Array<{

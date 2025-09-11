@@ -57,7 +57,7 @@ export default function ConfigTab() {
       });
 
       alert('Configuration applied successfully!');
-    } catch {
+    } catch { // Fixed ESLint unused error variable
       alert('Invalid JSON format. Please check your configuration.');
     }
   };

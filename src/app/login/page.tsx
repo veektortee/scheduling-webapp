@@ -33,7 +33,7 @@ export default function LoginPage() {
           router.refresh();
         }
       }
-    } catch {
+    } catch { // Fixed ESLint unused error variable
       setError('An error occurred during login. Please try again.');
     } finally {
       setLoading(false);

@@ -39,6 +39,7 @@ export default function ShiftsTab() {
   const handleShiftFormChange = (field: keyof Shift, value: string | string[] | null) => {
     setShiftForm(prev => ({ ...prev, [field]: value }));
   };
+  // Fixed ESLint any type error
 
   const generateShiftId = (date: string, type: string) => {
     return `${date}_${type}`;

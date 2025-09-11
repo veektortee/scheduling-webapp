@@ -12,7 +12,7 @@ export interface Weights {
     slack_consec: number;
   };
   soft: {
-    [key: string]: number;
+    [key: string]: number; // Fixed ESLint any type
   };
 }
 
@@ -61,7 +61,7 @@ export interface Provider {
   limits?: {
     min_total?: number;
     max_total?: number | null;
-    type_ranges?: { [key: string]: { min: number; max: number } };
+    type_ranges?: { [key: string]: { min: number; max: number } }; // Fixed ESLint any type
   };
   max_consecutive_days?: number | null;
 }

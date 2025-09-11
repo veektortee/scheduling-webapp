@@ -47,7 +47,7 @@ export default function RunTab() {
         } else {
           throw new Error(`Local solver error: ${response.status}`);
         }
-      } catch {
+      } catch { // Fixed ESLint unused localError variable
         setLogs(prev => [...prev, 'Local solver not available. Trying fallback web solver...']);
         
         // Fallback to web API
