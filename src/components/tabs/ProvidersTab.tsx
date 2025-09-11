@@ -21,7 +21,6 @@ export default function ProvidersTab() {
     preferred_days_soft: {},
   });
   const [selectedOffDays, setSelectedOffDays] = useState<string[]>([]);
-  const [selectedOnDays, setSelectedOnDays] = useState<string[]>([]);
 
   const handleProviderSelect = (index: number) => {
     dispatch({ type: 'SELECT_PROVIDER', payload: index });
@@ -36,7 +35,7 @@ export default function ProvidersTab() {
     });
   };
 
-  const handleProviderFormChange = (field: keyof Provider, value: any) => {
+  const handleProviderFormChange = (field: keyof Provider, value: string | number | null | string[] | Record<string, string[]>) => {
     setProviderForm(prev => ({ ...prev, [field]: value }));
   };
 

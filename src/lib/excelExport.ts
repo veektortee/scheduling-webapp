@@ -1,5 +1,5 @@
 import * as XLSX from 'xlsx';
-import { SchedulingCase, Shift, Provider } from '@/types/scheduling';
+import { SchedulingCase } from '@/types/scheduling';
 
 export interface ScheduleResult {
   assignments: Array<{

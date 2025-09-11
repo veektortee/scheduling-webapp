@@ -36,7 +36,7 @@ export default function ShiftsTab() {
     });
   };
 
-  const handleShiftFormChange = (field: keyof Shift, value: any) => {
+  const handleShiftFormChange = (field: keyof Shift, value: string | string[] | null) => {
     setShiftForm(prev => ({ ...prev, [field]: value }));
   };
 

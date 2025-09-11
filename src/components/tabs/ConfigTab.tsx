@@ -57,7 +57,7 @@ export default function ConfigTab() {
       });
 
       alert('Configuration applied successfully!');
-    } catch (error) {
+    } catch {
       alert('Invalid JSON format. Please check your configuration.');
     }
   };

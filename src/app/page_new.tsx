@@ -25,7 +25,7 @@ export default function Home() {
         if (caseData) {
           dispatch({ type: 'LOAD_CASE', payload: caseData });
         }
-      } catch (error) {
+      } catch {
         dispatch({ type: 'SET_ERROR', payload: 'Failed to load case data' });
       } finally {
         dispatch({ type: 'SET_LOADING', payload: false });
