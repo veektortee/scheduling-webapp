@@ -16,8 +16,14 @@ const handler = NextAuth({
         password: { label: 'Password', type: 'password' }
       },
       async authorize(credentials) {
-        console.log('🔐 Auth attempt:', { email: credentials?.email, hasPassword: !!credentials?.password })
-        console.log('🔑 Expected email:', ADMIN_EMAIL)
+        console.log('🔐 Auth attempt:', { 
+          email: credentials?.email, 
+          hasPassword: !!credentials?.password,
+          providedEmail: credentials?.email,
+          expectedEmail: ADMIN_EMAIL,
+          emailMatch: credentials?.email === ADMIN_EMAIL,
+          environment: process.env.NODE_ENV
+        })
         
         if (!credentials?.email || !credentials?.password) {
           console.log('❌ Missing credentials')
@@ -29,7 +35,12 @@ const handler = NextAuth({
           // For development - simple password check
           // In production, use bcrypt comparison
           const isValidPassword = credentials.password === 'admin123'
-          console.log('🔍 Password check:', { provided: credentials.password, isValid: isValidPassword })
+          console.log('🔍 Password check:', { 
+            provided: credentials.password, 
+            expected: 'admin123',
+            isValid: isValidPassword,
+            adminEmail: ADMIN_EMAIL 
+          })
           
           if (isValidPassword) {
             console.log('✅ Authentication successful')
@@ -40,6 +51,12 @@ const handler = NextAuth({
               role: 'admin'
             }
           }
+        } else {
+          console.log('❌ Email mismatch:', { 
+            provided: credentials.email, 
+            expected: ADMIN_EMAIL,
+            match: credentials.email === ADMIN_EMAIL 
+          })
         }
 
         console.log('❌ Authentication failed')
