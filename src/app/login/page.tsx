@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { signIn, getSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
 import { HiShieldCheck } from 'react-icons/hi2';
 
 export default function LoginPage() {
@@ -10,7 +9,6 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,22 +24,37 @@ export default function LoginPage() {
 
       console.log('🔍 SignIn result:', result);
 
-      if (result?.error && result.error !== 'Configuration') {
+      if (result?.error) {
         console.log('❌ SignIn error:', result.error);
         setError('Invalid credentials. Please check your email and password.');
-      } else if (result?.ok || result?.error === 'Configuration') {
-        // Handle Configuration error as success since auth is actually working
-        console.log('✅ SignIn successful, checking session...');
-        // Check session to ensure user is authenticated
-        const session = await getSession();
-        console.log('🔍 Session after signIn:', session);
+      } else if (result?.ok) {
+        console.log('✅ SignIn successful, waiting for session...');
+        
+        // Wait a bit for session to be established
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        // Check session multiple times if needed
+        let session = null;
+        let attempts = 0;
+        const maxAttempts = 5;
+        
+        while (!session && attempts < maxAttempts) {
+          session = await getSession();
+          if (!session) {
+            attempts++;
+            await new Promise(resolve => setTimeout(resolve, 200));
+          }
+        }
+        
+        console.log('🔍 Final session check:', session);
+        
         if (session) {
           console.log('✅ Session confirmed, redirecting...');
-          router.push('/');
-          router.refresh();
+          // Use window.location for a full page redirect to ensure middleware runs
+          window.location.href = '/';
         } else {
-          console.log('❌ No session found after successful signIn');
-          setError('Authentication succeeded but session not found. Please try again.');
+          console.log('❌ No session found after multiple attempts');
+          setError('Authentication succeeded but session not established. Please try again.');
         }
       } else {
         console.log('❌ Unexpected signIn result:', result);

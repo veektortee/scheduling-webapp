@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { verifyAuth, createAuthResponse } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
+  // Verify authentication
+  const token = await verifyAuth(request);
+  if (!token) {
+    return createAuthResponse('Authentication required to access solver');
+  }
+
   try {
     const caseData = await request.json();
     

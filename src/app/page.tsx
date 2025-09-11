@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { useSession, signOut } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import { useScheduling } from '@/context/SchedulingContext';
 import { loadCaseFromFile } from '@/lib/scheduling';
 import { exportCurrentCaseToExcel, generateMockResults, exportScheduleToExcel } from '@/lib/excelExport';
-import AuthGuard from '@/components/AuthGuard';
 import RunTab from '@/components/tabs/RunTab';
 import CalendarTab from '@/components/tabs/CalendarTab';
 import ShiftsTab from '@/components/tabs/ShiftsTab';
@@ -24,10 +24,32 @@ import {
 type TabType = 'run' | 'calendar' | 'shifts' | 'providers' | 'config';
 
 export default function Home() {
-  useSession(); // Authentication check is handled by AuthGuard
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const { state, dispatch } = useScheduling();
   const [activeTab, setActiveTab] = useState<TabType>('run');
   const [isInitialized, setIsInitialized] = useState(false);
+
+  // Authentication check - redirect if not authenticated
+  useEffect(() => {
+    if (status === 'loading') return; // Still loading
+    
+    console.log('🔍 Auth status:', { status, session: !!session, role: session?.user?.role });
+    
+    if (!session) {
+      console.log('❌ No session found, redirecting to login');
+      router.push('/login');
+      return;
+    }
+    
+    if (session.user?.role !== 'admin') {
+      console.log('❌ User is not admin, redirecting to login');
+      router.push('/login');
+      return;
+    }
+    
+    console.log('✅ User is authenticated with admin role');
+  }, [session, status, router]);
 
   useEffect(() => {
     const initializeApp = async () => {
@@ -88,6 +110,29 @@ export default function Home() {
     }
   };
 
+  // Show loading screen while checking authentication
+  if (status === 'loading') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-slate-50/50 to-blue-50/30 dark:from-gray-900 dark:via-gray-900 dark:to-slate-800">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-lg text-gray-600 dark:text-gray-300">Checking authentication...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render anything if not authenticated (user will be redirected)
+  if (!session || session.user?.role !== 'admin') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-slate-50/50 to-blue-50/30 dark:from-gray-900 dark:via-gray-900 dark:to-slate-800">
+        <div className="text-center">
+          <p className="text-lg text-gray-600 dark:text-gray-300">Redirecting to login...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (!isInitialized) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-50 via-slate-50/50 to-blue-50/30 dark:from-gray-900 dark:via-gray-900 dark:to-slate-800 relative">
@@ -115,8 +160,7 @@ export default function Home() {
   }
 
   return (
-    <AuthGuard>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-slate-50/50 to-blue-50/30 dark:from-gray-900 dark:via-gray-900 dark:to-slate-800 relative">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-slate-50/50 to-blue-50/30 dark:from-gray-900 dark:via-gray-900 dark:to-slate-800 relative">
         <div className="absolute inset-0 bg-gradient-to-tr from-blue-50/10 via-transparent to-teal-50/10 dark:from-blue-900/5 dark:via-transparent dark:to-teal-900/5 pointer-events-none"></div>
         <div className="relative">
         {/* Header */}
@@ -210,6 +254,5 @@ export default function Home() {
           </main>
         </div>
       </div>
-    </AuthGuard>
   );
 }
