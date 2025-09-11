@@ -26,6 +26,28 @@ body {
   font-feature-settings: 'rlig' 1, 'calt' 1;
 }
 
+/* Global text selection styling for better visibility */
+::selection {
+  background-color: #3b82f6; /* Blue-500 */
+  color: #ffffff; /* White text */
+}
+
+::-moz-selection {
+  background-color: #3b82f6; /* Blue-500 */
+  color: #ffffff; /* White text */
+}
+
+/* Dark mode text selection */
+.dark ::selection {
+  background-color: #60a5fa; /* Blue-400 */
+  color: #1e293b; /* Slate-800 */
+}
+
+.dark ::-moz-selection {
+  background-color: #60a5fa; /* Blue-400 */
+  color: #1e293b; /* Slate-800 */
+}
+
 /* Standardized gradient system */
 :root {
   /* Subtle header gradients */

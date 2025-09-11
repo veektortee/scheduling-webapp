@@ -50,7 +50,7 @@ export default function LoginPage() {
 
       if (result?.error) {
         console.log('❌ SignIn error:', result.error);
-        setError('Invalid credentials. Please check your email and password.');
+        setError('Invalid credentials. Please check your username and password.');
       } else if (result?.ok) {
         console.log('✅ SignIn successful, waiting for session...');
         
@@ -146,18 +146,18 @@ export default function LoginPage() {
           <div className="space-y-4 lg:space-y-5">
             <div>
               <label htmlFor="email" className="block text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
-                Email Address
+                Username
               </label>
               <input
                 id="email"
                 name="email"
-                type="email"
-                autoComplete="email"
+                type="text"
+                autoComplete="username"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-3 lg:px-4 py-2 lg:py-3 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm bg-white/90 dark:bg-gray-700/90 text-gray-900 dark:text-white backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 hover:shadow-md text-sm lg:text-base"
-                placeholder="admin@scheduling.com"
+                className="w-full px-3 lg:px-4 py-2 lg:py-3 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm bg-white/90 dark:bg-gray-700/90 text-gray-900 dark:text-white backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 hover:shadow-md text-sm lg:text-base selection:bg-blue-200 selection:text-blue-900 dark:selection:bg-blue-700 dark:selection:text-white"
+                placeholder="Enter your username"
               />
             </div>
             
@@ -173,7 +173,7 @@ export default function LoginPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-3 lg:px-4 py-2 lg:py-3 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm bg-white/90 dark:bg-gray-700/90 text-gray-900 dark:text-white backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 hover:shadow-md text-sm lg:text-base"
+                className="w-full px-3 lg:px-4 py-2 lg:py-3 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm bg-white/90 dark:bg-gray-700/90 text-gray-900 dark:text-white backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 hover:shadow-md text-sm lg:text-base selection:bg-blue-200 selection:text-blue-900 dark:selection:bg-blue-700 dark:selection:text-white"
                 placeholder="Enter your password"
               />
             </div>
@@ -201,26 +201,6 @@ export default function LoginPage() {
                 </div>
               )}
             </button>
-          </div>
-
-          <div className="text-center">
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-6 backdrop-blur-sm">
-              <h4 className="font-bold text-blue-900 dark:text-blue-300 mb-3 flex items-center justify-center space-x-2">
-                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                <span>Demo Credentials</span>
-                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-              </h4>
-              <div className="space-y-2 text-sm text-blue-800 dark:text-blue-200">
-                <div className="flex justify-between items-center">
-                  <strong>Email:</strong> 
-                  <code className="bg-blue-100 dark:bg-blue-900/50 px-2 py-1 rounded text-xs">admin@scheduling.com</code>
-                </div>
-                <div className="flex justify-between items-center">
-                  <strong>Password:</strong> 
-                  <code className="bg-blue-100 dark:bg-blue-900/50 px-2 py-1 rounded text-xs">admin123</code>
-                </div>
-              </div>
-            </div>
           </div>
         </form>
       </div>
