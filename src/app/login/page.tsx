@@ -23,17 +23,30 @@ export default function LoginPage() {
         redirect: false,
       });
 
+      console.log('🔍 SignIn result:', result);
+
       if (result?.error) {
+        console.log('❌ SignIn error:', result.error);
         setError('Invalid credentials. Please check your email and password.');
-      } else {
+      } else if (result?.ok) {
+        console.log('✅ SignIn successful, checking session...');
         // Check session to ensure user is authenticated
         const session = await getSession();
+        console.log('🔍 Session after signIn:', session);
         if (session) {
+          console.log('✅ Session confirmed, redirecting...');
           router.push('/');
           router.refresh();
+        } else {
+          console.log('❌ No session found after successful signIn');
+          setError('Authentication succeeded but session not found. Please try again.');
         }
+      } else {
+        console.log('❌ Unexpected signIn result:', result);
+        setError('Unexpected authentication result. Please try again.');
       }
-    } catch { // Fixed ESLint unused error variable
+    } catch (error) {
+      console.log('❌ SignIn exception:', error);
       setError('An error occurred during login. Please try again.');
     } finally {
       setLoading(false);

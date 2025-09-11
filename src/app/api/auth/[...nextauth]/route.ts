@@ -71,17 +71,21 @@ const handler = NextAuth({
   },
   callbacks: {
     async jwt({ token, user }) {
+      console.log('🔍 JWT callback:', { user: !!user, token: { sub: token.sub, role: token.role } });
       if (user) {
-        token.role = user.role
+        token.role = user.role;
+        console.log('✅ User added to token:', { role: user.role });
       }
-      return token
+      return token;
     },
     async session({ session, token }) {
+      console.log('🔍 Session callback:', { token: { sub: token.sub, role: token.role }, session: !!session });
       if (token) {
-        session.user.id = token.sub!
-        session.user.role = token.role as string
+        session.user.id = token.sub!;
+        session.user.role = token.role as string;
+        console.log('✅ Session updated:', { userId: session.user.id, role: session.user.role });
       }
-      return session
+      return session;
     }
   },
   pages: {
