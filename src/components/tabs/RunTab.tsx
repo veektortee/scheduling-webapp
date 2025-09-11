@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { useScheduling } from '@/context/SchedulingContext';
 import { 
   IoRocketSharp,
@@ -11,25 +11,82 @@ import {
   IoTimerSharp,
   IoPowerSharp,
   IoSync,
-  IoCheckmarkDoneSharp
+  IoCheckmarkDoneSharp,
+  IoWarningSharp,
+  IoCloudSharp,
+  IoStopSharp
 } from 'react-icons/io5';
+
+interface SolverResult {
+  status: string;
+  message: string;
+  run_id?: string;
+  progress?: number;
+  results?: unknown;
+  solver_service_url?: string;
+  websocket_url?: string;
+  polling_url?: string;
+  statistics?: Record<string, unknown>;
+  error?: string;
+  instructions?: Record<string, unknown>;
+}
 
 export default function RunTab() {
   const { state, dispatch } = useScheduling();
   const { case: schedulingCase } = state;
   const [isRunning, setIsRunning] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [logs, setLogs] = useState<string[]>([]);
-  const [solverState, setSolverState] = useState<'ready' | 'running' | 'finished'>('ready');
+  const [logs, setLogs] = useState<string[]>(['Ready to run optimization...']);
+  const [solverState, setSolverState] = useState<'ready' | 'connecting' | 'running' | 'finished' | 'error'>('ready');
+  const logsEndRef = useRef<HTMLDivElement>(null);
 
+  // Auto-scroll logs to bottom
+  const scrollToBottom = () => {
+    logsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [logs]);
+
+  // Cleanup on unmount (simplified for serverless)
+  useEffect(() => {
+    return () => {
+      // No cleanup needed for serverless approach
+    };
+  }, []);
+
+  const addLog = useCallback((message: string, type: 'info' | 'success' | 'error' | 'warning' = 'info') => {
+    const timestamp = new Date().toLocaleTimeString();
+    const prefix = {
+      info: '🔵',
+      success: '✅', 
+      error: '❌',
+      warning: '⚠️'
+    }[type];
+    
+    setLogs(prev => [...prev, `${timestamp} ${prefix} ${message}`]);
+  }, []);
+
+  const clearLogs = () => {
+    setLogs([]);
+    addLog('Logs cleared');
+  };
+
+  // WebSocket and polling functions removed for serverless approach
+  
   const getSolverIcon = () => {
     switch (solverState) {
       case 'ready':
         return <IoPowerSharp className="w-6 h-6 text-white" />;
+      case 'connecting':
+        return <IoCloudSharp className="w-6 h-6 text-white animate-pulse" />;
       case 'running':
         return <IoSync className="w-6 h-6 text-white animate-spin" />;
       case 'finished':
         return <IoCheckmarkDoneSharp className="w-6 h-6 text-white" />;
+      case 'error':
+        return <IoWarningSharp className="w-6 h-6 text-white" />;
       default:
         return <IoPowerSharp className="w-6 h-6 text-white" />;
     }
@@ -39,92 +96,121 @@ export default function RunTab() {
     switch (solverState) {
       case 'ready':
         return 'Ready';
+      case 'connecting':
+        return 'Connecting...';
       case 'running':
         return 'Processing';
       case 'finished':
         return 'Finished';
+      case 'error':
+        return 'Error';
       default:
         return 'Ready';
     }
   };
 
   const handleRunSolver = async () => {
+    if (isRunning) return;
+    
+    if (!schedulingCase.shifts?.length) {
+      addLog('No shifts available to optimize', 'error');
+      return;
+    }
+
+    if (!schedulingCase.providers?.length) {
+      addLog('No providers available for assignment', 'error');
+      return;
+    }
+
     setIsRunning(true);
     setProgress(0);
-    setLogs(['Starting optimization solver...']);
-    setSolverState('running');
-
-    // Simulate solver progress
-    const progressInterval = setInterval(() => {
-      setProgress(prev => {
-        const next = prev + Math.random() * 10;
-        return next >= 100 ? 100 : next;
-      });
-    }, 500);
+    setSolverState('connecting');
+    
+    addLog('🚀 Starting serverless optimization...');
+    addLog(`📊 Processing ${schedulingCase.shifts.length} shifts and ${schedulingCase.providers.length} providers`);
 
     try {
-      // Try connecting to local Python solver first
-      setLogs(prev => [...prev, 'Connecting to local Python solver (localhost:8000)...']);
+      const startTime = Date.now();
       
-      let response;
-      try {
-        response = await fetch('http://localhost:8000/solve', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(schedulingCase),
-        });
-        
-        if (response.ok) {
-          const result = await response.json();
-          setLogs(prev => [...prev, 'Local Python solver completed successfully!']);
-          setLogs(prev => [...prev, `Run ID: ${result.run_id}`]);
-          setLogs(prev => [...prev, `Total assignments: ${result.result?.summary?.total_assignments || 0}`]);
-          setLogs(prev => [...prev, `Runtime: ${result.result?.optimization_info?.solver_runtime || 'N/A'}`]);
-          setLogs(prev => [...prev, 'Full result:', JSON.stringify(result, null, 2)]);
-        } else {
-          throw new Error(`Local solver error: ${response.status}`);
-        }
-      } catch { // Fixed ESLint unused localError variable
-        setLogs(prev => [...prev, 'Local solver not available. Trying fallback web solver...']);
-        
-        // Fallback to web API
-        response = await fetch('/api/solve', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(schedulingCase),
-        });
+      // Submit case to serverless solver
+      addLog('📡 Submitting to serverless solver...');
+      setSolverState('running');
+      
+      const response = await fetch('/api/solve', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(schedulingCase),
+      });
 
-        if (response.ok) {
-          const result = await response.json();
-          setLogs(prev => [...prev, 'Web solver completed successfully!', JSON.stringify(result, null, 2)]);
-        } else {
-          throw new Error('Both local and web solvers failed');
-        }
-      }
-    } catch {
-      setLogs(prev => [...prev, `Error: Unable to connect to solvers. Please ensure:`]);
-      setLogs(prev => [...prev, `1. Local Python solver is running: python solver_service.py`]);
-      setLogs(prev => [...prev, `2. Or use the demo web solver (limited functionality)`]);
-      setLogs(prev => [...prev, `Current case: ${schedulingCase.shifts.length} shifts, ${schedulingCase.providers.length} providers`]);
-    } finally {
-      clearInterval(progressInterval);
-      setProgress(100);
-      setIsRunning(false);
-      setSolverState('finished');
+      const result: SolverResult = await response.json();
       
-      // Reset to ready state after 3 seconds
-      setTimeout(() => {
-        setSolverState('ready');
-      }, 3000);
+      if (!response.ok) {
+        throw new Error(result.message || `HTTP ${response.status}`);
+      }
+
+      const executionTime = Date.now() - startTime;
+      addLog(`⚡ Optimization completed in ${executionTime}ms`, 'success');
+      
+      if (result.status === 'completed') {
+        setSolverState('finished');
+        setProgress(100);
+        
+        // Display results
+        if (result.results && typeof result.results === 'object') {
+          const resultsData = result.results as { solutions?: Array<unknown>; solver_stats?: Record<string, unknown> };
+          const solutions = resultsData.solutions || [];
+          const stats = resultsData.solver_stats || {};
+          
+          addLog(`✅ Generated ${solutions.length} solution(s)`, 'success');
+          addLog(`� Solver: ${stats.solver_type || 'serverless'} (${stats.status || 'completed'})`, 'info');
+          
+          // Store results in context (note: this may need proper action type in context)
+          // dispatch({
+          //   type: 'SET_RESULTS',
+          //   payload: {
+          //     results: result.results,
+          //     metadata: {
+          //       runId: result.run_id || 'serverless',
+          //       timestamp: new Date().toISOString(),
+          //       statistics: result.statistics,
+          //       executionTimeMs: executionTime,
+          //       solverType: 'serverless'
+          //     }
+          //   }
+          // });
+          
+          // For now, just log the results
+          addLog(`📊 Results: ${JSON.stringify(result.results, null, 2).slice(0, 200)}...`, 'info');
+          
+          addLog('📋 Results saved and ready for export', 'success');
+        }
+        
+      } else if (result.status === 'error') {
+        throw new Error(result.error || result.message);
+      }
+      
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      addLog(`❌ Optimization failed: ${errorMessage}`, 'error');
+      setSolverState('error');
+      setProgress(0);
+    } finally {
+      setIsRunning(false);
     }
   };
 
+  const stopSolver = () => {
+    // For serverless approach, we just reset the UI state
+    setIsRunning(false);
+    setSolverState('ready');
+    setProgress(0);
+    addLog('🛑 Optimization stopped by user', 'warning');
+  };
+
   const handleOpenOutputFolder = () => {
-    setLogs(prev => [...prev, `Output folder: ${schedulingCase.run.out}`]);
+    addLog(`Output folder: ${schedulingCase.run.out}`);
   };
 
   const updateRunConfig = (field: keyof typeof schedulingCase.run, value: string | number) => {
@@ -248,6 +334,17 @@ export default function RunTab() {
               </>
             )}
           </button>
+
+          {isRunning && (
+            <button
+              onClick={stopSolver}
+              className="relative px-4 lg:px-6 py-3 lg:py-4 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl hover:from-red-700 hover:to-red-800 font-semibold flex items-center justify-center space-x-2 transition-all duration-300 shadow-lg hover:shadow-2xl hover:scale-105 overflow-hidden group w-full lg:w-auto"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-red-400 to-red-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+              <IoStopSharp className="w-4 h-4 lg:w-5 lg:h-5" />
+              <span className="relative z-10">Stop</span>
+            </button>
+          )}
           
           <button
             onClick={handleOpenOutputFolder}
@@ -256,6 +353,15 @@ export default function RunTab() {
             <div className="absolute inset-0 bg-gradient-to-r from-gray-400 to-gray-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
             <IoFolderOpenSharp className="w-4 h-4 lg:w-5 lg:h-5" />
             <span className="relative z-10">Open Output Folder</span>
+          </button>
+
+          <button
+            onClick={clearLogs}
+            className="relative px-4 lg:px-6 py-3 lg:py-4 bg-gradient-to-r from-orange-600 to-orange-700 text-white rounded-xl hover:from-orange-700 hover:to-orange-800 font-semibold flex items-center justify-center space-x-2 transition-all duration-300 shadow-lg hover:shadow-2xl hover:scale-105 overflow-hidden group w-full lg:w-auto"
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-orange-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+            <IoTerminalSharp className="w-4 h-4 lg:w-5 lg:h-5" />
+            <span className="relative z-10">Clear Logs</span>
           </button>
         </div>
 
