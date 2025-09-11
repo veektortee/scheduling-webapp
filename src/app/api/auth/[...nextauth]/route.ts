@@ -3,6 +3,7 @@ import CredentialsProvider from 'next-auth/providers/credentials'
 // import bcrypt from 'bcryptjs'
 
 // Admin credentials - In production, store these securely
+// Updated with enhanced debugging for Vercel deployment
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@scheduling.com'
 // const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH || '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewviUK1CXLaWhWH2' // "admin123"
 
