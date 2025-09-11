@@ -7,6 +7,7 @@ const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@scheduling.com'
 // const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH || '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewviUK1CXLaWhWH2' // "admin123"
 
 const handler = NextAuth({
+  secret: process.env.NEXTAUTH_SECRET,
   providers: [
     CredentialsProvider({
       name: 'credentials',
@@ -68,6 +69,18 @@ const handler = NextAuth({
   pages: {
     signIn: '/login',
     error: '/login'
+  },
+  debug: process.env.NODE_ENV === 'development',
+  logger: {
+    error(code, metadata) {
+      console.error('NextAuth Error:', { code, metadata })
+    },
+    warn(code) {
+      console.warn('NextAuth Warning:', code)
+    },
+    debug(code, metadata) {
+      console.log('NextAuth Debug:', { code, metadata })
+    }
   }
 })
 

@@ -128,13 +128,34 @@ The solver service will be available at `http://localhost:8000`
 - [ ] Backup existing scheduling data
 
 ### **Environment Variables**
+
+#### **For Local Development (.env.local)**
 ```bash
-# .env.local
 NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=your-secret-key
-ADMIN_EMAIL=admin@yourcompany.com
-ADMIN_PASSWORD_HASH=bcrypt-hashed-password
+NEXTAUTH_SECRET=your-super-secret-key-for-development
+ADMIN_EMAIL=admin@scheduling.com
+ADMIN_PASSWORD_HASH=$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewviUK1CXLaWhWH2
 ```
+
+#### **For Vercel Production Deployment**
+
+⚠️ **CRITICAL**: You must set these environment variables in your Vercel dashboard:
+
+1. Go to your Vercel project dashboard
+2. Navigate to Settings > Environment Variables
+3. Add the following variables:
+
+```bash
+NEXTAUTH_URL=https://your-app-name.vercel.app
+NEXTAUTH_SECRET=your-production-secret-key-min-32-chars
+ADMIN_EMAIL=admin@yourcompany.com
+ADMIN_PASSWORD_HASH=$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewviUK1CXLaWhWH2
+```
+
+**Important Notes:**
+- Replace `your-app-name.vercel.app` with your actual Vercel domain
+- Generate a secure `NEXTAUTH_SECRET` (minimum 32 characters)
+- The password hash corresponds to "admin123" - change this in production!
 
 ## 🆘 Troubleshooting
 
@@ -145,9 +166,12 @@ ADMIN_PASSWORD_HASH=bcrypt-hashed-password
    - Check if port 8000 is available
    - Verify firewall settings
 
-2. **"Authentication failed"**
-   - Use correct credentials: `admin@scheduling.com` / `admin123`
-   - Clear browser cookies if needed
+2. **"Authentication failed" or "500 Server Error"**
+   - **Missing Environment Variables**: Check that `NEXTAUTH_SECRET` and `NEXTAUTH_URL` are set in Vercel
+   - **Wrong URL**: Ensure `NEXTAUTH_URL` matches your exact Vercel domain (with https://)
+   - **Invalid Credentials**: Use `admin@scheduling.com` / `admin123`
+   - **Clear browser cookies and cache**
+   - **Check Vercel Function logs** for detailed error messages
 
 3. **"Export not working"**
    - Check browser's download settings
