@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { signIn, getSession } from 'next-auth/react';
 import { HiShieldCheck } from 'react-icons/hi2';
 
@@ -9,6 +9,30 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
+
+  // Check if user is already authenticated immediately
+  useEffect(() => {
+    const checkAuthentication = async () => {
+      try {
+        const session = await getSession();
+        console.log('🔍 Auto-check session status:', session);
+        
+        if (session) {
+          console.log('✅ User already authenticated, redirecting to home...');
+          window.location.href = '/';
+        } else {
+          console.log('👤 User not authenticated, staying on login page');
+        }
+      } catch (error) {
+        console.log('❌ Error checking authentication:', error);
+      } finally {
+        setCheckingAuth(false);
+      }
+    };
+
+    checkAuthentication();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,6 +95,23 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-slate-50/50 to-blue-50/30 dark:from-gray-900 dark:via-gray-900 dark:to-slate-800 py-6 lg:py-12 px-4 sm:px-6 lg:px-8 relative">
       <div className="absolute inset-0 bg-gradient-to-tr from-blue-50/10 via-transparent to-teal-50/10 dark:from-blue-900/5 dark:via-transparent dark:to-teal-900/5"></div>
+      
+      {checkingAuth && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-2xl border border-gray-200 dark:border-gray-700 max-w-md w-full mx-4">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                Checking Authentication
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
+                Verifying if you&apos;re already signed in...
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+      
       <div className="relative max-w-md w-full space-y-6 lg:space-y-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50 p-6 lg:p-8">
         <div>
           <div className="mx-auto h-12 w-12 lg:h-14 lg:w-14 flex items-center justify-center bg-gradient-to-br from-blue-600 to-teal-600 rounded-xl shadow-lg">
