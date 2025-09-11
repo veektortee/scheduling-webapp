@@ -1,6 +1,7 @@
 import NextAuth from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import { validateCredentials } from '@/lib/credentialsManager'
+import { lockoutManager } from '@/lib/lockoutManager'
 // import bcrypt from 'bcryptjs'
 
 // Dynamic credentials managed by credentials manager
@@ -18,7 +19,7 @@ const handler = NextAuth({
         email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' }
       },
-      async authorize(credentials) {
+      async authorize(credentials, req) {
         console.log('🔐 Auth attempt:', { 
           email: credentials?.email, 
           hasPassword: !!credentials?.password,
@@ -30,15 +31,28 @@ const handler = NextAuth({
           return null
         }
 
+        // Check if client is locked out
+        const lockoutInfo = lockoutManager.getLockoutInfo(req);
+        if (lockoutInfo.isLockedOut) {
+          console.log('🔒 Login attempt blocked - client is locked out');
+          const remainingTime = lockoutInfo.remainingTime 
+            ? lockoutManager.getFormattedRemainingTime(lockoutInfo.remainingTime)
+            : 'unknown time';
+          throw new Error(`Too many failed attempts. Please wait ${remainingTime} before trying again.`);
+        }
+
         // Load current credentials dynamically each time
         const isValid = validateCredentials(credentials.email, credentials.password);
         console.log('🔍 Credential validation:', { 
           isValid,
-          providedEmail: credentials.email
+          providedEmail: credentials.email,
+          attemptCount: lockoutInfo.attemptCount
         });
         
         if (isValid) {
           console.log('✅ Authentication successful')
+          // Reset failed attempts on successful login
+          lockoutManager.resetAttempts(req);
           return {
             id: '1',
             email: credentials.email, // Use the provided email as the current username
@@ -47,7 +61,20 @@ const handler = NextAuth({
           }
         }
 
-        console.log('❌ Authentication failed')
+        // Record failed attempt
+        lockoutManager.recordFailedAttempt(req);
+        const newLockoutInfo = lockoutManager.getLockoutInfo(req);
+        
+        console.log('❌ Authentication failed', {
+          attemptCount: newLockoutInfo.attemptCount,
+          isNowLockedOut: newLockoutInfo.isLockedOut
+        });
+
+        if (newLockoutInfo.isLockedOut && newLockoutInfo.remainingTime) {
+          const remainingTime = lockoutManager.getFormattedRemainingTime(newLockoutInfo.remainingTime);
+          throw new Error(`Too many failed attempts. Please wait ${remainingTime} before trying again.`);
+        }
+
         return null
       }
     })

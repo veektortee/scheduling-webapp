@@ -10,6 +10,44 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
+  const [lockoutInfo, setLockoutInfo] = useState<{
+    isLockedOut: boolean;
+    remainingTime?: number;
+    attemptCount: number;
+    formattedTime?: string;
+  }>({ isLockedOut: false, attemptCount: 0 });
+
+  // Check lockout status
+  const checkLockoutStatus = async () => {
+    try {
+      const response = await fetch('/api/auth/lockout-status');
+      if (response.ok) {
+        const data = await response.json();
+        setLockoutInfo(data);
+        
+        if (data.isLockedOut && data.formattedTime) {
+          setError(`Too many failed attempts. Please wait ${data.formattedTime} before trying again.`);
+        }
+      }
+    } catch (error) {
+      console.error('Error checking lockout status:', error);
+    }
+  };
+
+  // Check lockout status periodically if locked out
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    
+    if (lockoutInfo.isLockedOut && lockoutInfo.remainingTime) {
+      interval = setInterval(() => {
+        checkLockoutStatus();
+      }, 1000); // Check every second
+    }
+
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [lockoutInfo.isLockedOut, lockoutInfo.remainingTime]);
 
   // Check if user is already authenticated immediately
   useEffect(() => {
@@ -23,6 +61,8 @@ export default function LoginPage() {
           window.location.href = '/';
         } else {
           console.log('👤 User not authenticated, staying on login page');
+          // Check lockout status when page loads
+          await checkLockoutStatus();
         }
       } catch (error) {
         console.log('❌ Error checking authentication:', error);
@@ -36,6 +76,13 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Check lockout status before attempting login
+    await checkLockoutStatus();
+    if (lockoutInfo.isLockedOut) {
+      return; // Error message already set by checkLockoutStatus
+    }
+    
     setLoading(true);
     setError('');
 
@@ -50,7 +97,17 @@ export default function LoginPage() {
 
       if (result?.error) {
         console.log('❌ SignIn error:', result.error);
-        setError('Invalid credentials. Please check your username and password.');
+        
+        // Check if it's a lockout error
+        if (result.error.includes('wait')) {
+          setError(result.error);
+          // Refresh lockout status
+          await checkLockoutStatus();
+        } else {
+          setError('Invalid credentials. Please check your username and password.');
+          // Check updated lockout status after failed attempt
+          setTimeout(checkLockoutStatus, 100);
+        }
       } else if (result?.ok) {
         console.log('✅ SignIn successful, waiting for session...');
         
@@ -143,6 +200,18 @@ export default function LoginPage() {
             </div>
           )}
           
+          {lockoutInfo.attemptCount > 0 && lockoutInfo.attemptCount < 3 && !lockoutInfo.isLockedOut && (
+            <div className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 border border-yellow-200 dark:border-yellow-800 text-yellow-800 dark:text-yellow-300 px-4 lg:px-6 py-2 lg:py-3 rounded-xl shadow-lg backdrop-blur-sm">
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>
+                <span className="font-medium text-xs lg:text-sm">
+                  Warning: {lockoutInfo.attemptCount} of 3 failed attempts. 
+                  {3 - lockoutInfo.attemptCount} attempt{3 - lockoutInfo.attemptCount !== 1 ? 's' : ''} remaining.
+                </span>
+              </div>
+            </div>
+          )}
+          
           <div className="space-y-4 lg:space-y-5">
             <div>
               <label htmlFor="email" className="block text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
@@ -182,9 +251,9 @@ export default function LoginPage() {
           <div className="pt-2">
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || lockoutInfo.isLockedOut}
               className={`group relative w-full flex justify-center py-3 lg:py-4 px-4 lg:px-6 border border-transparent text-sm lg:text-base font-semibold rounded-xl text-white transition-all duration-300 shadow-lg hover:shadow-2xl ${
-                loading
+                loading || lockoutInfo.isLockedOut
                   ? 'bg-gray-400 cursor-not-allowed'
                   : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 hover:scale-105'
               }`}
@@ -193,6 +262,11 @@ export default function LoginPage() {
                 <div className="flex items-center">
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
                   Signing in...
+                </div>
+              ) : lockoutInfo.isLockedOut ? (
+                <div className="flex items-center space-x-2">
+                  <div className="w-5 h-5 rounded-full bg-red-500 animate-pulse"></div>
+                  <span>Locked - Wait {lockoutInfo.formattedTime}</span>
                 </div>
               ) : (
                 <div className="flex items-center space-x-2">
