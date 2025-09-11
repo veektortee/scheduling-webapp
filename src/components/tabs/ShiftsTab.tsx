@@ -4,6 +4,11 @@ import { useState } from 'react';
 import { useScheduling } from '@/context/SchedulingContext';
 import { Shift, DEFAULT_SHIFT_TYPES } from '@/types/scheduling';
 import { formatTime, formatDate } from '@/lib/scheduling';
+import { 
+  IoCalendarSharp,
+  IoTimeSharp,
+  IoStatsChartSharp
+} from 'react-icons/io5';
 
 export default function ShiftsTab() {
   const { state, dispatch } = useScheduling();
@@ -159,33 +164,106 @@ export default function ShiftsTab() {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      {/* Date Selection */}
-      <div className="lg:col-span-1">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Select Date</h3>
-          <div className="max-h-96 overflow-y-auto space-y-1">
-            {schedulingCase.calendar.days.map((date) => (
-              <button
-                key={date}
-                onClick={() => handleDateSelect(date)}
-                className={`w-full text-left px-3 py-2 rounded-md text-sm ${
-                  selectedDate === date
-                    ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 font-medium'
-                    : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
-                }`}
-              >
-                {formatDate(date)}
-              </button>
-            ))}
-            {schedulingCase.calendar.days.length === 0 && (
-              <div className="text-gray-500 text-sm">
-                No calendar days. Generate them in the Calendar tab.
-              </div>
-            )}
+    <div className="space-y-8 animate-fade-in-up">
+      {/* Quick Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl shadow-lg border border-blue-200/50 dark:border-blue-800/50 p-6 hover-glow hover:scale-105 transition-all duration-300">
+          <div className="flex items-center space-x-3">
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center">
+              <IoTimeSharp className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Shifts</p>
+              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{schedulingCase.shifts.length}</p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl shadow-lg border border-green-200/50 dark:border-green-800/50 p-6 hover-glow hover:scale-105 transition-all duration-300">
+          <div className="flex items-center space-x-3">
+            <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
+              <IoCalendarSharp className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Selected Date</p>
+              <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                {shiftsForSelectedDate.length}
+              </p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl shadow-lg border border-purple-200/50 dark:border-purple-800/50 p-6 hover-glow hover:scale-105 transition-all duration-300">
+          <div className="flex items-center space-x-3">
+            <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+              <IoTimeSharp className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Shift Types</p>
+              <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                {new Set(schedulingCase.shifts.map(s => s.type)).size}
+              </p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 rounded-xl shadow-lg border border-orange-200/50 dark:border-orange-800/50 p-6 hover-glow hover:scale-105 transition-all duration-300">
+          <div className="flex items-center space-x-3">
+            <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-500 rounded-lg flex items-center justify-center">
+              <IoStatsChartSharp className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Selected</p>
+              <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                {selectedShiftIndex !== null ? 1 : 0}
+              </p>
+            </div>
           </div>
         </div>
       </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Date Selection */}
+        <div className="lg:col-span-1">
+          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 dark:border-gray-700/50 p-8 hover-glow">
+            <div className="flex items-center space-x-3 mb-6">
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
+                <IoCalendarSharp className="w-4 h-4 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                Calendar Dates
+              </h3>
+            </div>
+            <div className="max-h-96 overflow-y-auto space-y-2">
+              {schedulingCase.calendar.days.map((date) => (
+                <button
+                  key={date}
+                  onClick={() => handleDateSelect(date)}
+                  className={`w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
+                    selectedDate === date
+                      ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg scale-105'
+                      : 'bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 hover:scale-102'
+                  }`}
+                >
+                  {formatDate(date)}
+                </button>
+              ))}
+              {schedulingCase.calendar.days.length === 0 && (
+                <div className="text-center py-8">
+                  <div className="text-gray-400 text-4xl mb-2 flex justify-center">
+                    <IoCalendarSharp className="w-10 h-10" />
+                  </div>
+                  <div className="text-gray-500 text-sm font-medium">
+                    No calendar days available
+                  </div>
+                  <div className="text-gray-400 text-xs mt-1">
+                    Generate them in the Calendar tab
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
 
       {/* Shifts List */}
       <div className="lg:col-span-1">
@@ -235,7 +313,7 @@ export default function ShiftsTab() {
                 <button
                   key={template.id}
                   onClick={() => applyShiftTemplate(template)}
-                  className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded"
+                  className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200 text-gray-800 rounded transition-colors"
                 >
                   {template.name}
                 </button>
@@ -326,7 +404,7 @@ export default function ShiftsTab() {
             <div className="flex space-x-2 pt-4">
               <button
                 onClick={addShift}
-                className="flex-1 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+                className="flex-1 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:from-green-600 hover:to-emerald-700 transform hover:scale-[1.02] transition-all duration-200 font-medium shadow-lg"
               >
                 Add
               </button>
@@ -334,13 +412,13 @@ export default function ShiftsTab() {
                 <>
                   <button
                     onClick={updateShift}
-                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                    className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transform hover:scale-[1.02] transition-all duration-200 font-medium shadow-lg"
                   >
                     Update
                   </button>
                   <button
                     onClick={deleteShift}
-                    className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                    className="flex-1 px-4 py-2 bg-gradient-to-r from-red-500 to-pink-600 text-white rounded-lg hover:from-red-600 hover:to-pink-700 transform hover:scale-[1.02] transition-all duration-200 font-medium shadow-lg"
                   >
                     Delete
                   </button>
@@ -350,6 +428,7 @@ export default function ShiftsTab() {
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 }

@@ -3,6 +3,19 @@
 import { useState } from 'react';
 import { useScheduling } from '@/context/SchedulingContext';
 import { Provider } from '@/types/scheduling';
+import { 
+  IoPeopleSharp, 
+  IoPersonSharp, 
+  IoMedkitSharp,
+  IoHeartSharp,
+  IoCalendarSharp,
+  IoClipboardSharp,
+  IoCheckmarkCircleSharp,
+  IoSyncSharp,
+  IoTrashSharp,
+  IoCloseCircleSharp,
+  IoWarningSharp
+} from 'react-icons/io5';
 
 export default function ProvidersTab() {
   const { state, dispatch } = useScheduling();
@@ -143,12 +156,77 @@ export default function ProvidersTab() {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      {/* Providers List */}
-      <div className="lg:col-span-1">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Providers</h3>
-          <div className="max-h-64 overflow-y-auto space-y-2">
+    <div className="space-y-8 animate-fade-in-up">
+      {/* Quick Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl shadow-lg border border-blue-200/50 dark:border-blue-800/50 p-6 hover-glow hover:scale-105 transition-all duration-300">
+          <div className="flex items-center space-x-3">
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center">
+              <IoPeopleSharp className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total</p>
+              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{schedulingCase.providers.length}</p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl shadow-lg border border-green-200/50 dark:border-green-800/50 p-6 hover-glow hover:scale-105 transition-all duration-300">
+          <div className="flex items-center space-x-3">
+            <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
+              <IoMedkitSharp className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">MD</p>
+              <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                {schedulingCase.providers.filter(p => p.type === 'MD').length}
+              </p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl shadow-lg border border-purple-200/50 dark:border-purple-800/50 p-6 hover-glow hover:scale-105 transition-all duration-300">
+          <div className="flex items-center space-x-3">
+            <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+              <IoHeartSharp className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">RN</p>
+              <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                {schedulingCase.providers.filter(p => p.type === 'RN').length}
+              </p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 rounded-xl shadow-lg border border-orange-200/50 dark:border-orange-800/50 p-6 hover-glow hover:scale-105 transition-all duration-300">
+          <div className="flex items-center space-x-3">
+            <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-500 rounded-lg flex items-center justify-center">
+              <IoPersonSharp className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Selected</p>
+              <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                {selectedProvider !== null ? 1 : 0}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Providers List */}
+        <div className="lg:col-span-1">
+          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 dark:border-gray-700/50 p-8 hover-glow">
+            <div className="flex items-center space-x-3 mb-6">
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
+                <IoPeopleSharp className="w-4 h-4 text-white" />
+              </div>
+              <h3 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                Medical Providers
+              </h3>
+            </div>
+            <div className="max-h-64 overflow-y-auto space-y-2">
             {schedulingCase.providers.map((provider, index) => (
               <div
                 key={provider.id || index}
@@ -243,26 +321,32 @@ export default function ProvidersTab() {
               />
             </div>
 
-            <div className="flex space-x-2">
+            <div className="flex space-x-3">
               <button
                 onClick={addProvider}
-                className="flex-1 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+                className="flex-1 relative px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:from-green-700 hover:to-emerald-700 font-semibold flex items-center justify-center space-x-2 transition-all duration-300 shadow-lg hover:shadow-2xl hover:scale-105 border border-green-500/20 overflow-hidden group"
               >
-                Add
+                <div className="absolute inset-0 bg-gradient-to-r from-green-400 to-emerald-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+                <IoCheckmarkCircleSharp className="w-4 h-4" />
+                <span className="relative z-10">Add</span>
               </button>
               {selectedProvider !== null && (
                 <>
                   <button
                     onClick={updateProvider}
-                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                    className="flex-1 relative px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 font-semibold flex items-center justify-center space-x-2 transition-all duration-300 shadow-lg hover:shadow-2xl hover:scale-105 border border-blue-500/20 overflow-hidden group"
                   >
-                    Update
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-indigo-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+                    <IoSyncSharp className="w-4 h-4" />
+                    <span className="relative z-10">Update</span>
                   </button>
                   <button
                     onClick={deleteProvider}
-                    className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                    className="flex-1 relative px-6 py-3 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-xl hover:from-red-700 hover:to-rose-700 font-semibold flex items-center justify-center space-x-2 transition-all duration-300 shadow-lg hover:shadow-2xl hover:scale-105 border border-red-500/20 overflow-hidden group"
                   >
-                    Delete
+                    <div className="absolute inset-0 bg-gradient-to-r from-red-400 to-rose-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+                    <IoTrashSharp className="w-4 h-4" />
+                    <span className="relative z-10">Delete</span>
                   </button>
                 </>
               )}
@@ -274,7 +358,7 @@ export default function ProvidersTab() {
       {/* Days Selection (OFF) */}
       <div className="lg:col-span-1">
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Choose Days (OFF)</h3>
+          <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Choose Days (OFF)</h3>
           <div className="max-h-64 overflow-y-auto border rounded-md mb-4">
             {schedulingCase.calendar.days.map((day) => (
               <div
@@ -302,20 +386,24 @@ export default function ProvidersTab() {
             ))}
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-3">
             <button
               onClick={applyFixedOffDays}
               disabled={selectedProvider === null || selectedOffDays.length === 0}
-              className="w-full px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full relative px-6 py-3 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-xl hover:from-red-700 hover:to-rose-700 font-semibold flex items-center justify-center space-x-2 transition-all duration-300 shadow-lg hover:shadow-2xl hover:scale-105 border border-red-500/20 overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
-              Set FIXED OFF
+              <div className="absolute inset-0 bg-gradient-to-r from-red-400 to-rose-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+              <IoCloseCircleSharp className="w-4 h-4" />
+              <span className="relative z-10">Set FIXED OFF</span>
             </button>
             <button
               onClick={applyPreferOffDays}
               disabled={selectedProvider === null || selectedOffDays.length === 0}
-              className="w-full px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full relative px-6 py-3 bg-gradient-to-r from-orange-600 to-amber-600 text-white rounded-xl hover:from-orange-700 hover:to-amber-700 font-semibold flex items-center justify-center space-x-2 transition-all duration-300 shadow-lg hover:shadow-2xl hover:scale-105 border border-orange-500/20 overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
-              Set PREFER OFF
+              <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-amber-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+              <IoWarningSharp className="w-4 h-4" />
+              <span className="relative z-10">Set PREFER OFF</span>
             </button>
           </div>
         </div>
@@ -324,7 +412,7 @@ export default function ProvidersTab() {
       {/* Provider Summary */}
       <div className="lg:col-span-1">
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Provider Summary</h3>
+          <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Provider Summary</h3>
           {selectedProvider !== null && schedulingCase.providers[selectedProvider] ? (
             <div className="space-y-4">
               <div>
@@ -386,6 +474,7 @@ export default function ProvidersTab() {
           )}
         </div>
       </div>
+    </div>
     </div>
   );
 }
