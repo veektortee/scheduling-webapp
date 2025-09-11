@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { signIn, getSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { HiShieldCheck } from 'react-icons/hi2';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -59,7 +60,7 @@ export default function LoginPage() {
       <div className="max-w-md w-full space-y-8">
         <div>
           <div className="mx-auto h-12 w-12 flex items-center justify-center bg-blue-600 rounded-full">
-            <span className="text-white text-xl font-bold">🏥</span>
+            <HiShieldCheck className="w-6 h-6 text-white" />
           </div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-gray-100">
             Medical Staff Scheduling
