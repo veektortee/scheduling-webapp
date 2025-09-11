@@ -9,6 +9,10 @@ const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@scheduling.com'
 
 const handler = NextAuth({
   secret: process.env.NEXTAUTH_SECRET,
+  ...(process.env.VERCEL_URL && {
+    // Use Vercel URL if available, otherwise fall back to NEXTAUTH_URL
+    url: process.env.NEXTAUTH_URL || `https://${process.env.VERCEL_URL}`
+  }),
   providers: [
     CredentialsProvider({
       name: 'credentials',
