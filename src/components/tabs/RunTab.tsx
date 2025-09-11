@@ -140,96 +140,96 @@ export default function RunTab() {
   };
 
   return (
-    <div className="space-y-8 animate-fade-in-up">
+    <div className="space-y-4 lg:space-y-8 animate-fade-in-up">
       {/* Run Settings */}
-      <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 dark:border-gray-700/50 p-8 hover-glow">
-        <div className="flex items-center space-x-3 mb-6">
-          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
-            <IoSettingsSharp className="w-4 h-4 text-white" />
+      <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 dark:border-gray-700/50 p-4 lg:p-8 hover-glow">
+        <div className="flex items-center space-x-3 mb-4 lg:mb-6">
+          <div className="w-6 h-6 lg:w-8 lg:h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
+            <IoSettingsSharp className="w-3 h-3 lg:w-4 lg:h-4 text-white" />
           </div>
-          <h2 className="text-2xl font-bold text-gradient">
+          <h2 className="text-xl lg:text-2xl font-bold text-gradient">
             Run Settings
           </h2>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
           <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
               Output Folder Name
             </label>
             <input
               type="text"
               value={schedulingCase.run.out}
               onChange={(e) => updateRunConfig('out', e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/90 dark:bg-gray-700/90 text-gray-900 dark:text-white backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 hover:shadow-md"
+              className="w-full px-3 lg:px-4 py-2 lg:py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/90 dark:bg-gray-700/90 text-gray-900 dark:text-white backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 hover:shadow-md text-sm lg:text-base"
             />
           </div>
           
           <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
               k (Solutions)
             </label>
             <input
               type="number"
               value={schedulingCase.run.k}
               onChange={(e) => updateRunConfig('k', parseInt(e.target.value) || 0)}
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/90 dark:bg-gray-700/90 text-gray-900 dark:text-white backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 hover:shadow-md"
+              className="w-full px-3 lg:px-4 py-2 lg:py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/90 dark:bg-gray-700/90 text-gray-900 dark:text-white backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 hover:shadow-md text-sm lg:text-base"
             />
           </div>
           
           <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
               L (Variety)
             </label>
             <input
               type="number"
               value={schedulingCase.run.L}
               onChange={(e) => updateRunConfig('L', parseInt(e.target.value) || 0)}
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/90 dark:bg-gray-700/90 text-gray-900 dark:text-white backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 hover:shadow-md"
+              className="w-full px-3 lg:px-4 py-2 lg:py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/90 dark:bg-gray-700/90 text-gray-900 dark:text-white backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 hover:shadow-md text-sm lg:text-base"
             />
           </div>
           
           <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
               Seed
             </label>
             <input
               type="number"
               value={schedulingCase.run.seed}
               onChange={(e) => updateRunConfig('seed', parseInt(e.target.value) || 0)}
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/90 dark:bg-gray-700/90 text-gray-900 dark:text-white backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 hover:shadow-md"
+              className="w-full px-3 lg:px-4 py-2 lg:py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/90 dark:bg-gray-700/90 text-gray-900 dark:text-white backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 hover:shadow-md text-sm lg:text-base"
             />
           </div>
           
           <div>
-            <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-              <IoTimerSharp className="w-4 h-4" />
+            <label className="flex items-center space-x-2 text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+              <IoTimerSharp className="w-3 h-3 lg:w-4 lg:h-4" />
               <span>Time (minutes)</span>
             </label>
             <input
               type="number"
               value={schedulingCase.run.time}
               onChange={(e) => updateRunConfig('time', parseFloat(e.target.value) || 0)}
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/90 dark:bg-gray-700/90 text-gray-900 dark:text-white backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 hover:shadow-md"
+              className="w-full px-3 lg:px-4 py-2 lg:py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/90 dark:bg-gray-700/90 text-gray-900 dark:text-white backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 hover:shadow-md text-sm lg:text-base"
             />
           </div>
         </div>
       </div>
 
       {/* Run Controls */}
-      <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 dark:border-gray-700/50 p-8 hover-glow">
-        <div className="flex items-center space-x-3 mb-6">
-          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
-            <IoRocketSharp className="w-4 h-4 text-white" />
+      <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 dark:border-gray-700/50 p-4 lg:p-8 hover-glow">
+        <div className="flex items-center space-x-3 mb-4 lg:mb-6">
+          <div className="w-6 h-6 lg:w-8 lg:h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
+            <IoRocketSharp className="w-3 h-3 lg:w-4 lg:h-4 text-white" />
           </div>
-          <h2 className="text-2xl font-bold text-gradient">
+          <h2 className="text-xl lg:text-2xl font-bold text-gradient">
             Optimization Control
           </h2>
         </div>
-        <div className="flex flex-col sm:flex-row gap-4 mb-6">
+        <div className="flex flex-col space-y-3 lg:space-y-0 lg:flex-row lg:space-x-4 mb-4 lg:mb-6">
           <button
             onClick={handleRunSolver}
             disabled={isRunning}
-            className={`relative px-8 py-4 rounded-xl font-bold text-lg flex items-center justify-center space-x-3 transition-all duration-300 shadow-lg hover:shadow-2xl overflow-hidden group ${
+            className={`relative px-6 lg:px-8 py-3 lg:py-4 rounded-xl font-bold text-base lg:text-lg flex items-center justify-center space-x-3 transition-all duration-300 shadow-lg hover:shadow-2xl overflow-hidden group w-full lg:w-auto ${
               isRunning
                 ? 'bg-gray-400 text-white cursor-not-allowed'
                 : 'bg-gradient-to-r from-green-600 to-blue-600 text-white hover:from-green-700 hover:to-blue-700 hover:scale-105'
@@ -238,12 +238,12 @@ export default function RunTab() {
             {!isRunning && <div className="absolute inset-0 bg-gradient-to-r from-green-400 to-blue-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>}
             {isRunning ? (
               <>
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                <div className="animate-spin rounded-full h-5 w-5 lg:h-6 lg:w-6 border-b-2 border-white"></div>
                 <span>Running Optimization...</span>
               </>
             ) : (
               <>
-                <IoPlaySharp className="w-6 h-6" />
+                <IoPlaySharp className="w-5 h-5 lg:w-6 lg:h-6" />
                 <span>Run Solver</span>
               </>
             )}
@@ -251,27 +251,27 @@ export default function RunTab() {
           
           <button
             onClick={handleOpenOutputFolder}
-            className="relative px-6 py-4 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-xl hover:from-gray-700 hover:to-gray-800 font-semibold flex items-center space-x-2 transition-all duration-300 shadow-lg hover:shadow-2xl hover:scale-105 overflow-hidden group"
+            className="relative px-4 lg:px-6 py-3 lg:py-4 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-xl hover:from-gray-700 hover:to-gray-800 font-semibold flex items-center justify-center space-x-2 transition-all duration-300 shadow-lg hover:shadow-2xl hover:scale-105 overflow-hidden group w-full lg:w-auto"
           >
             <div className="absolute inset-0 bg-gradient-to-r from-gray-400 to-gray-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
-            <IoFolderOpenSharp className="w-5 h-5" />
+            <IoFolderOpenSharp className="w-4 h-4 lg:w-5 lg:h-5" />
             <span className="relative z-10">Open Output Folder</span>
           </button>
         </div>
 
         {/* Progress Bar */}
         {isRunning && (
-          <div className="bg-gradient-to-r from-blue-50 to-green-50 dark:from-blue-900/20 dark:to-green-900/20 rounded-xl p-6 border border-blue-200/50 dark:border-blue-800/50">
+          <div className="bg-gradient-to-r from-blue-50 to-green-50 dark:from-blue-900/20 dark:to-green-900/20 rounded-xl p-4 lg:p-6 border border-blue-200/50 dark:border-blue-800/50">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center space-x-2">
                 <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Optimization Progress</span>
+                <span className="text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-300">Optimization Progress</span>
               </div>
-              <span className="text-lg font-bold text-blue-600 dark:text-blue-400">{Math.round(progress)}%</span>
+              <span className="text-base lg:text-lg font-bold text-blue-600 dark:text-blue-400">{Math.round(progress)}%</span>
             </div>
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 shadow-inner">
+            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 lg:h-3 shadow-inner">
               <div
-                className="bg-gradient-to-r from-blue-500 via-purple-500 to-green-500 h-3 rounded-full transition-all duration-500 ease-out shadow-lg"
+                className="bg-gradient-to-r from-blue-500 via-purple-500 to-green-500 h-2 lg:h-3 rounded-full transition-all duration-500 ease-out shadow-lg"
                 style={{ width: `${progress}%` }}
               />
             </div>
@@ -283,19 +283,19 @@ export default function RunTab() {
       </div>
 
       {/* Log Output */}
-      <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 dark:border-gray-700/50 p-8 hover-glow">
-        <div className="flex items-center space-x-3 mb-6">
-          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
-            <IoTerminalSharp className="w-4 h-4 text-white" />
+      <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 dark:border-gray-700/50 p-4 lg:p-8 hover-glow">
+        <div className="flex items-center space-x-3 mb-4 lg:mb-6">
+          <div className="w-6 h-6 lg:w-8 lg:h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
+            <IoTerminalSharp className="w-3 h-3 lg:w-4 lg:h-4 text-white" />
           </div>
-          <h3 className="text-2xl font-bold text-gradient">
+          <h3 className="text-xl lg:text-2xl font-bold text-gradient">
             System Log
           </h3>
         </div>
-        <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-green-400 p-6 rounded-xl font-mono text-sm h-80 overflow-y-auto shadow-inner border border-gray-700">
+        <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-green-400 p-3 lg:p-6 rounded-xl font-mono text-xs lg:text-sm h-64 lg:h-80 overflow-y-auto shadow-inner border border-gray-700">
           {logs.length === 0 ? (
-            <div className="text-gray-500 italic flex items-center justify-center space-x-2 py-8">
-              <IoTerminalSharp className="w-6 h-6" />
+            <div className="text-gray-500 italic flex flex-col lg:flex-row items-center justify-center space-y-2 lg:space-y-0 lg:space-x-2 py-8 text-center">
+              <IoTerminalSharp className="w-5 h-5 lg:w-6 lg:h-6" />
               <span>Waiting for optimization to start...</span>
             </div>
           ) : (

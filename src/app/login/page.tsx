@@ -69,42 +69,42 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-slate-50/50 to-blue-50/30 dark:from-gray-900 dark:via-gray-900 dark:to-slate-800 py-12 px-4 sm:px-6 lg:px-8 relative">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-slate-50/50 to-blue-50/30 dark:from-gray-900 dark:via-gray-900 dark:to-slate-800 py-6 lg:py-12 px-4 sm:px-6 lg:px-8 relative">
       <div className="absolute inset-0 bg-gradient-to-tr from-blue-50/10 via-transparent to-teal-50/10 dark:from-blue-900/5 dark:via-transparent dark:to-teal-900/5"></div>
-      <div className="relative max-w-md w-full space-y-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50 p-8">
+      <div className="relative max-w-md w-full space-y-6 lg:space-y-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50 p-6 lg:p-8">
         <div>
-          <div className="mx-auto h-14 w-14 flex items-center justify-center bg-gradient-to-br from-blue-600 to-teal-600 rounded-xl shadow-lg">
-            <HiShieldCheck className="w-7 h-7 text-white" />
+          <div className="mx-auto h-12 w-12 lg:h-14 lg:w-14 flex items-center justify-center bg-gradient-to-br from-blue-600 to-teal-600 rounded-xl shadow-lg">
+            <HiShieldCheck className="w-6 h-6 lg:w-7 lg:h-7 text-white" />
           </div>
-          <div className="mt-8 text-center">
+          <div className="mt-6 lg:mt-8 text-center">
             <div>
-              <h2 className="text-4xl font-extrabold tracking-tight text-gradient whitespace-nowrap">
+              <h2 className="text-2xl lg:text-4xl font-extrabold tracking-tight text-gradient break-words">
                 Medical Staff Scheduling System
               </h2>
             </div>
             <div className="mt-3 flex items-center justify-center space-x-2">
-              <div className="h-1 w-24 bg-gradient-to-r from-slate-400 via-blue-500 to-teal-500 rounded-full shadow-sm"></div>
+              <div className="h-1 w-20 lg:w-24 bg-gradient-to-r from-slate-400 via-blue-500 to-teal-500 rounded-full shadow-sm"></div>
               <div className="h-2 w-2 bg-gradient-to-r from-blue-500 to-teal-500 rounded-full animate-pulse"></div>
             </div>
           </div>
-          <p className="mt-4 text-center text-sm font-medium text-gray-600 dark:text-gray-300">
+          <p className="mt-4 text-center text-xs lg:text-sm font-medium text-gray-600 dark:text-gray-300">
             Admin access required
           </p>
         </div>
         
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+        <form className="mt-6 lg:mt-8 space-y-4 lg:space-y-6" onSubmit={handleSubmit}>
           {error && (
-            <div className="bg-gradient-to-r from-red-50 to-rose-50 dark:from-red-900/20 dark:to-rose-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-300 px-6 py-4 rounded-xl shadow-lg backdrop-blur-sm animate-fade-in-up">
+            <div className="bg-gradient-to-r from-red-50 to-rose-50 dark:from-red-900/20 dark:to-rose-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-300 px-4 lg:px-6 py-3 lg:py-4 rounded-xl shadow-lg backdrop-blur-sm animate-fade-in-up">
               <div className="flex items-center space-x-2">
                 <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-                <span className="font-medium">{error}</span>
+                <span className="font-medium text-sm lg:text-base break-words">{error}</span>
               </div>
             </div>
           )}
           
-          <div className="space-y-5">
+          <div className="space-y-4 lg:space-y-5">
             <div>
-              <label htmlFor="email" className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+              <label htmlFor="email" className="block text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
                 Email Address
               </label>
               <input
@@ -115,13 +115,13 @@ export default function LoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm bg-white/90 dark:bg-gray-700/90 text-gray-900 dark:text-white backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 hover:shadow-md"
+                className="w-full px-3 lg:px-4 py-2 lg:py-3 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm bg-white/90 dark:bg-gray-700/90 text-gray-900 dark:text-white backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 hover:shadow-md text-sm lg:text-base"
                 placeholder="admin@scheduling.com"
               />
             </div>
             
             <div>
-              <label htmlFor="password" className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+              <label htmlFor="password" className="block text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
                 Password
               </label>
               <input
@@ -132,7 +132,7 @@ export default function LoginPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm bg-white/90 dark:bg-gray-700/90 text-gray-900 dark:text-white backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 hover:shadow-md"
+                className="w-full px-3 lg:px-4 py-2 lg:py-3 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm bg-white/90 dark:bg-gray-700/90 text-gray-900 dark:text-white backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 hover:shadow-md text-sm lg:text-base"
                 placeholder="Enter your password"
               />
             </div>
@@ -142,7 +142,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className={`group relative w-full flex justify-center py-4 px-6 border border-transparent text-base font-semibold rounded-xl text-white transition-all duration-300 shadow-lg hover:shadow-2xl ${
+              className={`group relative w-full flex justify-center py-3 lg:py-4 px-4 lg:px-6 border border-transparent text-sm lg:text-base font-semibold rounded-xl text-white transition-all duration-300 shadow-lg hover:shadow-2xl ${
                 loading
                   ? 'bg-gray-400 cursor-not-allowed'
                   : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 hover:scale-105'

@@ -167,10 +167,10 @@ export default function Home() {
         <header className="header-gradient shadow-lg border-b border-gray-200 dark:border-gray-700 relative overflow-hidden">
           <div className="absolute inset-0 header-overlay"></div>
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center py-8">
+            <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center py-4 lg:py-8 space-y-4 lg:space-y-0">
               <div className="flex flex-col space-y-2">
                 <div>
-                  <h1 className="text-4xl font-extrabold tracking-tight text-gradient whitespace-nowrap">
+                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-gradient break-words">
                     Medical Staff Scheduling System
                   </h1>
                 </div>
@@ -178,40 +178,40 @@ export default function Home() {
                   <div className="h-1 w-20 bg-gradient-to-r from-slate-400 via-blue-500 to-teal-500 rounded-full shadow-sm"></div>
                   <div className="h-2 w-2 bg-gradient-to-r from-blue-500 to-teal-500 rounded-full animate-pulse"></div>
                 </div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-300 tracking-wide leading-relaxed">
+                <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 tracking-wide leading-relaxed">
                   Advanced scheduling and optimization for medical staff
                 </p>
               </div>
-              <div className="flex items-center space-x-4">
-                <div className="flex space-x-3">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-3 sm:space-y-0 sm:space-x-2 lg:space-x-4">
+                <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 lg:space-x-3">
                   <button
                     onClick={handleExportConfiguration}
-                    className="relative px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:from-green-700 hover:to-emerald-700 text-base font-semibold flex items-center space-x-2 transition-all duration-300 shadow-lg hover:shadow-2xl hover:scale-105 border border-green-500/20 overflow-hidden group"
+                    className="relative px-4 lg:px-6 py-2 lg:py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:from-green-700 hover:to-emerald-700 text-sm lg:text-base font-semibold flex items-center justify-center space-x-2 transition-all duration-300 shadow-lg hover:shadow-2xl hover:scale-105 border border-green-500/20 overflow-hidden group"
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-green-400 to-emerald-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
-                    <IoDocumentTextSharp className="w-5 h-5 relative z-10 group-hover:scale-110 transition-transform duration-200" />
+                    <IoDocumentTextSharp className="w-4 h-4 lg:w-5 lg:h-5 relative z-10 group-hover:scale-110 transition-transform duration-200" />
                     <span className="relative z-10">Export Config</span>
                   </button>
                   <button
                     onClick={handleExportResults}
-                    className="relative px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 text-base font-semibold flex items-center space-x-2 transition-all duration-300 shadow-lg hover:shadow-2xl hover:scale-105 border border-blue-500/20 overflow-hidden group"
+                    className="relative px-4 lg:px-6 py-2 lg:py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 text-sm lg:text-base font-semibold flex items-center justify-center space-x-2 transition-all duration-300 shadow-lg hover:shadow-2xl hover:scale-105 border border-blue-500/20 overflow-hidden group"
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-indigo-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
-                    <IoStatsChartSharp className="w-5 h-5 relative z-10 group-hover:scale-110 transition-transform duration-200" />
+                    <IoStatsChartSharp className="w-4 h-4 lg:w-5 lg:h-5 relative z-10 group-hover:scale-110 transition-transform duration-200" />
                     <span className="relative z-10">Export Results</span>
                   </button>
                 </div>
                 {state.error && (
-                  <div className="bg-gradient-to-r from-red-50 to-rose-50 border border-red-200 text-red-800 px-6 py-4 rounded-xl shadow-lg backdrop-blur-sm animate-fade-in-up">
+                  <div className="bg-gradient-to-r from-red-50 to-rose-50 border border-red-200 text-red-800 px-4 lg:px-6 py-3 lg:py-4 rounded-xl shadow-lg backdrop-blur-sm animate-fade-in-up">
                     <div className="flex items-center space-x-2">
                       <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-                      <span className="font-medium">{state.error}</span>
+                      <span className="font-medium text-sm lg:text-base break-words">{state.error}</span>
                     </div>
                   </div>
                 )}
                 <button
                   onClick={handleSignOut}
-                  className="relative px-6 py-3 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-xl hover:from-red-700 hover:to-rose-700 text-base font-semibold transition-all duration-300 shadow-lg hover:shadow-2xl hover:scale-105 border border-red-500/20 overflow-hidden group"
+                  className="relative px-4 lg:px-6 py-2 lg:py-3 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-xl hover:from-red-700 hover:to-rose-700 text-sm lg:text-base font-semibold transition-all duration-300 shadow-lg hover:shadow-2xl hover:scale-105 border border-red-500/20 overflow-hidden group"
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-red-400 to-rose-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
                   <span className="relative z-10">Sign Out</span>
@@ -224,21 +224,21 @@ export default function Home() {
       {/* Tab Navigation */}
       <nav className="bg-white dark:bg-gray-800 shadow-lg border-b-2 border-gray-200 dark:border-gray-600">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex space-x-1">
+          <div className="flex flex-wrap sm:flex-nowrap overflow-x-auto space-x-1">
             {tabs.map((tab) => {
               const IconComponent = tab.icon;
               return (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as TabType)}
-                  className={`py-4 px-6 font-semibold text-base flex items-center space-x-3 transition-all duration-200 min-w-[140px] justify-center border-b-3 ${
+                  className={`py-3 lg:py-4 px-3 sm:px-4 lg:px-6 font-semibold text-sm lg:text-base flex items-center space-x-2 lg:space-x-3 transition-all duration-200 min-w-[100px] sm:min-w-[120px] lg:min-w-[140px] justify-center border-b-3 whitespace-nowrap ${
                     activeTab === tab.id
                       ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border-blue-600 dark:border-blue-400'
                       : 'text-gray-700 dark:text-gray-300 border-transparent hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-700'
                   }`}
                 >
-                  <IconComponent className="w-5 h-5" />
-                  <span>{tab.label}</span>
+                  <IconComponent className="w-4 h-4 lg:w-5 lg:h-5" />
+                  <span className="hidden sm:inline">{tab.label}</span>
                 </button>
               );
             })}
@@ -247,8 +247,8 @@ export default function Home() {
       </nav>
 
           {/* Tab Content */}
-          <main className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 dark:border-gray-700/50 p-6">
+          <main className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 lg:py-8">
+            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 dark:border-gray-700/50 p-4 lg:p-6 overflow-hidden">
               {renderActiveTab()}
             </div>
           </main>

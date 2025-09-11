@@ -20,6 +20,24 @@ export default {
       letterSpacing: {
         'extra-wide': '0.1em',
       },
+      screens: {
+        'xs': '475px',
+        '3xl': '1600px',
+      },
+      spacing: {
+        '18': '4.5rem',
+        '88': '22rem',
+        '100': '25rem',
+        '112': '28rem',
+        '128': '32rem',
+      },
+      fontSize: {
+        'xxs': '0.625rem',
+        '2xs': '0.6875rem',
+      },
+      borderWidth: {
+        '3': '3px',
+      },
     },
   },
   plugins: [],
