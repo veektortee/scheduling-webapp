@@ -56,8 +56,8 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-blue-50/30 to-teal-50/30 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 py-12 px-4 sm:px-6 lg:px-8 relative">
-      <div className="absolute inset-0 bg-gradient-to-tr from-blue-50/20 via-transparent to-purple-50/20 dark:from-blue-900/10 dark:via-transparent dark:to-purple-900/10"></div>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-slate-50/50 to-blue-50/30 dark:from-gray-900 dark:via-gray-900 dark:to-slate-800 py-12 px-4 sm:px-6 lg:px-8 relative">
+      <div className="absolute inset-0 bg-gradient-to-tr from-blue-50/10 via-transparent to-teal-50/10 dark:from-blue-900/5 dark:via-transparent dark:to-teal-900/5"></div>
       <div className="relative max-w-md w-full space-y-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50 p-8">
         <div>
           <div className="mx-auto h-14 w-14 flex items-center justify-center bg-gradient-to-br from-blue-600 to-teal-600 rounded-xl shadow-lg">
@@ -65,13 +65,13 @@ export default function LoginPage() {
           </div>
           <div className="mt-8 text-center">
             <div>
-              <h2 className="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 bg-clip-text text-transparent dark:from-blue-400 dark:via-purple-400 dark:to-teal-400 whitespace-nowrap">
+              <h2 className="text-4xl font-extrabold tracking-tight text-gradient whitespace-nowrap">
                 Medical Staff Scheduling System
               </h2>
             </div>
             <div className="mt-3 flex items-center justify-center space-x-2">
-              <div className="h-1 w-24 bg-gradient-to-r from-blue-500 via-purple-500 to-teal-500 rounded-full shadow-sm"></div>
-              <div className="h-2 w-2 bg-gradient-to-r from-purple-500 to-teal-500 rounded-full animate-pulse"></div>
+              <div className="h-1 w-24 bg-gradient-to-r from-slate-400 via-blue-500 to-teal-500 rounded-full shadow-sm"></div>
+              <div className="h-2 w-2 bg-gradient-to-r from-blue-500 to-teal-500 rounded-full animate-pulse"></div>
             </div>
           </div>
           <p className="mt-4 text-center text-sm font-medium text-gray-600 dark:text-gray-300">

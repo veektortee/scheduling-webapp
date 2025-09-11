@@ -222,7 +222,7 @@ export default function ProvidersTab() {
               <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
                 <IoPeopleSharp className="w-4 h-4 text-white" />
               </div>
-              <h3 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              <h3 className="text-xl font-bold text-gradient">
                 Medical Providers
               </h3>
             </div>

@@ -90,20 +90,20 @@ export default function Home() {
 
   if (!isInitialized) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-teal-50/30 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 relative">
-        <div className="absolute inset-0 bg-gradient-to-tr from-blue-50/20 via-transparent to-purple-50/20 dark:from-blue-900/10 dark:via-transparent dark:to-purple-900/10"></div>
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-50 via-slate-50/50 to-blue-50/30 dark:from-gray-900 dark:via-gray-900 dark:to-slate-800 relative">
+        <div className="absolute inset-0 bg-gradient-to-tr from-blue-50/10 via-transparent to-teal-50/10 dark:from-blue-900/5 dark:via-transparent dark:to-teal-900/5"></div>
         <div className="relative text-center bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50 p-12">
           <div className="relative">
             <div className="animate-spin rounded-full h-20 w-20 border-4 border-transparent bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 mx-auto"></div>
             <div className="animate-spin rounded-full h-16 w-16 border-4 border-white dark:border-gray-800 absolute top-2 left-1/2 transform -translate-x-1/2"></div>
           </div>
           <div className="mt-8">
-            <p className="text-2xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 bg-clip-text text-transparent dark:from-blue-400 dark:via-purple-400 dark:to-teal-400">
+            <p className="text-2xl font-bold text-gradient">
               Medical Staff Scheduling
             </p>
             <div className="flex items-center justify-center space-x-2 mt-2">
-              <div className="h-1 w-16 bg-gradient-to-r from-blue-500 via-purple-500 to-teal-500 rounded-full animate-pulse"></div>
-              <div className="h-2 w-2 bg-gradient-to-r from-purple-500 to-teal-500 rounded-full animate-bounce"></div>
+              <div className="h-1 w-16 bg-gradient-to-r from-slate-400 via-blue-500 to-teal-500 rounded-full animate-pulse"></div>
+              <div className="h-2 w-2 bg-gradient-to-r from-blue-500 to-teal-500 rounded-full animate-bounce"></div>
             </div>
             <p className="mt-4 text-gray-600 dark:text-gray-300 font-medium">
               Loading your scheduling system...
@@ -116,23 +116,23 @@ export default function Home() {
 
   return (
     <AuthGuard>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-teal-50/30 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 relative">
-        <div className="absolute inset-0 bg-gradient-to-tr from-blue-50/20 via-transparent to-purple-50/20 dark:from-blue-900/10 dark:via-transparent dark:to-purple-900/10 pointer-events-none"></div>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-slate-50/50 to-blue-50/30 dark:from-gray-900 dark:via-gray-900 dark:to-slate-800 relative">
+        <div className="absolute inset-0 bg-gradient-to-tr from-blue-50/10 via-transparent to-teal-50/10 dark:from-blue-900/5 dark:via-transparent dark:to-teal-900/5 pointer-events-none"></div>
         <div className="relative">
         {/* Header */}
-        <header className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 shadow-lg border-b border-gray-200 dark:border-gray-700 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-50/30 via-purple-50/20 to-teal-50/30 dark:from-blue-900/10 dark:via-purple-900/5 dark:to-teal-900/10"></div>
+        <header className="header-gradient shadow-lg border-b border-gray-200 dark:border-gray-700 relative overflow-hidden">
+          <div className="absolute inset-0 header-overlay"></div>
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center py-8">
               <div className="flex flex-col space-y-2">
                 <div>
-                  <h1 className="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 bg-clip-text text-transparent dark:from-blue-400 dark:via-purple-400 dark:to-teal-400 whitespace-nowrap">
+                  <h1 className="text-4xl font-extrabold tracking-tight text-gradient whitespace-nowrap">
                     Medical Staff Scheduling System
                   </h1>
                 </div>
                 <div className="flex items-center space-x-2 -mt-1">
-                  <div className="h-1 w-20 bg-gradient-to-r from-blue-500 via-purple-500 to-teal-500 rounded-full shadow-sm"></div>
-                  <div className="h-2 w-2 bg-gradient-to-r from-purple-500 to-teal-500 rounded-full animate-pulse"></div>
+                  <div className="h-1 w-20 bg-gradient-to-r from-slate-400 via-blue-500 to-teal-500 rounded-full shadow-sm"></div>
+                  <div className="h-2 w-2 bg-gradient-to-r from-blue-500 to-teal-500 rounded-full animate-pulse"></div>
                 </div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-300 tracking-wide leading-relaxed">
                   Advanced scheduling and optimization for medical staff

@@ -150,7 +150,7 @@ export default function RunTab() {
           <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
             <IoSettingsSharp className="w-4 h-4 text-white" />
           </div>
-          <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          <h2 className="text-2xl font-bold text-gradient">
             Run Settings
           </h2>
         </div>
@@ -221,10 +221,10 @@ export default function RunTab() {
       {/* Run Controls */}
       <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 dark:border-gray-700/50 p-8 hover-glow">
         <div className="flex items-center space-x-3 mb-6">
-          <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-blue-500 rounded-lg flex items-center justify-center">
+          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
             <IoRocketSharp className="w-4 h-4 text-white" />
           </div>
-          <h2 className="text-2xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
+          <h2 className="text-2xl font-bold text-gradient">
             Optimization Control
           </h2>
         </div>
@@ -288,10 +288,10 @@ export default function RunTab() {
       {/* Log Output */}
       <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 dark:border-gray-700/50 p-8 hover-glow">
         <div className="flex items-center space-x-3 mb-6">
-          <div className="w-8 h-8 bg-gradient-to-br from-gray-800 to-green-600 rounded-lg flex items-center justify-center">
+          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
             <IoTerminalSharp className="w-4 h-4 text-white" />
           </div>
-          <h3 className="text-2xl font-bold bg-gradient-to-r from-gray-800 to-green-600 bg-clip-text text-transparent">
+          <h3 className="text-2xl font-bold text-gradient">
             System Log
           </h3>
         </div>
@@ -316,14 +316,14 @@ export default function RunTab() {
       {/* Status Information */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl shadow-lg border border-blue-200/50 dark:border-blue-800/50 p-6 text-center hover-glow hover:scale-105 transition-all duration-300">
-          <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+          <div className="text-3xl font-bold text-gradient">
             {schedulingCase.calendar.days.length}
           </div>
           <div className="text-sm font-semibold text-gray-600 dark:text-gray-400 mt-2">Calendar Days</div>
         </div>
         
         <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl shadow-lg border border-green-200/50 dark:border-green-800/50 p-6 text-center hover-glow hover:scale-105 transition-all duration-300">
-          <div className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+          <div className="text-3xl font-bold text-gradient">
             {schedulingCase.shifts.length}
           </div>
           <div className="text-sm font-semibold text-gray-600 dark:text-gray-400 mt-2 flex items-center justify-center space-x-2">
@@ -333,7 +333,7 @@ export default function RunTab() {
         </div>
         
         <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl shadow-lg border border-purple-200/50 dark:border-purple-800/50 p-6 text-center hover-glow hover:scale-105 transition-all duration-300">
-          <div className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+          <div className="text-3xl font-bold text-gradient">
             {schedulingCase.providers.length}
           </div>
           <div className="text-sm font-semibold text-gray-600 dark:text-gray-400 mt-2">Providers</div>
