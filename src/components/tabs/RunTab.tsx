@@ -8,7 +8,6 @@ import {
   IoPlaySharp,
   IoFolderOpenSharp,
   IoTerminalSharp,
-  IoTimeSharp,
   IoTimerSharp
 } from 'react-icons/io5';
 
@@ -105,45 +104,6 @@ export default function RunTab() {
 
   return (
     <div className="space-y-8 animate-fade-in-up">
-      {/* Quick Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl shadow-lg border border-blue-200/50 dark:border-blue-800/50 p-6 hover-glow hover:scale-105 transition-all duration-300">
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg">{schedulingCase.shifts.length}</span>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Shifts</p>
-              <p className="text-xl font-bold text-blue-600 dark:text-blue-400">Scheduled</p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl shadow-lg border border-green-200/50 dark:border-green-800/50 p-6 hover-glow hover:scale-105 transition-all duration-300">
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg">{schedulingCase.providers.length}</span>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Active Providers</p>
-              <p className="text-xl font-bold text-green-600 dark:text-green-400">Available</p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl shadow-lg border border-purple-200/50 dark:border-purple-800/50 p-6 hover-glow hover:scale-105 transition-all duration-300">
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg">AI</span>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Optimization</p>
-              <p className="text-xl font-bold text-purple-600 dark:text-purple-400">Ready</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Run Settings */}
       <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 dark:border-gray-700/50 p-8 hover-glow">
         <div className="flex items-center space-x-3 mb-6">
@@ -313,30 +273,42 @@ export default function RunTab() {
         </div>
       </div>
 
-      {/* Status Information */}
+      {/* Statistics Summary */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl shadow-lg border border-blue-200/50 dark:border-blue-800/50 p-6 text-center hover-glow hover:scale-105 transition-all duration-300">
-          <div className="text-3xl font-bold text-gradient">
-            {schedulingCase.calendar.days.length}
-          </div>
-          <div className="text-sm font-semibold text-gray-600 dark:text-gray-400 mt-2">Calendar Days</div>
-        </div>
-        
-        <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl shadow-lg border border-green-200/50 dark:border-green-800/50 p-6 text-center hover-glow hover:scale-105 transition-all duration-300">
-          <div className="text-3xl font-bold text-gradient">
-            {schedulingCase.shifts.length}
-          </div>
-          <div className="text-sm font-semibold text-gray-600 dark:text-gray-400 mt-2 flex items-center justify-center space-x-2">
-            <IoTimeSharp className="w-4 h-4" />
-            <span>Total Shifts</span>
+        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl shadow-lg border border-blue-200/50 dark:border-blue-800/50 p-6 hover-glow hover:scale-105 transition-all duration-300">
+          <div className="flex items-center space-x-3">
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-lg">{schedulingCase.shifts.length}</span>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Shifts</p>
+              <p className="text-xl font-bold text-blue-600 dark:text-blue-400">Scheduled</p>
+            </div>
           </div>
         </div>
         
-        <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl shadow-lg border border-purple-200/50 dark:border-purple-800/50 p-6 text-center hover-glow hover:scale-105 transition-all duration-300">
-          <div className="text-3xl font-bold text-gradient">
-            {schedulingCase.providers.length}
+        <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl shadow-lg border border-green-200/50 dark:border-green-800/50 p-6 hover-glow hover:scale-105 transition-all duration-300">
+          <div className="flex items-center space-x-3">
+            <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-lg">{schedulingCase.providers.length}</span>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Active Providers</p>
+              <p className="text-xl font-bold text-green-600 dark:text-green-400">Available</p>
+            </div>
           </div>
-          <div className="text-sm font-semibold text-gray-600 dark:text-gray-400 mt-2">Providers</div>
+        </div>
+        
+        <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl shadow-lg border border-purple-200/50 dark:border-purple-800/50 p-6 hover-glow hover:scale-105 transition-all duration-300">
+          <div className="flex items-center space-x-3">
+            <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-lg">AI</span>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Optimization</p>
+              <p className="text-xl font-bold text-purple-600 dark:text-purple-400">Ready</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>

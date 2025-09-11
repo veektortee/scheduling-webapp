@@ -106,65 +106,6 @@ export default function ConfigTab() {
 
   return (
     <div className="space-y-8 animate-fade-in-up">
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl shadow-lg border border-blue-200/50 dark:border-blue-800/50 p-6 hover-glow hover:scale-105 transition-all duration-300">
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center">
-              <IoSettingsSharp className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Max Time</p>
-              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                {schedulingCase.constants.solver.max_time_in_seconds}s
-              </p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl shadow-lg border border-green-200/50 dark:border-green-800/50 p-6 hover-glow hover:scale-105 transition-all duration-300">
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
-              <IoStatsChartSharp className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Phase 1</p>
-              <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-                {(schedulingCase.constants.solver.phase1_fraction * 100).toFixed(0)}%
-              </p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl shadow-lg border border-purple-200/50 dark:border-purple-800/50 p-6 hover-glow hover:scale-105 transition-all duration-300">
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-              <IoSettingsSharp className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Weights</p>
-              <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                {Object.keys(schedulingCase.constants.weights).length}
-              </p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 rounded-xl shadow-lg border border-orange-200/50 dark:border-orange-800/50 p-6 hover-glow hover:scale-105 transition-all duration-300">
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-500 rounded-lg flex items-center justify-center">
-              <IoSpeedometerSharp className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Objectives</p>
-              <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">
-                {Object.keys(schedulingCase.constants.objective).length}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Solver Configuration */}
       <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 dark:border-gray-700/50 p-8 hover-glow">
         <div className="flex items-center space-x-3 mb-6">
@@ -386,6 +327,51 @@ export default function ConfigTab() {
           <p><strong>Weights:</strong> Define the importance of different constraints (hard vs soft)</p>
           <p><strong>Objectives:</strong> Balance between constraint satisfaction and fairness</p>
           <p><strong>Advanced JSON:</strong> Direct configuration for complex constraint definitions</p>
+        </div>
+      </div>
+
+      {/* Configuration Statistics */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl shadow-lg border border-green-200/50 dark:border-green-800/50 p-6 hover-glow hover:scale-105 transition-all duration-300">
+          <div className="flex items-center space-x-3">
+            <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
+              <IoStatsChartSharp className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Phase 1</p>
+              <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                {(schedulingCase.constants.solver.phase1_fraction * 100).toFixed(0)}%
+              </p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl shadow-lg border border-purple-200/50 dark:border-purple-800/50 p-6 hover-glow hover:scale-105 transition-all duration-300">
+          <div className="flex items-center space-x-3">
+            <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+              <IoSettingsSharp className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Weights</p>
+              <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                {Object.keys(schedulingCase.constants.weights).length}
+              </p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 rounded-xl shadow-lg border border-orange-200/50 dark:border-orange-800/50 p-6 hover-glow hover:scale-105 transition-all duration-300">
+          <div className="flex items-center space-x-3">
+            <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-500 rounded-lg flex items-center justify-center">
+              <IoSpeedometerSharp className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Objectives</p>
+              <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                {Object.keys(schedulingCase.constants.objective).length}
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </div>

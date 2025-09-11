@@ -8,8 +8,6 @@ import {
   IoPersonSharp, 
   IoMedkitSharp,
   IoHeartSharp,
-  IoCalendarSharp,
-  IoClipboardSharp,
   IoCheckmarkCircleSharp,
   IoSyncSharp,
   IoTrashSharp,
@@ -157,63 +155,6 @@ export default function ProvidersTab() {
 
   return (
     <div className="space-y-8 animate-fade-in-up">
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl shadow-lg border border-blue-200/50 dark:border-blue-800/50 p-6 hover-glow hover:scale-105 transition-all duration-300">
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center">
-              <IoPeopleSharp className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total</p>
-              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{schedulingCase.providers.length}</p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl shadow-lg border border-green-200/50 dark:border-green-800/50 p-6 hover-glow hover:scale-105 transition-all duration-300">
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
-              <IoMedkitSharp className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">MD</p>
-              <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-                {schedulingCase.providers.filter(p => p.type === 'MD').length}
-              </p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl shadow-lg border border-purple-200/50 dark:border-purple-800/50 p-6 hover-glow hover:scale-105 transition-all duration-300">
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-              <IoHeartSharp className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">RN</p>
-              <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                {schedulingCase.providers.filter(p => p.type === 'RN').length}
-              </p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 rounded-xl shadow-lg border border-orange-200/50 dark:border-orange-800/50 p-6 hover-glow hover:scale-105 transition-all duration-300">
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-500 rounded-lg flex items-center justify-center">
-              <IoPersonSharp className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Selected</p>
-              <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">
-                {selectedProvider !== null ? 1 : 0}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Providers List */}
         <div className="lg:col-span-1">
@@ -474,7 +415,64 @@ export default function ProvidersTab() {
           )}
         </div>
       </div>
-    </div>
+      </div>
+
+      {/* Provider Statistics */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl shadow-lg border border-blue-200/50 dark:border-blue-800/50 p-6 hover-glow hover:scale-105 transition-all duration-300">
+          <div className="flex items-center space-x-3">
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center">
+              <IoPeopleSharp className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total</p>
+              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{schedulingCase.providers.length}</p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl shadow-lg border border-green-200/50 dark:border-green-800/50 p-6 hover-glow hover:scale-105 transition-all duration-300">
+          <div className="flex items-center space-x-3">
+            <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
+              <IoMedkitSharp className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">MD</p>
+              <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                {schedulingCase.providers.filter(p => p.type === 'MD').length}
+              </p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl shadow-lg border border-purple-200/50 dark:border-purple-800/50 p-6 hover-glow hover:scale-105 transition-all duration-300">
+          <div className="flex items-center space-x-3">
+            <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+              <IoHeartSharp className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">RN</p>
+              <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                {schedulingCase.providers.filter(p => p.type === 'RN').length}
+              </p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 rounded-xl shadow-lg border border-orange-200/50 dark:border-orange-800/50 p-6 hover-glow hover:scale-105 transition-all duration-300">
+          <div className="flex items-center space-x-3">
+            <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-500 rounded-lg flex items-center justify-center">
+              <IoPersonSharp className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Selected</p>
+              <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                {selectedProvider !== null ? 1 : 0}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

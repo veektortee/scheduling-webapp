@@ -8,7 +8,6 @@ import {
   IoCalendarSharp,
   IoSunnySharp,
   IoStatsChartSharp,
-  IoTimeSharp,
   IoTrashSharp,
   IoRocketSharp
 } from 'react-icons/io5';
@@ -59,45 +58,6 @@ export default function CalendarTab() {
 
   return (
     <div className="space-y-8 animate-fade-in-up">
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl shadow-lg border border-blue-200/50 dark:border-blue-800/50 p-6 hover-glow hover:scale-105 transition-all duration-300">
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center">
-              <IoCalendarSharp className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Calendar Days</p>
-              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{schedulingCase.calendar.days.length}</p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl shadow-lg border border-purple-200/50 dark:border-purple-800/50 p-6 hover-glow hover:scale-105 transition-all duration-300">
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-              <IoSunnySharp className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Weekend Days</p>
-              <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{schedulingCase.calendar.weekend_days.length}</p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl shadow-lg border border-green-200/50 dark:border-green-800/50 p-6 hover-glow hover:scale-105 transition-all duration-300">
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
-              <IoTimeSharp className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Current Month</p>
-              <p className="text-2xl font-bold text-green-600 dark:text-green-400">{month}/{year}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Month Generator */}
       <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 dark:border-gray-700/50 p-8 hover-glow">
         <div className="flex items-center space-x-3 mb-6">
@@ -270,35 +230,42 @@ export default function CalendarTab() {
         </div>
       </div>
 
-      {/* Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 text-center">
-          <div className="text-2xl font-bold text-blue-600">
-            {schedulingCase.calendar.days.length}
+      {/* Calendar Statistics */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl shadow-lg border border-blue-200/50 dark:border-blue-800/50 p-6 hover-glow hover:scale-105 transition-all duration-300">
+          <div className="flex items-center space-x-3">
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center">
+              <IoCalendarSharp className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Calendar Days</p>
+              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{schedulingCase.calendar.days.length}</p>
+            </div>
           </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">Total Days</div>
         </div>
         
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 text-center">
-          <div className="text-2xl font-bold text-green-600">
-            {schedulingCase.calendar.days.filter(day => {
-              const date = new Date(day);
-              const dayName = date.toLocaleDateString('en-US', { weekday: 'long' });
-              return !schedulingCase.calendar.weekend_days.includes(dayName);
-            }).length}
+        <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl shadow-lg border border-purple-200/50 dark:border-purple-800/50 p-6 hover-glow hover:scale-105 transition-all duration-300">
+          <div className="flex items-center space-x-3">
+            <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+              <IoSunnySharp className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Weekend Days</p>
+              <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{schedulingCase.calendar.weekend_days.length}</p>
+            </div>
           </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">Weekdays</div>
         </div>
         
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 text-center">
-          <div className="text-2xl font-bold text-purple-600">
-            {schedulingCase.calendar.days.filter(day => {
-              const date = new Date(day);
-              const dayName = date.toLocaleDateString('en-US', { weekday: 'long' });
-              return schedulingCase.calendar.weekend_days.includes(dayName);
-            }).length}
+        <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl shadow-lg border border-green-200/50 dark:border-green-800/50 p-6 hover-glow hover:scale-105 transition-all duration-300">
+          <div className="flex items-center space-x-3">
+            <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
+              <IoCalendarSharp className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Current Month</p>
+              <p className="text-2xl font-bold text-green-600 dark:text-green-400">{month}/{year}</p>
+            </div>
           </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">Weekend Days</div>
         </div>
       </div>
     </div>
