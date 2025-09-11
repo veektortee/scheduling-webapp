@@ -8,7 +8,10 @@ import {
   IoPlaySharp,
   IoFolderOpenSharp,
   IoTerminalSharp,
-  IoTimerSharp
+  IoTimerSharp,
+  IoPowerSharp,
+  IoSync,
+  IoCheckmarkDoneSharp
 } from 'react-icons/io5';
 
 export default function RunTab() {
@@ -17,11 +20,39 @@ export default function RunTab() {
   const [isRunning, setIsRunning] = useState(false);
   const [progress, setProgress] = useState(0);
   const [logs, setLogs] = useState<string[]>([]);
+  const [solverState, setSolverState] = useState<'ready' | 'running' | 'finished'>('ready');
+
+  const getSolverIcon = () => {
+    switch (solverState) {
+      case 'ready':
+        return <IoPowerSharp className="w-6 h-6 text-white" />;
+      case 'running':
+        return <IoSync className="w-6 h-6 text-white animate-spin" />;
+      case 'finished':
+        return <IoCheckmarkDoneSharp className="w-6 h-6 text-white" />;
+      default:
+        return <IoPowerSharp className="w-6 h-6 text-white" />;
+    }
+  };
+
+  const getSolverText = () => {
+    switch (solverState) {
+      case 'ready':
+        return 'Ready';
+      case 'running':
+        return 'Processing';
+      case 'finished':
+        return 'Finished';
+      default:
+        return 'Ready';
+    }
+  };
 
   const handleRunSolver = async () => {
     setIsRunning(true);
     setProgress(0);
     setLogs(['Starting optimization solver...']);
+    setSolverState('running');
 
     // Simulate solver progress
     const progressInterval = setInterval(() => {
@@ -83,6 +114,12 @@ export default function RunTab() {
       clearInterval(progressInterval);
       setProgress(100);
       setIsRunning(false);
+      setSolverState('finished');
+      
+      // Reset to ready state after 3 seconds
+      setTimeout(() => {
+        setSolverState('ready');
+      }, 3000);
     }
   };
 
@@ -302,11 +339,11 @@ export default function RunTab() {
         <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl shadow-lg border border-purple-200/50 dark:border-purple-800/50 p-6 hover-glow hover:scale-105 transition-all duration-300">
           <div className="flex items-center space-x-3">
             <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg">AI</span>
+              {getSolverIcon()}
             </div>
             <div>
               <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Optimization</p>
-              <p className="text-xl font-bold text-purple-600 dark:text-purple-400">Ready</p>
+              <p className="text-xl font-bold text-purple-600 dark:text-purple-400">{getSolverText()}</p>
             </div>
           </div>
         </div>
