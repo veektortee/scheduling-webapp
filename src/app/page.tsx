@@ -6,17 +6,25 @@ import { useScheduling } from '@/context/SchedulingContext';
 import { loadCaseFromFile } from '@/lib/scheduling';
 import { exportCurrentCaseToExcel, generateMockResults, exportScheduleToExcel } from '@/lib/excelExport';
 import AuthGuard from '@/components/AuthGuard';
-import ThemeToggle from '@/components/ThemeToggle';
 import RunTab from '@/components/tabs/RunTab';
 import CalendarTab from '@/components/tabs/CalendarTab';
 import ShiftsTab from '@/components/tabs/ShiftsTab';
 import ProvidersTab from '@/components/tabs/ProvidersTab';
 import ConfigTab from '@/components/tabs/ConfigTab';
+import { 
+  IoPlaySharp, 
+  IoCalendarSharp, 
+  IoTimeSharp, 
+  IoPeopleSharp, 
+  IoSettingsSharp,
+  IoDocumentTextSharp,
+  IoStatsChartSharp
+} from 'react-icons/io5';
 
 type TabType = 'run' | 'calendar' | 'shifts' | 'providers' | 'config';
 
 export default function Home() {
-  const { data: session } = useSession();
+  useSession(); // Authentication check is handled by AuthGuard
   const { state, dispatch } = useScheduling();
   const [activeTab, setActiveTab] = useState<TabType>('run');
   const [isInitialized, setIsInitialized] = useState(false);
@@ -56,11 +64,11 @@ export default function Home() {
   };
 
   const tabs = [
-    { id: 'run', label: 'Run', icon: '▶️' },
-    { id: 'calendar', label: 'Calendar', icon: '📅' },
-    { id: 'shifts', label: 'Shifts', icon: '⏰' },
-    { id: 'providers', label: 'Providers', icon: '👥' },
-    { id: 'config', label: 'Config', icon: '⚙️' },
+    { id: 'run', label: 'Run', icon: IoPlaySharp },
+    { id: 'calendar', label: 'Calendar', icon: IoCalendarSharp },
+    { id: 'shifts', label: 'Shifts', icon: IoTimeSharp },
+    { id: 'providers', label: 'Providers', icon: IoPeopleSharp },
+    { id: 'config', label: 'Config', icon: IoSettingsSharp },
   ] as const;
 
   const renderActiveTab = () => {
@@ -107,19 +115,20 @@ export default function Home() {
                 </p>
               </div>
               <div className="flex items-center space-x-4">
-                <ThemeToggle />
-                <div className="flex space-x-2">
+                <div className="flex space-x-3">
                   <button
                     onClick={handleExportConfiguration}
-                    className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm"
+                    className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 text-base font-medium flex items-center space-x-2 transition-colors shadow-md hover:shadow-lg"
                   >
-                    📄 Export Config
+                    <IoDocumentTextSharp className="w-5 h-5" />
+                    <span>Export Config</span>
                   </button>
                   <button
                     onClick={handleExportResults}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
+                    className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-base font-medium flex items-center space-x-2 transition-colors shadow-md hover:shadow-lg"
                   >
-                    📊 Export Results
+                    <IoStatsChartSharp className="w-5 h-5" />
+                    <span>Export Results</span>
                   </button>
                 </div>
                 {state.error && (
@@ -129,7 +138,7 @@ export default function Home() {
                 )}
                 <button
                   onClick={handleSignOut}
-                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm"
+                  className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 text-base font-medium transition-colors shadow-md hover:shadow-lg"
                 >
                   Sign Out
                 </button>
@@ -141,21 +150,24 @@ export default function Home() {
       {/* Tab Navigation */}
       <nav className="bg-white dark:bg-gray-800 shadow-sm border-b dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex space-x-8">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as TabType)}
-                className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 transition-colors ${
-                  activeTab === tab.id
-                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:border-gray-300 dark:hover:border-gray-500'
-                }`}
-              >
-                <span>{tab.icon}</span>
-                <span>{tab.label}</span>
-              </button>
-            ))}
+          <div className="flex space-x-4">
+            {tabs.map((tab) => {
+              const IconComponent = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as TabType)}
+                  className={`py-6 px-6 border-b-2 font-semibold text-lg flex items-center space-x-3 transition-colors min-w-[140px] justify-center ${
+                    activeTab === tab.id
+                      ? 'border-blue-500 text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20'
+                      : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:border-gray-300 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                  }`}
+                >
+                  <IconComponent className="w-6 h-6" />
+                  <span>{tab.label}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
       </nav>
