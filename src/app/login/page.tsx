@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { signIn, getSession } from 'next-auth/react';
-import { HiShieldCheck } from 'react-icons/hi2';
+import { HiShieldCheck, HiEye, HiEyeSlash } from 'react-icons/hi2';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
@@ -306,25 +307,34 @@ export default function LoginPage() {
               <label htmlFor="password" className="block text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
                 Password
               </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                  // Reset recovery state when user starts typing (gives fresh start)
-                  if (hasFailedAttempt && e.target.value !== password) {
-                    setError('');
-                    setHasFailedAttempt(false);
-                    setShowRecovery(false);
-                  }
-                }}
-                className="w-full px-3 lg:px-4 py-2 lg:py-3 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm bg-white/90 dark:bg-gray-700/90 text-gray-900 dark:text-white backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 hover:shadow-md text-sm lg:text-base selection:bg-blue-200 selection:text-blue-900 dark:selection:bg-blue-700 dark:selection:text-white"
-                placeholder="Enter your password"
-              />
+              <div className="relative">
+                <input
+                  id="password"
+                  name="password"
+                  type={showPassword ? 'text' : 'password'}
+                  autoComplete="current-password"
+                  required
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    // Reset recovery state when user starts typing (gives fresh start)
+                    if (hasFailedAttempt && e.target.value !== password) {
+                      setError('');
+                      setHasFailedAttempt(false);
+                      setShowRecovery(false);
+                    }
+                  }}
+                  className="w-full px-3 lg:px-4 py-2 lg:py-3 pr-10 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm bg-white/90 dark:bg-gray-700/90 text-gray-900 dark:text-white backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 hover:shadow-md text-sm lg:text-base selection:bg-blue-200 selection:text-blue-900 dark:selection:bg-blue-700 dark:selection:text-white"
+                  placeholder="Enter your password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+                >
+                  {showPassword ? <HiEyeSlash className="w-4 h-4 lg:w-5 lg:h-5" /> : <HiEye className="w-4 h-4 lg:w-5 lg:h-5" />}
+                </button>
+              </div>
             </div>
           </div>
 

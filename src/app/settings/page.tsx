@@ -14,6 +14,7 @@ import {
   HiLockClosed,
   HiExclamationTriangle
 } from 'react-icons/hi2';
+import SettingsSkeleton from '@/components/SettingsSkeleton';
 
 export default function SettingsPage() {
   const { data: session, status } = useSession();
@@ -29,6 +30,7 @@ export default function SettingsPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
   const [loading, setLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [showWarning, setShowWarning] = useState(false);
@@ -54,6 +56,11 @@ export default function SettingsPage() {
         }
       } catch (error) {
         console.error('Failed to fetch current credentials:', error);
+      } finally {
+        // Add a small delay to ensure smooth transition from skeleton
+        setTimeout(() => {
+          setPageLoading(false);
+        }, 300);
       }
     };
     
@@ -165,12 +172,8 @@ export default function SettingsPage() {
     setShowWarning(false);
   };
 
-  if (status === 'loading') {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-slate-50/50 to-blue-50/30 dark:from-gray-900 dark:via-gray-900 dark:to-slate-800">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
+  if (status === 'loading' || pageLoading) {
+    return <SettingsSkeleton />;
   }
 
   return (
@@ -413,12 +416,6 @@ export default function SettingsPage() {
               <li>• Keep your backup email secure and accessible</li>
               <li>• Use a strong password with at least 6 characters</li>
             </ul>
-            <div className="mt-3 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg">
-              <p className="text-xs text-amber-800 dark:text-amber-200">
-                <strong>⚠️ Development Note:</strong> The system uses a test email service. 
-                Check the browser console for an email preview URL after updating credentials.
-              </p>
-            </div>
           </div>
         </div>
       </div>
