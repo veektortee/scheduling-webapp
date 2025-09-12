@@ -15,10 +15,10 @@ import os
 try:
     from ortools.sat.python import cp_model
     ORTOOLS_AVAILABLE = True
-    print("✅ OR-Tools detected - using high-performance solver")
+    print("[INFO] OR-Tools detected - using high-performance solver")
 except ImportError:
     ORTOOLS_AVAILABLE = False
-    print("💡 OR-Tools not available - using basic solver (pip install ortools for better performance)")
+    print("[INFO] OR-Tools not available - using basic solver (pip install ortools for better performance)")
 
 class SchedulingHandler(BaseHTTPRequestHandler):
     def do_OPTIONS(self):
@@ -43,10 +43,10 @@ class SchedulingHandler(BaseHTTPRequestHandler):
                 "solver_type": "local_enhanced",
                 "ortools_available": ORTOOLS_AVAILABLE,
                 "capabilities": [
-                    "✅ OR-Tools constraint programming" if ORTOOLS_AVAILABLE else "✅ Basic constraint satisfaction",
-                    "✅ Multi-solution generation",
-                    "✅ Advanced optimization algorithms",
-                    "✅ High-performance local execution"
+                    "[AVAILABLE] OR-Tools constraint programming" if ORTOOLS_AVAILABLE else "[AVAILABLE] Basic constraint satisfaction",
+                    "[AVAILABLE] Multi-solution generation",
+                    "[AVAILABLE] Advanced optimization algorithms",
+                    "[AVAILABLE] High-performance local execution"
                 ],
                 "performance": "10-100x faster than serverless for large problems"
             }
@@ -64,7 +64,7 @@ class SchedulingHandler(BaseHTTPRequestHandler):
                 post_data = self.rfile.read(content_length)
                 case_data = json.loads(post_data.decode('utf-8'))
                 
-                print(f"📊 Received optimization request: {len(case_data.get('shifts', []))} shifts, {len(case_data.get('providers', []))} providers")
+                print(f"[REQUEST] Received optimization request: {len(case_data.get('shifts', []))} shifts, {len(case_data.get('providers', []))} providers")
                 
                 # Solve the case
                 result = solve_scheduling_case(case_data)
@@ -77,7 +77,7 @@ class SchedulingHandler(BaseHTTPRequestHandler):
                 self.wfile.write(json.dumps(result).encode())
                 
             except Exception as e:
-                print(f"❌ Error processing request: {e}")
+                print(f"[ERROR] Error processing request: {e}")
                 self.send_response(500)
                 self.send_header('Content-Type', 'application/json')
                 self.send_header('Access-Control-Allow-Origin', '*')
@@ -262,20 +262,20 @@ def main():
     server = HTTPServer(('localhost', port), SchedulingHandler)
     
     print("\n" + "="*60)
-    print("🚀 LOCAL SCHEDULER OPTIMIZER RUNNING")
+    print("LOCAL SCHEDULER OPTIMIZER RUNNING")
     print("="*60)
-    print(f"✅ Server: http://localhost:{port}")
-    print(f"✅ Health: http://localhost:{port}/health")
-    print(f"✅ Solver: {'OR-Tools (High Performance)' if ORTOOLS_AVAILABLE else 'Basic Algorithm'}")
+    print(f"[SERVER] Server: http://localhost:{port}")
+    print(f"[SERVER] Health: http://localhost:{port}/health")
+    print(f"[SERVER] Solver: {'OR-Tools (High Performance)' if ORTOOLS_AVAILABLE else 'Basic Algorithm'}")
     print("="*60)
-    print("💡 Your web app will now use this local solver for better performance!")
-    print("💡 Close this window to stop the local solver (webapp will fallback to serverless)")
+    print("[INFO] Your web app will now use this local solver for better performance!")
+    print("[INFO] Close this window to stop the local solver (webapp will fallback to serverless)")
     print("="*60 + "\n")
     
     try:
         server.serve_forever()
     except KeyboardInterrupt:
-        print("\n🛑 Local solver stopped by user")
+        print("\n[SHUTDOWN] Local solver stopped by user")
         server.shutdown()
 
 if __name__ == '__main__':
