@@ -268,7 +268,7 @@ export default function LocalSolverGuideModal({ isOpen, onClose, platform }: Loc
               onClick={handleGotIt}
               className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl hover:from-green-600 hover:to-emerald-600 font-semibold transition-all duration-200 hover:scale-105"
             >
-              Got It!
+             Done ! <br></br> I Have Executed The File
             </button>
           ) : (
             <button
