@@ -1336,7 +1336,7 @@ export default function RunTab() {
                 </div>
                 <span className="font-bold">Local</span>
                 <span className="text-xs opacity-90 font-medium">
-                  {localSolverAvailable ? '(10-100x faster)' : '(Not available)'}
+                  {localSolverAvailable ? '(10-100x faster)' : '(Run the .bat or the .sh to Activate)'}
                 </span>
               </div>
             </button>
