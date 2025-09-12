@@ -174,7 +174,7 @@ export default function ProviderCalendar({
   const availableCount = availableDays.length;
 
   return (
-    <div className={`bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200/50 dark:border-gray-700/50 p-3 sm:p-4 ${className}`}>
+    <div className={`bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200/50 dark:border-gray-700/50 p-3 sm:p-4 flex flex-col ${className}`}>
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 space-y-2 sm:space-y-0">
         <div className="flex items-center space-x-2">
@@ -225,36 +225,36 @@ export default function ProviderCalendar({
       </div>
 
       {/* Instructions and Compact Legend */}
-      <div className="mb-4 space-y-2">
+      <div className="mb-3 space-y-2 flex-shrink-0">
         <div className={`p-2 rounded-lg text-center ${mode === 'off' ? 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300' : 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'}`}>
           <p className="text-xs font-medium">
             Click on dates to {mode === 'off' ? 'mark as OFF days' : 'mark as ON days'}
           </p>
         </div>
-        <div className="grid grid-cols-2 gap-2 p-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-        <div className="flex items-center space-x-1.5">
-          <div className="w-3 h-3 bg-red-600 rounded border border-red-500"></div>
+        <div className="grid grid-cols-2 gap-1 p-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg text-xs">
+        <div className="flex items-center space-x-1">
+          <div className="w-2 h-2 bg-red-600 rounded border border-red-500"></div>
           <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Fixed OFF</span>
         </div>
-        <div className="flex items-center space-x-1.5">
-          <div className="w-3 h-3 bg-orange-400 rounded border border-orange-400"></div>
+        <div className="flex items-center space-x-1">
+          <div className="w-2 h-2 bg-orange-400 rounded border border-orange-400"></div>
           <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Prefer OFF</span>
         </div>
-        <div className="flex items-center space-x-1.5">
-          <div className="w-3 h-3 bg-green-400 rounded border border-green-400"></div>
+        <div className="flex items-center space-x-1">
+          <div className="w-2 h-2 bg-green-400 rounded border border-green-400"></div>
           <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Prefer ON</span>
         </div>
-        <div className="flex items-center space-x-1.5">
-          <div className={`w-3 h-3 rounded border-2 ring-2 ${mode === 'off' ? 'bg-red-500 border-red-400 ring-red-300' : 'bg-blue-500 border-blue-400 ring-blue-300'}`}></div>
+        <div className="flex items-center space-x-1">
+          <div className={`w-2 h-2 rounded border ring-1 ${mode === 'off' ? 'bg-red-500 border-red-400 ring-red-300' : 'bg-blue-500 border-blue-400 ring-blue-300'}`}></div>
           <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Selected</span>
         </div>
         </div>
       </div>
 
       {/* Calendar Grid */}
-      <div className="space-y-2">
+      <div className="space-y-2 overflow-auto flex-1">
         {/* Week headers */}
-        <div className="grid grid-cols-7 gap-1">
+        <div className="grid grid-cols-7 gap-1 sticky top-0 bg-white/90 dark:bg-gray-800/90 z-10">
           {weekDays.map((day) => (
             <div
               key={day}

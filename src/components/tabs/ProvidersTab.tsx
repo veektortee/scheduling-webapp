@@ -406,7 +406,7 @@ export default function ProvidersTab() {
           preferOnDays={selectedProvider !== null ? Object.keys(schedulingCase.providers[selectedProvider]?.preferred_days_soft || {}) : []}
           mode={calendarMode}
           disabled={selectedProvider === null}
-          className="h-full"
+          className="h-115"
         />
         
         {/* Action buttons */}
