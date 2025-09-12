@@ -12,6 +12,7 @@ import {
   IoWarningSharp
 } from 'react-icons/io5';
 import { PlusCircleIcon, ArrowPathIcon, TrashIcon } from '@heroicons/react/24/solid';
+import ProviderCalendar from '@/components/ProviderCalendar';
 
 export default function ProvidersTab() {
   const { state, dispatch } = useScheduling();
@@ -30,7 +31,8 @@ export default function ProvidersTab() {
     preferred_days_soft: {},
   });
   const [selectedOffDays, setSelectedOffDays] = useState<string[]>([]);
-  // Removed selectedOnDays to fix ESLint warnings
+  const [selectedOnDays, setSelectedOnDays] = useState<string[]>([]);
+  const [calendarMode, setCalendarMode] = useState<'off' | 'on'>('off');
 
   const handleProviderSelect = (index: number) => {
     dispatch({ type: 'SELECT_PROVIDER', payload: index });
@@ -43,6 +45,9 @@ export default function ProvidersTab() {
       preferred_days_hard: provider.preferred_days_hard || {},
       preferred_days_soft: provider.preferred_days_soft || {},
     });
+    // Clear selected days when switching providers
+    setSelectedOffDays([]);
+    setSelectedOnDays([]);
   };
 
   const handleProviderFormChange = (field: keyof Provider, value: string | number | null | string[] | Record<string, string[]>) => {
@@ -117,6 +122,9 @@ export default function ProvidersTab() {
       preferred_days_soft: {},
     });
     dispatch({ type: 'SELECT_PROVIDER', payload: null });
+    // Clear selected days when resetting form
+    setSelectedOffDays([]);
+    setSelectedOnDays([]);
   };
 
   const applyFixedOffDays = () => {
@@ -149,6 +157,47 @@ export default function ProvidersTab() {
       payload: { index: selectedProvider, provider: updatedProvider },
     });
     setSelectedOffDays([]);
+  };
+
+  const applyPreferOnDays = () => {
+    if (selectedProvider === null) return;
+    
+    const provider = schedulingCase.providers[selectedProvider];
+    // For preferred ON days, we'll add them to preferred_days_soft with shift types
+    // For simplicity, we'll use all available shift types for these days
+    const shiftTypes = ['MD_D', 'MD_S1', 'MD_S2', 'MD_S3', 'MD_N']; // Common shift types
+    const newPreferredDaysSoft = { ...provider.preferred_days_soft };
+    
+    selectedOnDays.forEach(day => {
+      newPreferredDaysSoft[day] = shiftTypes;
+    });
+
+    const updatedProvider: Provider = {
+      ...provider,
+      preferred_days_soft: newPreferredDaysSoft,
+    };
+
+    dispatch({
+      type: 'UPDATE_PROVIDER',
+      payload: { index: selectedProvider, provider: updatedProvider },
+    });
+    setSelectedOnDays([]);
+  };
+
+  const handleDayToggle = (day: string, selected: boolean) => {
+    if (calendarMode === 'off') {
+      if (selected) {
+        setSelectedOffDays(prev => [...prev, day]);
+      } else {
+        setSelectedOffDays(prev => prev.filter(d => d !== day));
+      }
+    } else {
+      if (selected) {
+        setSelectedOnDays(prev => [...prev, day]);
+      } else {
+        setSelectedOnDays(prev => prev.filter(d => d !== day));
+      }
+    }
   };
 
   return (
@@ -294,57 +343,80 @@ export default function ProvidersTab() {
         </div>
       </div>
 
-      {/* Days Selection (OFF) */}
+      {/* Calendar Selection for Days Off/On */}
       <div className="lg:col-span-1">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Choose Days (OFF)</h3>
-          <div className="max-h-64 overflow-y-auto border rounded-md mb-4">
-            {schedulingCase.calendar.days.map((day) => (
-              <div
-                key={day}
-                className={`flex items-center justify-between p-2 hover:bg-gray-50 dark:hover:bg-gray-700 ${
-                  selectedOffDays.includes(day) ? 'bg-blue-50 dark:bg-blue-900' : ''
-                }`}
-              >
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    checked={selectedOffDays.includes(day)}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setSelectedOffDays(prev => [...prev, day]);
-                      } else {
-                        setSelectedOffDays(prev => prev.filter(d => d !== day));
-                      }
-                    }}
-                    className="w-4 h-4 text-blue-600 bg-white border-gray-300 rounded dark:bg-gray-800 dark:border-gray-600 focus:ring-blue-500"
-                  />
-                  <span className="text-sm">{day}</span>
-                </div>
-              </div>
-            ))}
+        {/* Mode Toggle */}
+        <div className="mb-3">
+          <div className="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5 w-full sm:w-fit mx-auto">
+            <button
+              onClick={() => setCalendarMode('off')}
+              className={`flex-1 sm:flex-none px-3 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-all duration-200 ${
+                calendarMode === 'off'
+                  ? 'bg-red-500 text-white shadow-md'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+              }`}
+            >
+              Days OFF
+            </button>
+            <button
+              onClick={() => setCalendarMode('on')}
+              className={`flex-1 sm:flex-none px-3 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-all duration-200 ${
+                calendarMode === 'on'
+                  ? 'bg-blue-500 text-white shadow-md'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+              }`}
+            >
+              Days ON
+            </button>
           </div>
+        </div>
 
-          <div className="space-y-3">
+        <ProviderCalendar
+          availableDays={schedulingCase.calendar.days}
+          selectedDays={calendarMode === 'off' ? selectedOffDays : selectedOnDays}
+          onDayToggle={handleDayToggle}
+          fixedOffDays={selectedProvider !== null ? schedulingCase.providers[selectedProvider]?.forbidden_days_hard || [] : []}
+          preferOffDays={selectedProvider !== null ? schedulingCase.providers[selectedProvider]?.forbidden_days_soft || [] : []}
+          preferOnDays={selectedProvider !== null ? Object.keys(schedulingCase.providers[selectedProvider]?.preferred_days_soft || {}) : []}
+          mode={calendarMode}
+          disabled={selectedProvider === null}
+          className="h-full"
+        />
+        
+        {/* Action buttons */}
+        <div className="mt-4 space-y-2">
+          {calendarMode === 'off' ? (
+            <>
+              <button
+                onClick={applyFixedOffDays}
+                disabled={selectedProvider === null || selectedOffDays.length === 0}
+                className="w-full relative px-4 py-2.5 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-lg hover:from-red-700 hover:to-rose-700 font-semibold flex items-center justify-center space-x-2 transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105 border border-red-500/20 overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 text-sm"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-red-400 to-rose-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+                <IoCloseCircleSharp className="w-5 h-5 relative z-20 text-white drop-shadow-sm" />
+                <span className="relative z-20 font-bold">Set FIXED OFF</span>
+              </button>
+              <button
+                onClick={applyPreferOffDays}
+                disabled={selectedProvider === null || selectedOffDays.length === 0}
+                className="w-full relative px-4 py-2.5 bg-gradient-to-r from-orange-600 to-amber-600 text-white rounded-lg hover:from-orange-700 hover:to-amber-700 font-semibold flex items-center justify-center space-x-2 transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105 border border-orange-500/20 overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 text-sm"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-amber-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+                <IoWarningSharp className="w-5 h-5 relative z-20 text-white drop-shadow-sm" />
+                <span className="relative z-20 font-bold">Set PREFER OFF</span>
+              </button>
+            </>
+          ) : (
             <button
-              onClick={applyFixedOffDays}
-              disabled={selectedProvider === null || selectedOffDays.length === 0}
-              className="w-full relative px-6 py-3 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-xl hover:from-red-700 hover:to-rose-700 font-semibold flex items-center justify-center space-x-3 transition-all duration-300 shadow-lg hover:shadow-2xl hover:scale-105 border border-red-500/20 overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+              onClick={applyPreferOnDays}
+              disabled={selectedProvider === null || selectedOnDays.length === 0}
+              className="w-full relative px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 font-semibold flex items-center justify-center space-x-2 transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105 border border-blue-500/20 overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 text-sm"
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-red-400 to-rose-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
-              <IoCloseCircleSharp className="w-6 h-6 relative z-20 text-white drop-shadow-sm" />
-              <span className="relative z-20 font-bold">Set FIXED OFF</span>
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-indigo-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+              <IoHeartSharp className="w-5 h-5 relative z-20 text-white drop-shadow-sm" />
+              <span className="relative z-20 font-bold">Set PREFER ON</span>
             </button>
-            <button
-              onClick={applyPreferOffDays}
-              disabled={selectedProvider === null || selectedOffDays.length === 0}
-              className="w-full relative px-6 py-3 bg-gradient-to-r from-orange-600 to-amber-600 text-white rounded-xl hover:from-orange-700 hover:to-amber-700 font-semibold flex items-center justify-center space-x-3 transition-all duration-300 shadow-lg hover:shadow-2xl hover:scale-105 border border-orange-500/20 overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-amber-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
-              <IoWarningSharp className="w-6 h-6 relative z-20 text-white drop-shadow-sm" />
-              <span className="relative z-20 font-bold">Set PREFER OFF</span>
-            </button>
-          </div>
+          )}
         </div>
       </div>
 
@@ -388,7 +460,24 @@ export default function ProvidersTab() {
                   ) : (
                     <div className="space-y-1">
                       {(schedulingCase.providers[selectedProvider].forbidden_days_soft || []).map(day => (
-                        <div key={day} className="bg-orange-100 text-orange-800 px-2 py-1 rounded text-xs inline-block mr-1">
+                        <div key={day} className="bg-orange-100 text-orange-800 px-2 py-1 rounded text-xs inline-block mr-1 mb-1">
+                          {day}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <h5 className="font-medium text-gray-700 dark:text-gray-300 mb-2">Prefer ON Days</h5>
+                <div className="text-sm text-gray-600 dark:text-gray-400">
+                  {Object.keys(schedulingCase.providers[selectedProvider].preferred_days_soft || {}).length === 0 ? (
+                    <span className="text-gray-400 dark:text-gray-500">None</span>
+                  ) : (
+                    <div className="space-y-1">
+                      {Object.keys(schedulingCase.providers[selectedProvider].preferred_days_soft || {}).map(day => (
+                        <div key={day} className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs inline-block mr-1 mb-1">
                           {day}
                         </div>
                       ))}
