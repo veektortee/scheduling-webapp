@@ -8,25 +8,25 @@ echo Checking Python installation...
 
 python --version >nul 2>&1
 if errorlevel 1 (
-    echo ❌ Python not found! Please install Python 3.7+ from python.org
+    echo [ERROR] Python not found! Please install Python 3.7+ from python.org
     echo    Or download from: https://python.org/downloads/
     pause
     exit /b 1
 )
 
-echo ✅ Python found
+echo [OK] Python found
 echo.
 echo Installing/checking dependencies...
 echo.
 
 REM Install required packages
 pip install ortools 2>nul || (
-    echo 💡 Installing OR-Tools for high performance...
+    echo [INFO] Installing OR-Tools for high performance...
     pip install ortools
 )
 
 echo.
-echo 🚀 Starting Local Scheduler Optimizer...
+echo [START] Starting Local Scheduler Optimizer...
 echo.
 echo ================================================================
 echo  INSTRUCTIONS FOR YOUR WEBAPP:
