@@ -35,10 +35,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const root = document.documentElement;
     if (theme === 'dark') {
       root.classList.add('dark');
-      console.log('✅ Added dark class to HTML');
+      console.log('Theme: Dark mode activated');
     } else {
       root.classList.remove('dark');
-      console.log('✅ Removed dark class from HTML');
+      console.log('Theme: Light mode activated');
     }
     
     // Save theme preference

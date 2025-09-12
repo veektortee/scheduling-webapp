@@ -1,5 +1,6 @@
 'use client';
 
+import { SunIcon, MoonIcon } from '@heroicons/react/24/outline';
 import { useTheme } from '@/context/ThemeContext';
 
 export default function ThemeToggle() {
@@ -43,8 +44,8 @@ export default function ThemeToggle() {
         
         {/* Background Icons */}
         <div className="absolute inset-0 flex items-center justify-between px-2 pointer-events-none">
-          <span className="text-xs">☀️</span>
-          <span className="text-xs">🌙</span>
+          <SunIcon className="w-3 h-3 text-yellow-500" />
+          <MoonIcon className="w-3 h-3 text-indigo-500" />
         </div>
       </button>
     </div>
