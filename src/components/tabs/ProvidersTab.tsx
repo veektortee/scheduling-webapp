@@ -34,8 +34,16 @@ export default function ProvidersTab() {
   const [selectedOffDays, setSelectedOffDays] = useState<string[]>([]);
   const [selectedOnDays, setSelectedOnDays] = useState<string[]>([]);
   const [calendarMode, setCalendarMode] = useState<'off' | 'on'>('on');
+  const [selectedDateForShifts, setSelectedDateForShifts] = useState<string | null>(null);
 
   const handleProviderSelect = (index: number) => {
+    // If the same provider is clicked again, deselect it
+    if (selectedProvider === index) {
+      dispatch({ type: 'SELECT_PROVIDER', payload: null });
+      resetForm();
+      return;
+    }
+    
     dispatch({ type: 'SELECT_PROVIDER', payload: index });
     const provider = schedulingCase.providers[index];
     setProviderForm({
@@ -49,6 +57,8 @@ export default function ProvidersTab() {
     // Clear selected days when switching providers
     setSelectedOffDays([]);
     setSelectedOnDays([]);
+    // Clear selected date for shifts when a provider is selected
+    setSelectedDateForShifts(null);
   };
 
   const handleProviderFormChange = (field: keyof Provider, value: string | number | null | string[] | Record<string, string[]>) => {
@@ -126,6 +136,8 @@ export default function ProvidersTab() {
     // Clear selected days when resetting form
     setSelectedOffDays([]);
     setSelectedOnDays([]);
+    // Clear selected date for shifts when resetting
+    setSelectedDateForShifts(null);
   };
 
   const applyFixedOffDays = () => {
@@ -333,6 +345,16 @@ export default function ProvidersTab() {
   const handleDayToggle = (day: string, selected: boolean) => {
     console.log(`Day toggle: ${day}, selected: ${selected}, mode: ${calendarMode}`);
     
+    // If no provider is selected, show shift types for this date
+    if (selectedProvider === null) {
+      if (selected) {
+        setSelectedDateForShifts(day);
+      } else {
+        setSelectedDateForShifts(null);
+      }
+      return;
+    }
+    
     if (calendarMode === 'off') {
       if (selected) {
         setSelectedOffDays(prev => [...prev, day]);
@@ -494,7 +516,7 @@ export default function ProvidersTab() {
       {/* Calendar Selection for Days Off/On */}
       <div className="lg:col-span-1">
         {/* Status indicator */}
-        {selectedProvider !== null && (
+        {selectedProvider !== null ? (
           <div className="mb-4 p-3 bg-gradient-to-r from-gray-50 to-blue-50 dark:from-gray-800 dark:to-blue-900/30 rounded-lg border border-gray-200 dark:border-gray-700">
             <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
               Editing: <span className="font-bold text-blue-600 dark:text-blue-400">{schedulingCase.providers[selectedProvider]?.name}</span>
@@ -503,49 +525,60 @@ export default function ProvidersTab() {
               Available days: {schedulingCase.calendar.days.length} • Mode: <span className={calendarMode === 'off' ? 'text-red-600 dark:text-red-400' : 'text-blue-600 dark:text-blue-400'}>{calendarMode === 'off' ? 'Days OFF' : 'Days ON'}</span>
             </p>
           </div>
+        ) : (
+          <div className="mb-4 p-3 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 rounded-lg border border-gray-200 dark:border-gray-700">
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              Default Mode
+            </p>
+            <p className="text-xs text-gray-600 dark:text-gray-400">
+              Click on a date to see shift types, or select a provider to manage their preferences
+            </p>
+          </div>
         )}
         
-        {/* Mode Toggle */}
-        <div className="mb-3">
-          <div className="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5 w-full sm:w-fit mx-auto">
-            <button
-              onClick={() => {
-                setCalendarMode('off');
-                // Optionally clear the other mode's selection to avoid confusion
-                if (selectedOnDays.length > 0) {
-                  // setSelectedOnDays([]);
-                }
-              }}
-              className={`flex-1 sm:flex-none px-3 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-all duration-200 ${
-                calendarMode === 'off'
-                  ? 'bg-red-500 text-white shadow-md'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-              }`}
-            >
-              Days OFF {selectedOffDays.length > 0 && `(${selectedOffDays.length})`}
-            </button>
-            <button
-              onClick={() => {
-                setCalendarMode('on');
-                // Optionally clear the other mode's selection to avoid confusion
-                if (selectedOffDays.length > 0) {
-                  // setSelectedOffDays([]);
-                }
-              }}
-              className={`flex-1 sm:flex-none px-3 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-all duration-200 ${
-                calendarMode === 'on'
-                  ? 'bg-blue-500 text-white shadow-md'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-              }`}
-            >
-              Days ON {selectedOnDays.length > 0 && `(${selectedOnDays.length})`}
-            </button>
+        {/* Mode Toggle - only show when provider is selected */}
+        {selectedProvider !== null && (
+          <div className="mb-3">
+            <div className="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5 w-full sm:w-fit mx-auto">
+              <button
+                onClick={() => {
+                  setCalendarMode('off');
+                  // Optionally clear the other mode's selection to avoid confusion
+                  if (selectedOnDays.length > 0) {
+                    // setSelectedOnDays([]);
+                  }
+                }}
+                className={`flex-1 sm:flex-none px-3 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-all duration-200 ${
+                  calendarMode === 'off'
+                    ? 'bg-red-500 text-white shadow-md'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                }`}
+              >
+                Days OFF {selectedOffDays.length > 0 && `(${selectedOffDays.length})`}
+              </button>
+              <button
+                onClick={() => {
+                  setCalendarMode('on');
+                  // Optionally clear the other mode's selection to avoid confusion
+                  if (selectedOffDays.length > 0) {
+                    // setSelectedOffDays([]);
+                  }
+                }}
+                className={`flex-1 sm:flex-none px-3 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-all duration-200 ${
+                  calendarMode === 'on'
+                    ? 'bg-blue-500 text-white shadow-md'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                }`}
+              >
+                Days ON {selectedOnDays.length > 0 && `(${selectedOnDays.length})`}
+              </button>
+            </div>
           </div>
-        </div>
+        )}
 
         <ProviderCalendar
           availableDays={schedulingCase.calendar.days}
-          selectedDays={calendarMode === 'off' ? selectedOffDays : selectedOnDays}
+          selectedDays={selectedProvider === null ? (selectedDateForShifts ? [selectedDateForShifts] : []) : (calendarMode === 'off' ? selectedOffDays : selectedOnDays)}
           onDayToggle={handleDayToggle}
           onDayClear={handleDayClear}
           fixedOffDays={selectedProvider !== null ? schedulingCase.providers[selectedProvider]?.forbidden_days_hard || [] : []}
@@ -553,27 +586,28 @@ export default function ProvidersTab() {
           fixedOnDays={selectedProvider !== null ? Object.keys(schedulingCase.providers[selectedProvider]?.preferred_days_hard || {}) : []}
           preferOnDays={selectedProvider !== null ? Object.keys(schedulingCase.providers[selectedProvider]?.preferred_days_soft || {}) : []}
           mode={calendarMode}
-          disabled={selectedProvider === null}
+          disabled={false}
           className="h-120"
         />
         
-        {/* Action buttons */}
-        <div className="mt-4 space-y-2">
-          {/* Clear selection button */}
-          {(selectedOffDays.length > 0 || selectedOnDays.length > 0) && (
-            <button
-              onClick={() => {
-                setSelectedOffDays([]);
-                setSelectedOnDays([]);
-              }}
-              className="w-full relative px-3 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-medium flex items-center justify-center space-x-2 transition-all duration-300 text-sm"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-              <span>Clear Selection ({calendarMode === 'off' ? selectedOffDays.length : selectedOnDays.length})</span>
-            </button>
-          )}
+        {/* Action buttons - only show when provider is selected */}
+        {selectedProvider !== null && (
+          <div className="mt-4 space-y-2">
+            {/* Clear selection button */}
+            {(selectedOffDays.length > 0 || selectedOnDays.length > 0) && (
+              <button
+                onClick={() => {
+                  setSelectedOffDays([]);
+                  setSelectedOnDays([]);
+                }}
+                className="w-full relative px-3 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-medium flex items-center justify-center space-x-2 transition-all duration-300 text-sm"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                <span>Clear Selection ({calendarMode === 'off' ? selectedOffDays.length : selectedOnDays.length})</span>
+              </button>
+            )}
           
           {calendarMode === 'off' ? (
             <>
@@ -618,13 +652,16 @@ export default function ProvidersTab() {
               </button>
             </>
           )}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Provider Summary */}
       <div className="lg:col-span-1">
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Provider Summary</h3>
+          <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">
+            {selectedProvider !== null ? 'Provider Summary' : selectedDateForShifts ? 'Shift Types' : 'Date Information'}
+          </h3>
           {selectedProvider !== null && schedulingCase.providers[selectedProvider] ? (
             <div className="space-y-4">
               <div>
@@ -713,9 +750,51 @@ export default function ProvidersTab() {
                 </div>
               </div>
             </div>
+          ) : selectedDateForShifts ? (
+            <div className="space-y-4">
+              <div>
+                <h4 className="font-medium text-gray-900 dark:text-gray-100">
+                  {new Date(selectedDateForShifts).toLocaleDateString('en-US', { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                  })}
+                </h4>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Shift types for this date
+                </p>
+              </div>
+
+              <div>
+                <h5 className="font-medium text-gray-700 dark:text-gray-300 mb-2">Scheduled Shifts</h5>
+                <div className="text-sm text-gray-600 dark:text-gray-400">
+                  {(() => {
+                    const shiftsForDate = schedulingCase.shifts.filter(shift => shift.date === selectedDateForShifts);
+                    return shiftsForDate.length === 0 ? (
+                      <span className="text-gray-400 dark:text-gray-500">No shifts scheduled</span>
+                    ) : (
+                      <div className="space-y-2">
+                        {shiftsForDate.map((shift, index) => (
+                          <div key={index} className="bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 px-3 py-2 rounded text-xs border border-blue-200 dark:border-blue-700">
+                            <div className="font-medium">{shift.type}</div>
+                            <div className="text-xs text-blue-600 dark:text-blue-400">
+                              {shift.start} - {shift.end}
+                            </div>
+                            <div className="text-xs text-blue-500 dark:text-blue-400 mt-1">
+                              Allowed: {shift.allowed_provider_types.join(', ')}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
+                </div>
+              </div>
+            </div>
           ) : (
             <div className="text-gray-500 dark:text-gray-400 text-sm">
-              Select a provider to view details
+              Select a provider to view details or click on a date to see shift types
             </div>
           )}
         </div>
