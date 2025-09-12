@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useScheduling } from '@/context/SchedulingContext';
 import { 
   IoRocketSharp,
@@ -14,8 +15,14 @@ import {
   IoCheckmarkDoneSharp,
   IoWarningSharp,
   IoCloudSharp,
-  IoStopSharp
+  IoStopSharp,
+  IoDownloadSharp,
+  IoDesktopSharp
 } from 'react-icons/io5';
+import { 
+  SiApple,
+  SiLinux
+} from 'react-icons/si';
 
 interface SolverResult {
   status: string;
@@ -40,7 +47,50 @@ export default function RunTab() {
   const [solverState, setSolverState] = useState<'ready' | 'connecting' | 'running' | 'finished' | 'error'>('ready');
   const [localSolverAvailable, setLocalSolverAvailable] = useState<boolean | null>(null);
   const [solverInfo, setSolverInfo] = useState<{type: string; capabilities?: string[]} | null>(null);
+  const [showInstallMenu, setShowInstallMenu] = useState(false);
   const logsEndRef = useRef<HTMLDivElement>(null);
+  const installMenuRef = useRef<HTMLDivElement>(null);
+  const portalMenuRef = useRef<HTMLDivElement>(null);
+  const [menuPosition, setMenuPosition] = useState<{ top: number; left: number; width: number }>({ top: 0, left: 0, width: 320 });
+
+  // Close install menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
+      const anchor = installMenuRef.current;
+      const menu = portalMenuRef.current;
+      if (
+        showInstallMenu &&
+        anchor &&
+        menu &&
+        !anchor.contains(target) &&
+        !menu.contains(target)
+      ) {
+        setShowInstallMenu(false);
+      }
+    };
+
+    const updateMenuPosition = () => {
+      const anchor = installMenuRef.current;
+      if (!anchor) return;
+      const rect = anchor.getBoundingClientRect();
+      // Position the menu below the button, aligned to left
+      setMenuPosition({ top: Math.round(rect.bottom + 8), left: Math.round(rect.left), width: Math.round(rect.width || 320) });
+    };
+
+    if (showInstallMenu) {
+      updateMenuPosition();
+      document.addEventListener('mousedown', handleClickOutside);
+      window.addEventListener('resize', updateMenuPosition);
+      window.addEventListener('scroll', updateMenuPosition, true);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('resize', updateMenuPosition);
+      window.removeEventListener('scroll', updateMenuPosition, true);
+    };
+  }, [showInstallMenu]);
 
   const addLog = useCallback((message: string, type: 'info' | 'success' | 'error' | 'warning' = 'info') => {
     const timestamp = new Date().toLocaleTimeString();
@@ -325,10 +375,107 @@ export default function RunTab() {
     });
   };
 
+  // Download functions for different platforms
+  const downloadFile = (filename: string, content: string) => {
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  };
+
+  const downloadPythonSolver = async () => {
+    try {
+      const response = await fetch('/local_solver.py');
+      const content = await response.text();
+      downloadFile('local_solver.py', content);
+      addLog('📁 Downloaded local_solver.py', 'success');
+    } catch {
+      addLog('❌ Failed to download local_solver.py', 'error');
+    }
+  };
+
+  const downloadWindowsScript = async () => {
+    try {
+      const response = await fetch('/start_local_solver.bat');
+      const content = await response.text();
+      downloadFile('start_local_solver.bat', content);
+      addLog('📁 Downloaded Windows start script', 'success');
+    } catch {
+      addLog('❌ Failed to download Windows script', 'error');
+    }
+  };
+
+  const downloadUnixScript = async () => {
+    try {
+      const response = await fetch('/start_local_solver.sh');
+      const content = await response.text();
+      downloadFile('start_local_solver.sh', content);
+      addLog('📁 Downloaded Unix/Linux/Mac start script', 'success');
+    } catch {
+      addLog('❌ Failed to download Unix script', 'error');
+    }
+  };
+
+  const handleSmartInstall = () => {
+    const platform = navigator.platform.toLowerCase();
+    const userAgent = navigator.userAgent.toLowerCase();
+    
+    if (platform.includes('win') || userAgent.includes('windows')) {
+      installForWindows();
+    } else if (platform.includes('mac') || userAgent.includes('mac')) {
+      installForMac();
+    } else {
+      installForLinux();
+    }
+  };
+
+  const installForWindows = async () => {
+    addLog('🪟 Installing for Windows...', 'info');
+    await downloadPythonSolver();
+    await downloadWindowsScript();
+    addLog('✅ Windows installation files downloaded!', 'success');
+    addLog('📋 Next steps:', 'info');
+    addLog('   1. Make sure Python is installed on your system', 'info');
+    addLog('   2. Double-click start_local_solver.bat to run', 'info');
+    addLog('   3. Refresh this page to detect the local solver', 'info');
+    setShowInstallMenu(false);
+  };
+
+  const installForMac = async () => {
+    addLog('🍎 Installing for macOS...', 'info');
+    await downloadPythonSolver();
+    await downloadUnixScript();
+    addLog('✅ macOS installation files downloaded!', 'success');
+    addLog('📋 Next steps:', 'info');
+    addLog('   1. Open Terminal and navigate to the download folder', 'info');
+    addLog('   2. Run: chmod +x start_local_solver.sh', 'info');
+    addLog('   3. Run: ./start_local_solver.sh', 'info');
+    addLog('   4. Refresh this page to detect the local solver', 'info');
+    setShowInstallMenu(false);
+  };
+
+  const installForLinux = async () => {
+    addLog('🐧 Installing for Linux...', 'info');
+    await downloadPythonSolver();
+    await downloadUnixScript();
+    addLog('✅ Linux installation files downloaded!', 'success');
+    addLog('📋 Next steps:', 'info');
+    addLog('   1. Open Terminal and navigate to the download folder', 'info');
+    addLog('   2. Run: chmod +x start_local_solver.sh', 'info');
+    addLog('   3. Run: ./start_local_solver.sh', 'info');
+    addLog('   4. Refresh this page to detect the local solver', 'info');
+    setShowInstallMenu(false);
+  };
+
   return (
     <div className="space-y-4 lg:space-y-8 animate-fade-in-up">
       {/* Solver Status */}
-      <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 dark:border-gray-700/50 p-4 lg:p-8 hover-glow">
+  <div className="relative z-50 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 dark:border-gray-700/50 p-4 lg:p-8 hover-glow">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-3">
             <div className={`w-6 h-6 lg:w-8 lg:h-8 rounded-lg flex items-center justify-center ${
@@ -349,30 +496,110 @@ export default function RunTab() {
                 {localSolverAvailable === true 
                   ? 'Local High-Performance Solver' 
                   : localSolverAvailable === false 
-                    ? 'Serverless Mode' 
+                    ? 'Enable Local Mode' 
                     : 'Checking Solver...'}
               </h3>
               <p className="text-xs lg:text-sm text-gray-600 dark:text-gray-400">
                 {localSolverAvailable === true 
                   ? '10-100x faster optimization with OR-Tools' 
                   : localSolverAvailable === false 
-                    ? 'Works everywhere, no installation required'
+                    ? 'Install the Local Solver , Get faster Computation and better Performance'
                     : 'Detecting available optimization engines...'}
               </p>
             </div>
           </div>
           {localSolverAvailable === false && (
-            <button
-              onClick={() => {
-                addLog('💡 To enable local high-performance solver:', 'info');
-                addLog('   1. Download local_solver.py and start_local_solver.bat', 'info');
-                addLog('   2. Double-click start_local_solver.bat (Windows) or start_local_solver.sh (Mac/Linux)', 'info');
-                addLog('   3. Refresh this page - local solver will be detected automatically', 'info');
-              }}
-              className="px-3 py-1.5 text-xs bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:shadow-lg transition-all duration-200"
-            >
-              Enable Local
-            </button>
+            <div className="relative z-50" ref={installMenuRef}>
+              <button
+                onClick={() => setShowInstallMenu(!showInstallMenu)}
+                className="relative px-8 py-4 text-lg font-bold bg-gradient-to-r from-emerald-500 via-blue-500 to-purple-500 text-white rounded-2xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.05] transform overflow-hidden group min-w-[200px]"
+              >
+                {/* Animated background glow */}
+                <div className="absolute inset-0 bg-gradient-to-r from-emerald-400/20 via-blue-400/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                
+                {/* Shimmer effect */}
+                <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent transform skew-x-12"></div>
+                
+                <div className="relative z-10 flex items-center justify-center space-x-3">
+                  <IoRocketSharp className="w-6 h-6" />
+                  <span>Enable Local Solver</span>
+                </div>
+              </button>
+              
+              {/* Installation Menu Dropdown */}
+              {showInstallMenu && createPortal(
+                <div
+                  ref={portalMenuRef}
+                  className="fixed z-[9999] bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50 overflow-hidden animate-fade-in-up"
+                  style={{ top: `${menuPosition.top}px`, left: `${menuPosition.left}px`, width: `${Math.max(menuPosition.width, 320)}px` }}
+                >
+                  <div className="p-6">
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center space-x-2">
+                      <IoRocketSharp className="w-5 h-5 text-blue-500" />
+                      <span>Install Local Solver</span>
+                    </h3>
+                    
+                    <div className="space-y-3">
+                      {/* Smart Install Button */}
+                      <button
+                        onClick={handleSmartInstall}
+                        className="w-full px-4 py-3 bg-gradient-to-r from-emerald-500 to-blue-500 text-white rounded-xl hover:from-emerald-600 hover:to-blue-600 font-semibold flex items-center justify-center space-x-3 transition-all duration-200 hover:scale-[1.02] transform"
+                      >
+                        <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+                          <IoDownloadSharp className="w-5 h-5 text-white" />
+                        </div>
+                        <span>Smart Install (Auto-detect OS)</span>
+                      </button>
+                      
+                      {/* Manual Platform Selection */}
+                      <div className="border-t border-gray-200 dark:border-gray-600 pt-3 mt-3">
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Or choose manually:</p>
+                        
+                        <div className="space-y-2">
+                          <button
+                            onClick={installForWindows}
+                            className="w-full px-4 py-3 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/40 font-medium flex items-center justify-center space-x-3 transition-all duration-200"
+                          >
+                            <div className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                              <IoDesktopSharp className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                            </div>
+                            <span>Windows (.bat)</span>
+                          </button>
+                          
+                          <button
+                            onClick={installForMac}
+                            className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700/50 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 font-medium flex items-center justify-center space-x-3 transition-all duration-200"
+                          >
+                            <div className="w-8 h-8 bg-gray-500/20 rounded-lg flex items-center justify-center">
+                              <SiApple className="w-5 h-5 text-gray-700 dark:text-gray-300" />
+                            </div>
+                            <span>macOS (.sh)</span>
+                          </button>
+                          
+                          <button
+                            onClick={installForLinux}
+                            className="w-full px-4 py-3 bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300 rounded-lg hover:bg-orange-100 dark:hover:bg-orange-900/40 font-medium flex items-center justify-center space-x-3 transition-all duration-200"
+                          >
+                            <div className="w-8 h-8 bg-orange-500/20 rounded-lg flex items-center justify-center">
+                              <SiLinux className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                            </div>
+                            <span>Linux (.sh)</span>
+                          </button>
+                        </div>
+                      </div>
+                      
+                      {/* Help Text */}
+                      <div className="border-t border-gray-200 dark:border-gray-600 pt-3 mt-3">
+                        <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+                          Downloads installation files and provides setup instructions
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>,
+                document.body
+              )}
+            </div>
           )}
         </div>
         
@@ -485,95 +712,172 @@ export default function RunTab() {
             Optimization Control
           </h2>
         </div>
-        <div className="flex flex-col space-y-3 lg:space-y-0 lg:flex-row lg:space-x-4 mb-4 lg:mb-6">
-          {/* Auto Run Button (Default) */}
-          <button
-            onClick={() => handleRunSolver('auto')}
-            disabled={isRunning}
-            className={`relative px-6 lg:px-8 py-3 lg:py-4 rounded-xl font-bold text-base lg:text-lg flex items-center justify-center space-x-3 transition-all duration-300 shadow-lg hover:shadow-2xl overflow-hidden group flex-1 ${
-              isRunning
-                ? 'bg-gray-400 text-white cursor-not-allowed'
-                : 'bg-gradient-to-r from-green-600 to-blue-600 text-white hover:from-green-700 hover:to-blue-700 hover:scale-105'
-            }`}
-          >
-            {!isRunning && <div className="absolute inset-0 bg-gradient-to-r from-green-400 to-blue-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>}
-            {isRunning ? (
-              <>
-                <div className="animate-spin rounded-full h-5 w-5 lg:h-6 lg:w-6 border-b-2 border-white"></div>
-                <span>Running Optimization...</span>
-              </>
-            ) : (
-              <>
-                <IoPlaySharp className="w-5 h-5 lg:w-6 lg:h-6" />
-                <span>Smart Run</span>
-                <span className="text-xs opacity-80">(Auto-detect)</span>
-              </>
-            )}
-          </button>
+        {/* Enhanced Solver Mode Selection */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+          {/* Smart Run Button (Auto-detect) */}
+          <div className="flex flex-col">
+            <button
+              onClick={() => handleRunSolver('auto')}
+              disabled={isRunning}
+              className={`relative px-6 py-4 rounded-2xl font-bold text-base flex flex-col items-center justify-center space-y-2 transition-all duration-300 shadow-lg hover:shadow-2xl overflow-hidden group min-h-[120px] ${
+                isRunning
+                  ? 'bg-gray-400 text-white cursor-not-allowed'
+                  : 'bg-gradient-to-br from-emerald-500 via-blue-500 to-indigo-600 text-white hover:from-emerald-600 hover:via-blue-600 hover:to-indigo-700 hover:scale-[1.02] transform'
+              } backdrop-blur-sm border border-white/20 dark:border-gray-700/50`}
+              title="Automatically detects and uses the best available solver"
+            >
+              {/* Animated background glow */}
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-400/20 via-blue-400/20 to-indigo-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              
+              {/* Shimmer effect */}
+              <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/10 to-transparent transform skew-x-12"></div>
+              
+              <div className="relative z-10 flex flex-col items-center space-y-2">
+                {isRunning ? (
+                  <>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+                    <span className="text-sm font-semibold">Running...</span>
+                  </>
+                ) : (
+                  <>
+                    <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                      <IoPlaySharp className="w-6 h-6" />
+                    </div>
+                    <span className="font-bold">Smart Run</span>
+                    <span className="text-xs opacity-90 font-medium">(Auto-detect)</span>
+                  </>
+                )}
+              </div>
+            </button>
+            
+            {/* Status indicator */}
+            <div className="mt-2 text-center">
+              <div className="inline-flex items-center space-x-1 px-2 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs font-medium">
+                <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
+                <span>Recommended</span>
+              </div>
+            </div>
+          </div>
 
-          {/* Local Run Button */}
-          <button
-            onClick={() => handleRunSolver('local')}
-            disabled={isRunning}
-            className={`relative px-4 lg:px-6 py-3 lg:py-4 rounded-xl font-semibold text-sm lg:text-base flex items-center justify-center space-x-2 transition-all duration-300 shadow-lg hover:shadow-2xl overflow-hidden group ${
-              isRunning
-                ? 'bg-gray-400 text-white cursor-not-allowed'
-                : localSolverAvailable
-                  ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 hover:scale-105'
-                  : 'bg-gradient-to-r from-gray-400 to-gray-500 text-white opacity-50 cursor-not-allowed'
-            }`}
-            title={localSolverAvailable ? 'Run with local high-performance solver' : 'Local solver not available - start local_solver.py first'}
-          >
-            {!isRunning && localSolverAvailable && <div className="absolute inset-0 bg-gradient-to-r from-orange-300 to-red-300 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>}
-            <IoRocketSharp className="w-4 h-4 lg:w-5 lg:h-5" />
-            <span>Local</span>
-            {localSolverAvailable && <span className="text-xs opacity-80">(10-100x faster)</span>}
-          </button>
+          {/* Local Solver Button */}
+          <div className="flex flex-col">
+            <button
+              onClick={() => handleRunSolver('local')}
+              disabled={isRunning}
+              className={`relative px-6 py-4 rounded-2xl font-bold text-base flex flex-col items-center justify-center space-y-2 transition-all duration-300 shadow-lg hover:shadow-2xl overflow-hidden group min-h-[120px] ${
+                isRunning
+                  ? 'bg-gray-400 text-white cursor-not-allowed'
+                  : localSolverAvailable
+                    ? 'bg-gradient-to-br from-orange-500 via-red-500 to-pink-600 text-white hover:from-orange-600 hover:via-red-600 hover:to-pink-700 hover:scale-[1.02] transform'
+                    : 'bg-gradient-to-br from-gray-400 to-gray-500 text-white opacity-60 cursor-not-allowed'
+              } backdrop-blur-sm border border-white/20 dark:border-gray-700/50`}
+              title={localSolverAvailable ? 'Run with local high-performance solver (10-100x faster)' : 'Local solver not available - start local_solver.py first'}
+            >
+              {/* Animated background glow - only when available */}
+              {localSolverAvailable && !isRunning && (
+                <div className="absolute inset-0 bg-gradient-to-br from-orange-400/20 via-red-400/20 to-pink-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              )}
+              
+              {/* Shimmer effect - only when available */}
+              {localSolverAvailable && !isRunning && (
+                <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/10 to-transparent transform skew-x-12"></div>
+              )}
+              
+              <div className="relative z-10 flex flex-col items-center space-y-2">
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                  <IoRocketSharp className="w-6 h-6" />
+                </div>
+                <span className="font-bold">Local</span>
+                <span className="text-xs opacity-90 font-medium">
+                  {localSolverAvailable ? '(10-100x faster)' : '(Not available)'}
+                </span>
+              </div>
+            </button>
+            
+            {/* Status indicator */}
+            <div className="mt-2 text-center">
+              {localSolverAvailable ? (
+                <div className="inline-flex items-center space-x-1 px-2 py-1 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 text-xs font-medium">
+                  <div className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse"></div>
+                  <span>High Performance</span>
+                </div>
+              ) : (
+                <div className="inline-flex items-center space-x-1 px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-800/30 text-gray-600 dark:text-gray-400 text-xs font-medium">
+                  <div className="w-1.5 h-1.5 bg-gray-400 rounded-full"></div>
+                  <span>Not Running</span>
+                </div>
+              )}
+            </div>
+          </div>
 
-          {/* Serverless Run Button */}
-          <button
-            onClick={() => handleRunSolver('serverless')}
-            disabled={isRunning}
-            className={`relative px-4 lg:px-6 py-3 lg:py-4 rounded-xl font-semibold text-sm lg:text-base flex items-center justify-center space-x-2 transition-all duration-300 shadow-lg hover:shadow-2xl overflow-hidden group ${
-              isRunning
-                ? 'bg-gray-400 text-white cursor-not-allowed'
-                : 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white hover:from-blue-600 hover:to-cyan-600 hover:scale-105'
-            }`}
-            title="Run with serverless cloud solver (always available)"
-          >
-            {!isRunning && <div className="absolute inset-0 bg-gradient-to-r from-blue-300 to-cyan-300 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>}
-            <IoCloudSharp className="w-4 h-4 lg:w-5 lg:h-5" />
-            <span>Serverless</span>
-            <span className="text-xs opacity-80">(Always works)</span>
-          </button>
+          {/* Serverless Button */}
+          <div className="flex flex-col">
+            <button
+              onClick={() => handleRunSolver('serverless')}
+              disabled={isRunning}
+              className={`relative px-6 py-4 rounded-2xl font-bold text-base flex flex-col items-center justify-center space-y-2 transition-all duration-300 shadow-lg hover:shadow-2xl overflow-hidden group min-h-[120px] ${
+                isRunning
+                  ? 'bg-gray-400 text-white cursor-not-allowed'
+                  : 'bg-gradient-to-br from-blue-500 via-cyan-500 to-teal-600 text-white hover:from-blue-600 hover:via-cyan-600 hover:to-teal-700 hover:scale-[1.02] transform'
+              } backdrop-blur-sm border border-white/20 dark:border-gray-700/50`}
+              title="Run with serverless cloud solver (works everywhere, no installation required)"
+            >
+              {/* Animated background glow */}
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-400/20 via-cyan-400/20 to-teal-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              
+              {/* Shimmer effect */}
+              <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/10 to-transparent transform skew-x-12"></div>
+              
+              <div className="relative z-10 flex flex-col items-center space-y-2">
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                  <IoCloudSharp className="w-6 h-6" />
+                </div>
+                <span className="font-bold">Serverless</span>
+                <span className="text-xs opacity-90 font-medium">(Always works)</span>
+              </div>
+            </button>
+            
+            {/* Status indicator */}
+            <div className="mt-2 text-center">
+              <div className="inline-flex items-center space-x-1 px-2 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs font-medium">
+                <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></div>
+                <span>Always Available</span>
+              </div>
+            </div>
+          </div>
+        </div>
 
+        {/* Action Buttons Row */}
+        <div className="flex flex-wrap gap-3 mb-6">
           {/* Stop Button - only show when running */}
           {isRunning && (
             <button
               onClick={stopSolver}
-              className="relative px-4 lg:px-6 py-3 lg:py-4 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl hover:from-red-700 hover:to-red-800 font-semibold flex items-center justify-center space-x-2 transition-all duration-300 shadow-lg hover:shadow-2xl hover:scale-105 overflow-hidden group"
+              className="relative px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl hover:from-red-600 hover:to-red-700 font-semibold flex items-center justify-center space-x-2 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 overflow-hidden group"
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-red-400 to-red-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
-              <IoStopSharp className="w-4 h-4 lg:w-5 lg:h-5" />
+              <div className="absolute inset-0 bg-gradient-to-r from-red-300/20 to-red-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <IoStopSharp className="w-5 h-5 relative z-10" />
               <span className="relative z-10">Stop</span>
             </button>
           )}
           
+          {/* Open Output Folder */}
           <button
             onClick={handleOpenOutputFolder}
-            className="relative px-4 lg:px-6 py-3 lg:py-4 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-xl hover:from-gray-700 hover:to-gray-800 font-semibold flex items-center justify-center space-x-2 transition-all duration-300 shadow-lg hover:shadow-2xl hover:scale-105 overflow-hidden group w-full lg:w-auto"
+            className="relative px-6 py-3 bg-gradient-to-r from-slate-600 to-slate-700 dark:from-slate-700 dark:to-slate-800 text-white rounded-xl hover:from-slate-700 hover:to-slate-800 dark:hover:from-slate-600 dark:hover:to-slate-700 font-semibold flex items-center justify-center space-x-2 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 overflow-hidden group"
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-gray-400 to-gray-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
-            <IoFolderOpenSharp className="w-4 h-4 lg:w-5 lg:h-5" />
+            <div className="absolute inset-0 bg-gradient-to-r from-slate-400/20 to-slate-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <IoFolderOpenSharp className="w-5 h-5 relative z-10" />
             <span className="relative z-10">Open Output Folder</span>
           </button>
 
+          {/* Clear Logs */}
           <button
             onClick={clearLogs}
-            className="relative px-4 lg:px-6 py-3 lg:py-4 bg-gradient-to-r from-orange-600 to-orange-700 text-white rounded-xl hover:from-orange-700 hover:to-orange-800 font-semibold flex items-center justify-center space-x-2 transition-all duration-300 shadow-lg hover:shadow-2xl hover:scale-105 overflow-hidden group w-full lg:w-auto"
+            className="relative px-6 py-3 bg-gradient-to-r from-amber-600 to-orange-600 text-white rounded-xl hover:from-amber-700 hover:to-orange-700 font-semibold flex items-center justify-center space-x-2 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 overflow-hidden group"
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-orange-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
-            <IoTerminalSharp className="w-4 h-4 lg:w-5 lg:h-5" />
+            <div className="absolute inset-0 bg-gradient-to-r from-amber-400/20 to-orange-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <IoTerminalSharp className="w-5 h-5 relative z-10" />
             <span className="relative z-10">Clear Logs</span>
           </button>
         </div>
