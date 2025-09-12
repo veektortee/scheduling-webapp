@@ -36,11 +36,12 @@ interface SolverResult {
   statistics?: Record<string, unknown>;
   error?: string;
   instructions?: Record<string, unknown>;
+  output_directory?: string;
 }
 
 export default function RunTab() {
   const { state, dispatch } = useScheduling();
-  const { case: schedulingCase } = state;
+  const { case: schedulingCase, lastResults } = state;
   const [isRunning, setIsRunning] = useState(false);
   const [progress, setProgress] = useState(0);
   const [logs, setLogs] = useState<string[]>(['Ready to run optimization...']);
@@ -291,7 +292,6 @@ export default function RunTab() {
 
   const clearLogs = () => {
     setLogs([]);
-    addLog('Logs cleared');
   };
 
   // WebSocket and polling functions removed for serverless approach
@@ -564,7 +564,20 @@ export default function RunTab() {
           const stats = resultsData.solver_stats || {};
           
           addLog(`✅ Generated ${solutions.length} solution(s)`, 'success');
-          addLog(`� Solver: ${stats.solver_type || 'serverless'} (${stats.status || 'completed'})`, 'info');
+          addLog(`🔧 Solver: ${stats.solver_type || 'serverless'} (${stats.status || 'completed'})`, 'info');
+          
+          // Store last run results for output folder functionality
+          dispatch({
+            type: 'SET_RESULTS',
+            payload: {
+              run_id: result.run_id || `serverless_${Date.now()}`,
+              output_directory: result.output_directory || 'serverless',
+              timestamp: new Date().toISOString(),
+              solver_type: actualSolver,
+              results: result.results,
+              statistics: result.statistics
+            }
+          });
           
           // Store results in context (note: this may need proper action type in context)
           // dispatch({
@@ -609,8 +622,79 @@ export default function RunTab() {
     addLog('🛑 Optimization stopped by user', 'warning');
   };
 
-  const handleOpenOutputFolder = () => {
-    addLog(`Output folder: ${schedulingCase.run.out}`);
+  const handleOpenOutputFolder = async () => {
+    if (!lastResults) {
+      addLog(`📂 No recent results available. Current output folder setting: ${schedulingCase.run.out}`, 'warning');
+      addLog('💡 Run optimization first to generate results that can be viewed', 'info');
+      return;
+    }
+
+    const { run_id, output_directory, timestamp, solver_type } = lastResults;
+    
+    try {
+      addLog(`📂 Opening results for run: ${run_id}`, 'info');
+      addLog(`📅 Generated: ${new Date(timestamp).toLocaleString()}`, 'info');
+      addLog(`🔧 Solver: ${solver_type}`, 'info');
+      
+      if (solver_type === 'local' && localSolverAvailable) {
+        // For local solver, try to get output directory contents
+        try {
+          const response = await fetch(`http://localhost:8000/output/${run_id}`);
+          if (response.ok) {
+            const outputInfo = await response.json();
+            addLog(`📁 Output directory: ${outputInfo.output_directory}`, 'success');
+            addLog(`📄 Files: ${outputInfo.files.join(', ')}`, 'info');
+            
+            // For Windows, try to open the folder in explorer
+            if (navigator.platform.includes('Win')) {
+              addLog('💡 On Windows: Open File Explorer and navigate to the solver_output folder in your project directory', 'info');
+            }
+          } else {
+            addLog(`📁 Output directory: ${output_directory}`, 'success');
+            addLog('📄 Contains input_case.json and results.json', 'info');
+          }
+        } catch {
+          addLog(`📁 Output directory: ${output_directory}`, 'success');
+          addLog('💡 Check your project folder > solver_output > [run_id] for generated files', 'info');
+        }
+      } else {
+        // For serverless results
+        addLog('🌐 Serverless solver results are available in the export functions', 'success');
+        addLog('📊 Use "Export Results" to download the generated schedule', 'info');
+      }
+      
+      // Display summary of results if available
+      if (lastResults.results && typeof lastResults.results === 'object') {
+        const results = lastResults.results as {
+          summary?: {
+            total_assignments?: number;
+            total_providers?: number;
+            total_shifts?: number;
+          };
+          optimization_info?: {
+            solver_runtime?: string;
+            objective_value?: number;
+          };
+        };
+        if (results.summary) {
+          addLog(`📈 Solution summary:`, 'info');
+          addLog(`   • Total assignments: ${results.summary.total_assignments || 'N/A'}`, 'info');
+          addLog(`   • Providers used: ${results.summary.total_providers || 'N/A'}`, 'info');
+          addLog(`   • Shifts covered: ${results.summary.total_shifts || 'N/A'}`, 'info');
+        }
+        
+        if (results.optimization_info) {
+          addLog(`⚡ Optimization info:`, 'info');
+          addLog(`   • Runtime: ${results.optimization_info.solver_runtime || 'N/A'}`, 'info');
+          addLog(`   • Objective value: ${results.optimization_info.objective_value || 'N/A'}`, 'info');
+        }
+      }
+      
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+      addLog(`❌ Error accessing results: ${errorMsg}`, 'error');
+      addLog(`📂 Fallback: Check project folder for solver_output/${run_id}/`, 'info');
+    }
   };
 
   const updateRunConfig = (field: keyof typeof schedulingCase.run, value: string | number) => {
@@ -1331,7 +1415,9 @@ export default function RunTab() {
           >
             <div className="absolute inset-0 bg-gradient-to-r from-slate-400/20 to-slate-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             <IoFolderOpenSharp className="w-5 h-5 relative z-10" />
-            <span className="relative z-10">Open Output Folder</span>
+            <span className="relative z-10">
+              {lastResults ? 'View Results' : 'View Output Folder'}
+            </span>
           </button>
 
           {/* Clear Logs */}

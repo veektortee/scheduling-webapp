@@ -77,7 +77,49 @@ export default function Home() {
   };
 
   const handleExportResults = () => {
-    // Generate mock results for demo
+    if (state.lastResults && state.lastResults.results) {
+      // Transform solver results to match export format
+      const solverResults = state.lastResults.results as {
+        assignments?: Array<{
+          shift_id: string;
+          provider_id: string;
+          provider_name: string;
+          date: string;
+          shift_type: string;
+          start_time: string;
+          end_time: string;
+        }>;
+        summary?: {
+          total_assignments?: number;
+          provider_workload?: Record<string, number>;
+          shift_coverage?: Record<string, number>;
+        };
+      };
+      
+      if (solverResults.assignments && solverResults.summary) {
+        const transformedResults = {
+          assignments: solverResults.assignments.map(assignment => ({
+            date: assignment.date,
+            shiftId: assignment.shift_id,
+            shiftType: assignment.shift_type,
+            providerId: assignment.provider_id,
+            providerName: assignment.provider_name,
+            startTime: assignment.start_time,
+            endTime: assignment.end_time
+          })),
+          summary: {
+            totalAssignments: solverResults.summary.total_assignments || 0,
+            providerWorkload: solverResults.summary.provider_workload || {},
+            shiftCoverage: solverResults.summary.shift_coverage || {}
+          }
+        };
+        
+        exportScheduleToExcel(state.case, transformedResults);
+        return;
+      }
+    }
+    
+    // Fallback to mock results for demo if no real results available
     const mockResults = generateMockResults(state.case);
     exportScheduleToExcel(state.case, mockResults);
   };

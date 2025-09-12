@@ -4,12 +4,22 @@ import { createContext, useContext, useReducer, ReactNode } from 'react';
 import { SchedulingCase, Shift, Provider } from '@/types/scheduling';
 import { DEFAULT_CASE } from '@/lib/scheduling';
 
+interface SolverResults {
+  run_id: string;
+  output_directory: string;
+  timestamp: string;
+  solver_type: string;
+  results?: unknown;
+  statistics?: Record<string, unknown>;
+}
+
 interface SchedulingState {
   case: SchedulingCase;
   selectedDate: string | null;
   selectedProvider: number | null;
   isLoading: boolean;
   error: string | null;
+  lastResults: SolverResults | null;
 }
 
 type SchedulingAction =
@@ -25,6 +35,7 @@ type SchedulingAction =
   | { type: 'DELETE_PROVIDER'; payload: number }
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'SET_ERROR'; payload: string | null }
+  | { type: 'SET_RESULTS'; payload: SolverResults | null }
   | { type: 'GENERATE_DAYS'; payload: string[] };
 
 const initialState: SchedulingState = {
@@ -33,6 +44,7 @@ const initialState: SchedulingState = {
   selectedProvider: null,
   isLoading: false,
   error: null,
+  lastResults: null,
 };
 
 function schedulingReducer(state: SchedulingState, action: SchedulingAction): SchedulingState {
@@ -119,6 +131,11 @@ function schedulingReducer(state: SchedulingState, action: SchedulingAction): Sc
       return {
         ...state,
         error: action.payload,
+      };
+    case 'SET_RESULTS':
+      return {
+        ...state,
+        lastResults: action.payload,
       };
     case 'GENERATE_DAYS':
       return {
