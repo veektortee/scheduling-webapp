@@ -61,9 +61,12 @@ if [ -f fastapi_solver_service.py ]; then
     $PYTHON_CMD fastapi_solver_service.py
 elif [ -f local_solver.py ]; then
     echo "[WARN] fastapi_solver_service.py not found, falling back to basic local_solver.py"
+    echo "[INFO] OR-Tools detected - using high-performance solver"
     $PYTHON_CMD local_solver.py
 else
     echo "[ERROR] No solver entrypoint found (fastapi_solver_service.py or local_solver.py)"
+    echo "[ERROR] Please ensure you have downloaded all required files."
+    exit 1
 fi
 
 echo ""

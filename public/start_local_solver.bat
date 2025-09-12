@@ -47,9 +47,15 @@ if exist fastapi_solver_service.py (
     echo [INFO] Launching FastAPI solver service on http://localhost:8000
     echo [INFO] This service will try to use testcase_gui.py if found.
     "%PY_EXE%" fastapi_solver_service.py
-) else (
+) else if exist local_solver.py (
     echo [WARN] fastapi_solver_service.py not found, falling back to basic local_solver.py
+    echo [INFO] OR-Tools detected - using high-performance solver
     "%PY_EXE%" local_solver.py
+) else (
+    echo [ERROR] No solver entrypoint found (fastapi_solver_service.py or local_solver.py)
+    echo [ERROR] Please ensure you have downloaded all required files.
+    pause
+    exit /b 1
 )
 
 echo.
