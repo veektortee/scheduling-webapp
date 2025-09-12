@@ -23,6 +23,7 @@ import {
   SiApple,
   SiLinux
 } from 'react-icons/si';
+import LocalSolverGuideModal from '@/components/LocalSolverGuideModal';
 
 interface SolverResult {
   status: string;
@@ -65,6 +66,8 @@ export default function RunTab() {
     missingFiles: []
   });
   const [isCheckingInstallation, setIsCheckingInstallation] = useState(false);
+  const [showGuideModal, setShowGuideModal] = useState(false);
+  const [guidePlatform, setGuidePlatform] = useState<'windows' | 'mac' | 'linux'>('windows');
   const logsEndRef = useRef<HTMLDivElement>(null);
   const installMenuRef = useRef<HTMLDivElement>(null);
   const portalMenuRef = useRef<HTMLDivElement>(null);
@@ -768,16 +771,21 @@ export default function RunTab() {
     }
   };
 
+  // Helper function to show guide modal after downloads
+  const showInstallGuide = (platform: 'windows' | 'mac' | 'linux') => {
+    setGuidePlatform(platform);
+    setShowGuideModal(true);
+    setShowInstallMenu(false);
+  };
+
   const installForWindows = async () => {
     addLog('🪟 Installing for Windows...', 'info');
     await downloadPythonSolver();
     await downloadWindowsScript();
     addLog('✅ Windows installation files downloaded!', 'success');
-    addLog('📋 One-time setup:', 'info');
-    addLog('   1. Run start_local_solver.bat once (double-click it)', 'info');
-    addLog('   2. After that, just click "Local" to run - it will auto-start!', 'info');
-    addLog('   3. Click "Check Local Mode Setup" to verify everything works', 'info');
-    setShowInstallMenu(false);
+    
+    // Show the guide modal with step-by-step instructions
+    showInstallGuide('windows');
   };
 
   const installForMac = async () => {
@@ -785,12 +793,9 @@ export default function RunTab() {
     await downloadPythonSolver();
     await downloadUnixScript();
     addLog('✅ macOS installation files downloaded!', 'success');
-    addLog('📋 Next steps:', 'info');
-    addLog('   1. Open Terminal and navigate to the download folder', 'info');
-    addLog('   2. Run: chmod +x start_local_solver.sh', 'info');
-    addLog('   3. Run: ./start_local_solver.sh', 'info');
-    addLog('   4. Come back here and click "Check Local Mode Setup" to verify', 'info');
-    setShowInstallMenu(false);
+    
+    // Show the guide modal with step-by-step instructions
+    showInstallGuide('mac');
   };
 
   const installForLinux = async () => {
@@ -798,12 +803,9 @@ export default function RunTab() {
     await downloadPythonSolver();
     await downloadUnixScript();
     addLog('✅ Linux installation files downloaded!', 'success');
-    addLog('📋 Next steps:', 'info');
-    addLog('   1. Open Terminal and navigate to the download folder', 'info');
-    addLog('   2. Run: chmod +x start_local_solver.sh', 'info');
-    addLog('   3. Run: ./start_local_solver.sh', 'info');
-    addLog('   4. Come back here and click "Check Local Mode Setup" to verify', 'info');
-    setShowInstallMenu(false);
+    
+    // Show the guide modal with step-by-step instructions
+    showInstallGuide('linux');
   };
 
   return (
@@ -1520,6 +1522,13 @@ export default function RunTab() {
           </div>
         </div>
       </div>
+
+      {/* Local Solver Installation Guide Modal */}
+      <LocalSolverGuideModal
+        isOpen={showGuideModal}
+        onClose={() => setShowGuideModal(false)}
+        platform={guidePlatform}
+      />
     </div>
   );
 }
