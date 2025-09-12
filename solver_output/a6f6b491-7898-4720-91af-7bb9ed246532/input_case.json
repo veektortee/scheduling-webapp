@@ -1,0 +1,47 @@
+{
+  "constants": {
+    "solver": {
+      "max_time_in_seconds": 300,
+      "num_threads": 8
+    }
+  },
+  "calendar": {},
+  "shifts": [
+    {
+      "name": "MD_D",
+      "day": 0,
+      "type": "MD"
+    },
+    {
+      "name": "MD_S1",
+      "day": 0,
+      "type": "MD"
+    },
+    {
+      "name": "MD_N",
+      "day": 0,
+      "type": "MD"
+    }
+  ],
+  "providers": [
+    {
+      "name": "Test Provider 1",
+      "type": "MD",
+      "forbidden_days": [],
+      "max_consecutive_days": 5
+    },
+    {
+      "name": "Test Provider 2",
+      "type": "MD",
+      "forbidden_days": [],
+      "max_consecutive_days": 5
+    },
+    {
+      "name": "Test Provider 3",
+      "type": "MD",
+      "forbidden_days": [],
+      "max_consecutive_days": 5
+    }
+  ],
+  "run": null
+}

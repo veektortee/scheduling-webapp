@@ -1,0 +1,28 @@
+{
+  "constants": {
+    "solver": {
+      "max_time_in_seconds": 10
+    }
+  },
+  "calendar": {
+    "days": [
+      "2025-10-01"
+    ]
+  },
+  "shifts": [
+    {
+      "name": "MD_D",
+      "day": 0,
+      "type": "MD"
+    }
+  ],
+  "providers": [
+    {
+      "name": "Dr. Test",
+      "type": "MD",
+      "forbidden_days": [],
+      "max_consecutive_days": 5
+    }
+  ],
+  "run": null
+}

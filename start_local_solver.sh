@@ -26,14 +26,23 @@ echo ""
 echo "Installing/checking dependencies..."
 echo ""
 
-# Install required packages
-$PYTHON_CMD -m pip install ortools 2>/dev/null || {
-    echo "[INFO] Installing OR-Tools for high performance..."
-    $PYTHON_CMD -m pip install ortools
-}
+# Prefer requirements.txt if present
+if [ -f requirements.txt ]; then
+    echo "[INSTALL] Using requirements.txt"
+    $PYTHON_CMD -m pip install -r requirements.txt || {
+        echo "[ERROR] Failed to install requirements"
+        exit 1
+    }
+else
+    echo "[INSTALL] Installing core packages (fastapi, uvicorn, websockets, python-multipart, ortools, openpyxl, colorama)"
+    $PYTHON_CMD -m pip install fastapi 'uvicorn[standard]' websockets python-multipart ortools openpyxl colorama || {
+        echo "[ERROR] Failed to install core packages"
+        exit 1
+    }
+fi
 
 echo ""
-echo "[START] Starting Local Scheduler Optimizer..."
+echo "[START] Starting Local Scheduler Optimizer (FastAPI preferred)..."
 echo ""
 echo "================================================================"
 echo " INSTRUCTIONS FOR YOUR WEBAPP:"
@@ -44,8 +53,20 @@ echo " 3. Close this terminal to stop local solver (webapp continues with server
 echo "================================================================"
 echo ""
 
-# Start the local solver
-$PYTHON_CMD local_solver.py
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+cd "$SCRIPT_DIR"
+
+# Prefer FastAPI service which integrates testcase_gui.py if available
+if [ -f fastapi_solver_service.py ]; then
+    echo "[INFO] Launching FastAPI solver service on http://localhost:8000"
+    echo "[INFO] This service will try to use testcase_gui.py if found."
+    $PYTHON_CMD fastapi_solver_service.py
+elif [ -f local_solver.py ]; then
+    echo "[WARN] fastapi_solver_service.py not found, falling back to basic local_solver.py"
+    $PYTHON_CMD local_solver.py
+else
+    echo "[ERROR] No solver entrypoint found (fastapi_solver_service.py or local_solver.py)"
+fi
 
 echo ""
 echo "Local solver stopped. Press Enter to exit..."
