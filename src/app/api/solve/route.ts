@@ -76,7 +76,7 @@ async function runHybridSolver(caseData: Record<string, unknown>): Promise<Solve
           }
         };
       }
-    } catch (localError) {
+    } catch {
       console.log('💡 Local solver not available, using serverless fallback');
     }
     
@@ -174,6 +174,7 @@ async function runServerlessSolver(caseData: Record<string, unknown>, runId: str
       }
     };
   }
+}
 
 // Generate a scheduling solution using constraint-based assignment
 function generateSolution(
