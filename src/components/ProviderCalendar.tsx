@@ -119,13 +119,13 @@ export default function ProviderCalendar({
         return `${baseClasses} text-green-900 bg-green-300 hover:bg-green-400 shadow-md hover:shadow-lg hover:scale-105 border-2 border-green-400 dark:text-green-100 dark:bg-green-600 dark:hover:bg-green-700 dark:border-green-500`;
         
       case 'selected-off':
-        return `${baseClasses} text-white bg-red-500 hover:bg-red-600 shadow-lg hover:shadow-xl hover:scale-110 border-2 border-red-400 ring-2 ring-red-300 ring-offset-2 transform scale-110`;
+        return `${baseClasses} text-white bg-red-600 hover:bg-red-700 shadow-lg hover:shadow-xl hover:scale-110 border-2 border-red-500 ring-4 ring-red-300 ring-offset-2 transform scale-110 font-extrabold`;
         
       case 'selected-on':
-        return `${baseClasses} text-white bg-blue-500 hover:bg-blue-600 shadow-lg hover:shadow-xl hover:scale-110 border-2 border-blue-400 ring-2 ring-blue-300 ring-offset-2 transform scale-110`;
+        return `${baseClasses} text-white bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-xl hover:scale-110 border-2 border-blue-500 ring-4 ring-blue-300 ring-offset-2 transform scale-110 font-extrabold`;
         
       default: // available
-        return `${baseClasses} text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 border-2 border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 shadow-sm hover:shadow-md hover:scale-105 ${isHovered ? 'ring-2 ring-blue-300 ring-offset-1 scale-105' : ''}`;
+        return `${baseClasses} text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-blue-50 dark:hover:bg-blue-900/30 border-2 border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500 shadow-sm hover:shadow-lg hover:scale-105 ${isHovered ? 'ring-2 ring-blue-300 ring-offset-1 scale-105 bg-blue-50 dark:bg-blue-900/30' : ''} transition-all duration-200`;
     }
   };
 
@@ -140,9 +140,9 @@ export default function ProviderCalendar({
       case 'prefer-on':
         return <CheckCircleIcon className="w-3 h-3 sm:w-4 sm:h-4 absolute -top-0.5 -right-0.5 bg-green-600 text-white rounded-full p-0.5" />;
       case 'selected-off':
-        return <div className="w-2 h-2 absolute top-0.5 right-0.5 bg-white rounded-full shadow-sm animate-pulse" />;
+        return <div className="w-3 h-3 absolute top-0.5 right-0.5 bg-white rounded-full shadow-lg animate-pulse border border-red-200" />;
       case 'selected-on':
-        return <div className="w-2 h-2 absolute top-0.5 right-0.5 bg-white rounded-full shadow-sm animate-pulse" />;
+        return <div className="w-3 h-3 absolute top-0.5 right-0.5 bg-white rounded-full shadow-lg animate-pulse border border-blue-200" />;
       default:
         return null;
     }
@@ -160,6 +160,11 @@ export default function ProviderCalendar({
     if (!isCurrentMonth || !isAvailable || isFixedOff) return;
     
     const isCurrentlySelected = selectedDays.includes(dayStr);
+    
+    // Add immediate visual feedback with a brief flash
+    setHoveredDay(dayStr);
+    setTimeout(() => setHoveredDay(null), 150);
+    
     onDayToggle(dayStr, !isCurrentlySelected);
   };
 
@@ -173,12 +178,15 @@ export default function ProviderCalendar({
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 space-y-2 sm:space-y-0">
         <div className="flex items-center space-x-2">
-          <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
+          <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center ${mode === 'off' ? 'bg-gradient-to-br from-red-500 to-pink-500' : 'bg-gradient-to-br from-blue-500 to-indigo-500'}`}>
             <CalendarDaysIcon className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
           </div>
           <div>
-            <h3 className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">
-              Days {mode === 'off' ? 'OFF' : 'ON'}
+            <h3 className={`text-sm sm:text-base font-bold ${mode === 'off' ? 'text-red-700 dark:text-red-300' : 'text-blue-700 dark:text-blue-300'}`}>
+              Days {mode === 'off' ? 'OFF' : 'ON'} 
+              <span className={`ml-2 text-xs px-2 py-1 rounded-full ${mode === 'off' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'}`}>
+                {mode === 'off' ? '🔴' : '🔵'}
+              </span>
             </h3>
             <p className="text-xs text-gray-600 dark:text-gray-400">
               {selectedCount} / {availableCount} selected
@@ -216,8 +224,14 @@ export default function ProviderCalendar({
         </div>
       </div>
 
-      {/* Compact Legend */}
-      <div className="grid grid-cols-2 gap-2 mb-4 p-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+      {/* Instructions and Compact Legend */}
+      <div className="mb-4 space-y-2">
+        <div className={`p-2 rounded-lg text-center ${mode === 'off' ? 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300' : 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'}`}>
+          <p className="text-xs font-medium">
+            Click on dates to {mode === 'off' ? 'mark as OFF days' : 'mark as ON days'}
+          </p>
+        </div>
+        <div className="grid grid-cols-2 gap-2 p-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
         <div className="flex items-center space-x-1.5">
           <div className="w-3 h-3 bg-red-600 rounded border border-red-500"></div>
           <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Fixed OFF</span>
@@ -233,6 +247,7 @@ export default function ProviderCalendar({
         <div className="flex items-center space-x-1.5">
           <div className={`w-3 h-3 rounded border-2 ring-2 ${mode === 'off' ? 'bg-red-500 border-red-400 ring-red-300' : 'bg-blue-500 border-blue-400 ring-blue-300'}`}></div>
           <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Selected</span>
+        </div>
         </div>
       </div>
 

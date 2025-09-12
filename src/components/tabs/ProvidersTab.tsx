@@ -185,6 +185,8 @@ export default function ProvidersTab() {
   };
 
   const handleDayToggle = (day: string, selected: boolean) => {
+    console.log(`Day toggle: ${day}, selected: ${selected}, mode: ${calendarMode}`);
+    
     if (calendarMode === 'off') {
       if (selected) {
         setSelectedOffDays(prev => [...prev, day]);
@@ -345,28 +347,52 @@ export default function ProvidersTab() {
 
       {/* Calendar Selection for Days Off/On */}
       <div className="lg:col-span-1">
+        {/* Status indicator */}
+        {selectedProvider !== null && (
+          <div className="mb-4 p-3 bg-gradient-to-r from-gray-50 to-blue-50 dark:from-gray-800 dark:to-blue-900/30 rounded-lg border border-gray-200 dark:border-gray-700">
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              Editing: <span className="font-bold text-blue-600 dark:text-blue-400">{schedulingCase.providers[selectedProvider]?.name}</span>
+            </p>
+            <p className="text-xs text-gray-600 dark:text-gray-400">
+              Available days: {schedulingCase.calendar.days.length} • Mode: <span className={calendarMode === 'off' ? 'text-red-600 dark:text-red-400' : 'text-blue-600 dark:text-blue-400'}>{calendarMode === 'off' ? 'Days OFF' : 'Days ON'}</span>
+            </p>
+          </div>
+        )}
+        
         {/* Mode Toggle */}
         <div className="mb-3">
           <div className="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5 w-full sm:w-fit mx-auto">
             <button
-              onClick={() => setCalendarMode('off')}
+              onClick={() => {
+                setCalendarMode('off');
+                // Optionally clear the other mode's selection to avoid confusion
+                if (selectedOnDays.length > 0) {
+                  // setSelectedOnDays([]);
+                }
+              }}
               className={`flex-1 sm:flex-none px-3 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-all duration-200 ${
                 calendarMode === 'off'
                   ? 'bg-red-500 text-white shadow-md'
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
               }`}
             >
-              Days OFF
+              Days OFF {selectedOffDays.length > 0 && `(${selectedOffDays.length})`}
             </button>
             <button
-              onClick={() => setCalendarMode('on')}
+              onClick={() => {
+                setCalendarMode('on');
+                // Optionally clear the other mode's selection to avoid confusion
+                if (selectedOffDays.length > 0) {
+                  // setSelectedOffDays([]);
+                }
+              }}
               className={`flex-1 sm:flex-none px-3 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-all duration-200 ${
                 calendarMode === 'on'
                   ? 'bg-blue-500 text-white shadow-md'
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
               }`}
             >
-              Days ON
+              Days ON {selectedOnDays.length > 0 && `(${selectedOnDays.length})`}
             </button>
           </div>
         </div>
@@ -385,6 +411,22 @@ export default function ProvidersTab() {
         
         {/* Action buttons */}
         <div className="mt-4 space-y-2">
+          {/* Clear selection button */}
+          {(selectedOffDays.length > 0 || selectedOnDays.length > 0) && (
+            <button
+              onClick={() => {
+                setSelectedOffDays([]);
+                setSelectedOnDays([]);
+              }}
+              className="w-full relative px-3 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-medium flex items-center justify-center space-x-2 transition-all duration-300 text-sm"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              <span>Clear Selection ({calendarMode === 'off' ? selectedOffDays.length : selectedOnDays.length})</span>
+            </button>
+          )}
+          
           {calendarMode === 'off' ? (
             <>
               <button
