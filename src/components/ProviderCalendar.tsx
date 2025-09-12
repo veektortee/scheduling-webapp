@@ -7,9 +7,7 @@ import {
   ChevronRightIcon, 
   CalendarDaysIcon,
   XMarkIcon,
-  CheckCircleIcon,
-  ExclamationCircleIcon,
-  MinusCircleIcon
+  ExclamationCircleIcon
 } from '@heroicons/react/24/outline';
 import { 
   format, 
@@ -28,9 +26,11 @@ export interface ProviderCalendarProps {
   availableDays: string[]; // Days from the scheduling case
   selectedDays: string[]; // Currently selected days for off/on
   onDayToggle: (day: string, selected: boolean) => void;
+  onDayClear?: (day: string) => void; // New prop for clearing day preferences
   fixedOffDays?: string[]; // Hard forbidden days
   preferOffDays?: string[]; // Soft forbidden days  
-  preferOnDays?: string[]; // Preferred working days
+  fixedOnDays?: string[]; // Hard preferred working days (green)
+  preferOnDays?: string[]; // Soft preferred working days (blue)
   mode?: 'off' | 'on'; // Whether selecting days off or days on
   disabled?: boolean;
   className?: string;
@@ -40,8 +40,10 @@ export default function ProviderCalendar({
   availableDays,
   selectedDays,
   onDayToggle,
+  onDayClear,
   fixedOffDays = [],
   preferOffDays = [],
+  fixedOnDays = [],
   preferOnDays = [],
   mode = 'off',
   disabled = false,
@@ -78,13 +80,15 @@ export default function ProviderCalendar({
     const isSelected = selectedDays.includes(dayStr);
     const isFixedOff = fixedOffDays.includes(dayStr);
     const isPreferOff = preferOffDays.includes(dayStr);
+    const isFixedOn = fixedOnDays.includes(dayStr);
     const isPreferOn = preferOnDays.includes(dayStr);
     
     if (!isAvailable) return 'unavailable';
     if (isFixedOff) return 'fixed-off';
     if (isPreferOff) return 'prefer-off';
+    if (isFixedOn) return 'fixed-on';
     if (isPreferOn) return 'prefer-on';
-    if (isSelected) return mode === 'off' ? 'selected-off' : 'selected-on';
+    if (isSelected) return 'pending-selection'; // Neutral pending state instead of mode-specific
     return 'available';
   };
 
@@ -115,14 +119,14 @@ export default function ProviderCalendar({
       case 'prefer-off':
         return `${baseClasses} text-orange-900 bg-orange-300 hover:bg-orange-400 shadow-md hover:shadow-lg hover:scale-105 border-2 border-orange-400 dark:text-orange-100 dark:bg-orange-600 dark:hover:bg-orange-700 dark:border-orange-500`;
         
+      case 'fixed-on':
+        return `${baseClasses} text-white bg-green-600 hover:bg-green-700 shadow-lg hover:shadow-xl hover:scale-110 border-2 border-green-500 ring-2 ring-green-300`;
+        
       case 'prefer-on':
-        return `${baseClasses} text-green-900 bg-green-300 hover:bg-green-400 shadow-md hover:shadow-lg hover:scale-105 border-2 border-green-400 dark:text-green-100 dark:bg-green-600 dark:hover:bg-green-700 dark:border-green-500`;
+        return `${baseClasses} text-blue-900 bg-blue-300 hover:bg-blue-400 shadow-md hover:shadow-lg hover:scale-105 border-2 border-blue-400 dark:text-blue-100 dark:bg-blue-600 dark:hover:bg-blue-700 dark:border-blue-500`;
         
-      case 'selected-off':
-        return `${baseClasses} text-white bg-red-600 hover:bg-red-700 shadow-lg hover:shadow-xl hover:scale-110 border-2 border-red-500 ring-4 ring-red-300 ring-offset-2 transform scale-110 font-extrabold`;
-        
-      case 'selected-on':
-        return `${baseClasses} text-white bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-xl hover:scale-110 border-2 border-blue-500 ring-4 ring-blue-300 ring-offset-2 transform scale-110 font-extrabold`;
+      case 'pending-selection':
+        return `${baseClasses} text-gray-700 dark:text-gray-200 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 shadow-md hover:shadow-lg hover:scale-105 border-2 border-blue-300 dark:border-blue-500 ring-1 ring-blue-200 dark:ring-blue-400 font-semibold`;
         
       default: // available
         return `${baseClasses} text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-blue-50 dark:hover:bg-blue-900/30 border-2 border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500 shadow-sm hover:shadow-lg hover:scale-105 ${isHovered ? 'ring-2 ring-blue-300 ring-offset-1 scale-105 bg-blue-50 dark:bg-blue-900/30' : ''} transition-all duration-200`;
@@ -131,18 +135,58 @@ export default function ProviderCalendar({
 
   const getDayIcon = (day: Date) => {
     const status = getDayStatus(day);
+    const dayStr = format(day, 'yyyy-MM-dd');
+    
+    const handleClearClick = (e: React.MouseEvent) => {
+      e.stopPropagation(); // Prevent day selection
+      if (onDayClear && !disabled) {
+        onDayClear(dayStr);
+      }
+    };
     
     switch (status) {
       case 'fixed-off':
-        return <XMarkIcon className="w-3 h-3 sm:w-4 sm:h-4 absolute -top-0.5 -right-0.5 bg-red-800 text-white rounded-full p-0.5" />;
+        return (
+          <button
+            onClick={handleClearClick}
+            className="w-3 h-3 sm:w-4 sm:h-4 absolute -top-0.5 -right-0.5 bg-red-800 hover:bg-red-900 text-white rounded-full p-0.5 transition-colors cursor-pointer"
+            title="Remove Fixed OFF"
+          >
+            <XMarkIcon className="w-full h-full" />
+          </button>
+        );
       case 'prefer-off':
-        return <MinusCircleIcon className="w-3 h-3 sm:w-4 sm:h-4 absolute -top-0.5 -right-0.5 bg-orange-600 text-white rounded-full p-0.5" />;
+        return (
+          <button
+            onClick={handleClearClick}
+            className="w-3 h-3 sm:w-4 sm:h-4 absolute -top-0.5 -right-0.5 bg-orange-600 hover:bg-orange-700 text-white rounded-full p-0.5 transition-colors cursor-pointer"
+            title="Remove Prefer OFF"
+          >
+            <XMarkIcon className="w-full h-full" />
+          </button>
+        );
+      case 'fixed-on':
+        return (
+          <button
+            onClick={handleClearClick}
+            className="w-3 h-3 sm:w-4 sm:h-4 absolute -top-0.5 -right-0.5 bg-green-800 hover:bg-green-900 text-white rounded-full p-0.5 transition-colors cursor-pointer"
+            title="Remove Fixed ON"
+          >
+            <XMarkIcon className="w-full h-full" />
+          </button>
+        );
       case 'prefer-on':
-        return <CheckCircleIcon className="w-3 h-3 sm:w-4 sm:h-4 absolute -top-0.5 -right-0.5 bg-green-600 text-white rounded-full p-0.5" />;
-      case 'selected-off':
-        return <div className="w-3 h-3 absolute top-0.5 right-0.5 bg-white rounded-full shadow-lg animate-pulse border border-red-200" />;
-      case 'selected-on':
-        return <div className="w-3 h-3 absolute top-0.5 right-0.5 bg-white rounded-full shadow-lg animate-pulse border border-blue-200" />;
+        return (
+          <button
+            onClick={handleClearClick}
+            className="w-3 h-3 sm:w-4 sm:h-4 absolute -top-0.5 -right-0.5 bg-blue-600 hover:bg-blue-700 text-white rounded-full p-0.5 transition-colors cursor-pointer"
+            title="Remove Prefer ON"
+          >
+            <XMarkIcon className="w-full h-full" />
+          </button>
+        );
+      case 'pending-selection':
+        return <div className="w-3 h-3 absolute top-0.5 right-0.5 bg-blue-300 dark:bg-blue-500 rounded-full shadow-sm border border-blue-400 dark:border-blue-300" />;
       default:
         return null;
     }
@@ -228,10 +272,10 @@ export default function ProviderCalendar({
       <div className="mb-3 space-y-2 flex-shrink-0">
         <div className={`p-2 rounded-lg text-center ${mode === 'off' ? 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300' : 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'}`}>
           <p className="text-xs font-medium">
-            Click on dates to {mode === 'off' ? 'mark as OFF days' : 'mark as ON days'}
+            Click on dates to select them, then use buttons to apply {mode === 'off' ? 'OFF' : 'ON'} preferences
           </p>
         </div>
-        <div className="grid grid-cols-2 gap-1 p-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg text-xs">
+        <div className="grid grid-cols-3 gap-1 p-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg text-xs">
         <div className="flex items-center space-x-1">
           <div className="w-2 h-2 bg-red-600 rounded border border-red-500"></div>
           <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Fixed OFF</span>
@@ -241,12 +285,20 @@ export default function ProviderCalendar({
           <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Prefer OFF</span>
         </div>
         <div className="flex items-center space-x-1">
-          <div className="w-2 h-2 bg-green-400 rounded border border-green-400"></div>
+          <div className="w-2 h-2 bg-gray-300 dark:bg-gray-500 rounded border border-gray-400 ring-1 ring-gray-300 dark:ring-gray-400"></div>
+          <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Selected</span>
+        </div>
+        <div className="flex items-center space-x-1">
+          <div className="w-2 h-2 bg-green-600 rounded border border-green-500"></div>
+          <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Fixed ON</span>
+        </div>
+        <div className="flex items-center space-x-1">
+          <div className="w-2 h-2 bg-blue-400 rounded border border-blue-400"></div>
           <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Prefer ON</span>
         </div>
         <div className="flex items-center space-x-1">
-          <div className={`w-2 h-2 rounded border ring-1 ${mode === 'off' ? 'bg-red-500 border-red-400 ring-red-300' : 'bg-blue-500 border-blue-400 ring-blue-300'}`}></div>
-          <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Selected</span>
+          <div className="w-2 h-2 bg-white dark:bg-gray-700 rounded border border-gray-200 dark:border-gray-600"></div>
+          <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Available</span>
         </div>
         </div>
       </div>

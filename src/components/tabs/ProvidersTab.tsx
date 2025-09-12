@@ -131,50 +131,106 @@ export default function ProvidersTab() {
   const applyFixedOffDays = () => {
     if (selectedProvider === null) return;
     
+    // Use the currently selected days based on the calendar mode
+    const daysToApply = calendarMode === 'off' ? selectedOffDays : selectedOnDays;
+    if (daysToApply.length === 0) return;
+    
     const provider = schedulingCase.providers[selectedProvider];
+    
+    // Clear any existing preferences for these days first (override functionality)
     const updatedProvider: Provider = {
       ...provider,
-      forbidden_days_hard: [...(provider.forbidden_days_hard || []), ...selectedOffDays],
+      forbidden_days_hard: [...(provider.forbidden_days_hard || []), ...daysToApply],
+      forbidden_days_soft: (provider.forbidden_days_soft || []).filter(day => !daysToApply.includes(day)),
+      preferred_days_hard: Object.fromEntries(
+        Object.entries(provider.preferred_days_hard || {}).filter(([day]) => !daysToApply.includes(day))
+      ),
+      preferred_days_soft: Object.fromEntries(
+        Object.entries(provider.preferred_days_soft || {}).filter(([day]) => !daysToApply.includes(day))
+      ),
     };
 
     dispatch({
       type: 'UPDATE_PROVIDER',
       payload: { index: selectedProvider, provider: updatedProvider },
     });
+    
+    // Clear both selected arrays and update form
     setSelectedOffDays([]);
+    setSelectedOnDays([]);
+    setProviderForm({
+      ...updatedProvider,
+      limits: updatedProvider.limits || { min_total: 0, max_total: null },
+      forbidden_days_soft: updatedProvider.forbidden_days_soft || [],
+      forbidden_days_hard: updatedProvider.forbidden_days_hard || [],
+      preferred_days_hard: updatedProvider.preferred_days_hard || {},
+      preferred_days_soft: updatedProvider.preferred_days_soft || {},
+    });
   };
 
   const applyPreferOffDays = () => {
     if (selectedProvider === null) return;
     
+    // Use the currently selected days based on the calendar mode
+    const daysToApply = calendarMode === 'off' ? selectedOffDays : selectedOnDays;
+    if (daysToApply.length === 0) return;
+    
     const provider = schedulingCase.providers[selectedProvider];
+    
+    // Clear any existing preferences for these days first (override functionality)
     const updatedProvider: Provider = {
       ...provider,
-      forbidden_days_soft: [...(provider.forbidden_days_soft || []), ...selectedOffDays],
+      forbidden_days_hard: (provider.forbidden_days_hard || []).filter(day => !daysToApply.includes(day)),
+      forbidden_days_soft: [...(provider.forbidden_days_soft || []), ...daysToApply],
+      preferred_days_hard: Object.fromEntries(
+        Object.entries(provider.preferred_days_hard || {}).filter(([day]) => !daysToApply.includes(day))
+      ),
+      preferred_days_soft: Object.fromEntries(
+        Object.entries(provider.preferred_days_soft || {}).filter(([day]) => !daysToApply.includes(day))
+      ),
     };
 
     dispatch({
       type: 'UPDATE_PROVIDER',
       payload: { index: selectedProvider, provider: updatedProvider },
     });
+    
+    // Clear both selected arrays and update form
     setSelectedOffDays([]);
+    setSelectedOnDays([]);
+    setProviderForm({
+      ...updatedProvider,
+      limits: updatedProvider.limits || { min_total: 0, max_total: null },
+      forbidden_days_soft: updatedProvider.forbidden_days_soft || [],
+      forbidden_days_hard: updatedProvider.forbidden_days_hard || [],
+      preferred_days_hard: updatedProvider.preferred_days_hard || {},
+      preferred_days_soft: updatedProvider.preferred_days_soft || {},
+    });
   };
 
   const applyPreferOnDays = () => {
     if (selectedProvider === null) return;
     
-    const provider = schedulingCase.providers[selectedProvider];
-    // For preferred ON days, we'll add them to preferred_days_soft with shift types
-    // For simplicity, we'll use all available shift types for these days
-    const shiftTypes = ['DAY', 'EVENING', 'NIGHT', 'WEEKEND', 'FLEX']; // Common shift types
-    const newPreferredDaysSoft = { ...provider.preferred_days_soft };
+    // Use the currently selected days based on the calendar mode
+    const daysToApply = calendarMode === 'on' ? selectedOnDays : selectedOffDays;
+    if (daysToApply.length === 0) return;
     
-    selectedOnDays.forEach(day => {
+    const provider = schedulingCase.providers[selectedProvider];
+    const shiftTypes = ['DAY', 'EVENING', 'NIGHT', 'WEEKEND', 'FLEX'];
+    
+    // Clear any existing preferences for these days first (override functionality)
+    const newPreferredDaysSoft = { ...provider.preferred_days_soft };
+    daysToApply.forEach(day => {
       newPreferredDaysSoft[day] = shiftTypes;
     });
 
     const updatedProvider: Provider = {
       ...provider,
+      forbidden_days_hard: (provider.forbidden_days_hard || []).filter(day => !daysToApply.includes(day)),
+      forbidden_days_soft: (provider.forbidden_days_soft || []).filter(day => !daysToApply.includes(day)),
+      preferred_days_hard: Object.fromEntries(
+        Object.entries(provider.preferred_days_hard || {}).filter(([day]) => !daysToApply.includes(day))
+      ),
       preferred_days_soft: newPreferredDaysSoft,
     };
 
@@ -182,32 +238,96 @@ export default function ProvidersTab() {
       type: 'UPDATE_PROVIDER',
       payload: { index: selectedProvider, provider: updatedProvider },
     });
+    
+    // Clear both selected arrays and update form
     setSelectedOnDays([]);
+    setSelectedOffDays([]);
+    setProviderForm({
+      ...updatedProvider,
+      limits: updatedProvider.limits || { min_total: 0, max_total: null },
+      forbidden_days_soft: updatedProvider.forbidden_days_soft || [],
+      forbidden_days_hard: updatedProvider.forbidden_days_hard || [],
+      preferred_days_hard: updatedProvider.preferred_days_hard || {},
+      preferred_days_soft: updatedProvider.preferred_days_soft || {},
+    });
   };
 
   const applyFixedOnDays = () => {
     if (selectedProvider === null) return;
     
-    const provider = schedulingCase.providers[selectedProvider];
-    // For fixed ON days, we'll add them to preferred_days_hard with shift types
-    // For simplicity, we'll use all available shift types for these days
-    const shiftTypes = ['DAY', 'EVENING', 'NIGHT', 'WEEKEND', 'FLEX']; // Common shift types
-    const newPreferredDaysHard = { ...provider.preferred_days_hard };
+    // Use the currently selected days based on the calendar mode
+    const daysToApply = calendarMode === 'on' ? selectedOnDays : selectedOffDays;
+    if (daysToApply.length === 0) return;
     
-    selectedOnDays.forEach(day => {
+    const provider = schedulingCase.providers[selectedProvider];
+    const shiftTypes = ['DAY', 'EVENING', 'NIGHT', 'WEEKEND', 'FLEX'];
+    
+    // Clear any existing preferences for these days first (override functionality)
+    const newPreferredDaysHard = { ...provider.preferred_days_hard };
+    daysToApply.forEach(day => {
       newPreferredDaysHard[day] = shiftTypes;
     });
 
     const updatedProvider: Provider = {
       ...provider,
+      forbidden_days_hard: (provider.forbidden_days_hard || []).filter(day => !daysToApply.includes(day)),
+      forbidden_days_soft: (provider.forbidden_days_soft || []).filter(day => !daysToApply.includes(day)),
       preferred_days_hard: newPreferredDaysHard,
+      preferred_days_soft: Object.fromEntries(
+        Object.entries(provider.preferred_days_soft || {}).filter(([day]) => !daysToApply.includes(day))
+      ),
     };
 
     dispatch({
       type: 'UPDATE_PROVIDER',
       payload: { index: selectedProvider, provider: updatedProvider },
     });
+    
+    // Clear both selected arrays and update form
     setSelectedOnDays([]);
+    setSelectedOffDays([]);
+    setProviderForm({
+      ...updatedProvider,
+      limits: updatedProvider.limits || { min_total: 0, max_total: null },
+      forbidden_days_soft: updatedProvider.forbidden_days_soft || [],
+      forbidden_days_hard: updatedProvider.forbidden_days_hard || [],
+      preferred_days_hard: updatedProvider.preferred_days_hard || {},
+      preferred_days_soft: updatedProvider.preferred_days_soft || {},
+    });
+  };
+
+  const handleDayClear = (day: string) => {
+    if (selectedProvider === null) return;
+    
+    const provider = schedulingCase.providers[selectedProvider];
+    
+    // Remove from all possible arrays/objects
+    const updatedProvider: Provider = {
+      ...provider,
+      forbidden_days_hard: (provider.forbidden_days_hard || []).filter(d => d !== day),
+      forbidden_days_soft: (provider.forbidden_days_soft || []).filter(d => d !== day),
+      preferred_days_hard: Object.fromEntries(
+        Object.entries(provider.preferred_days_hard || {}).filter(([d]) => d !== day)
+      ),
+      preferred_days_soft: Object.fromEntries(
+        Object.entries(provider.preferred_days_soft || {}).filter(([d]) => d !== day)
+      ),
+    };
+
+    dispatch({
+      type: 'UPDATE_PROVIDER',
+      payload: { index: selectedProvider, provider: updatedProvider },
+    });
+    
+    // Update form state
+    setProviderForm({
+      ...updatedProvider,
+      limits: updatedProvider.limits || { min_total: 0, max_total: null },
+      forbidden_days_soft: updatedProvider.forbidden_days_soft || [],
+      forbidden_days_hard: updatedProvider.forbidden_days_hard || [],
+      preferred_days_hard: updatedProvider.preferred_days_hard || {},
+      preferred_days_soft: updatedProvider.preferred_days_soft || {},
+    });
   };
 
   const handleDayToggle = (day: string, selected: boolean) => {
@@ -427,8 +547,10 @@ export default function ProvidersTab() {
           availableDays={schedulingCase.calendar.days}
           selectedDays={calendarMode === 'off' ? selectedOffDays : selectedOnDays}
           onDayToggle={handleDayToggle}
+          onDayClear={handleDayClear}
           fixedOffDays={selectedProvider !== null ? schedulingCase.providers[selectedProvider]?.forbidden_days_hard || [] : []}
           preferOffDays={selectedProvider !== null ? schedulingCase.providers[selectedProvider]?.forbidden_days_soft || [] : []}
+          fixedOnDays={selectedProvider !== null ? Object.keys(schedulingCase.providers[selectedProvider]?.preferred_days_hard || {}) : []}
           preferOnDays={selectedProvider !== null ? Object.keys(schedulingCase.providers[selectedProvider]?.preferred_days_soft || {}) : []}
           mode={calendarMode}
           disabled={selectedProvider === null}
@@ -457,7 +579,7 @@ export default function ProvidersTab() {
             <>
               <button
                 onClick={applyFixedOffDays}
-                disabled={selectedProvider === null || selectedOffDays.length === 0}
+                disabled={selectedProvider === null || (selectedOffDays.length === 0 && selectedOnDays.length === 0)}
                 className="w-full relative px-4 py-2.5 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-lg hover:from-red-700 hover:to-rose-700 font-semibold flex items-center justify-center space-x-2 transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105 border border-red-500/20 overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 text-sm"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-red-400 to-rose-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
@@ -466,7 +588,7 @@ export default function ProvidersTab() {
               </button>
               <button
                 onClick={applyPreferOffDays}
-                disabled={selectedProvider === null || selectedOffDays.length === 0}
+                disabled={selectedProvider === null || (selectedOffDays.length === 0 && selectedOnDays.length === 0)}
                 className="w-full relative px-4 py-2.5 bg-gradient-to-r from-orange-600 to-amber-600 text-white rounded-lg hover:from-orange-700 hover:to-amber-700 font-semibold flex items-center justify-center space-x-2 transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105 border border-orange-500/20 overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 text-sm"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-amber-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
@@ -478,7 +600,7 @@ export default function ProvidersTab() {
             <>
               <button
                 onClick={applyFixedOnDays}
-                disabled={selectedProvider === null || selectedOnDays.length === 0}
+                disabled={selectedProvider === null || (selectedOnDays.length === 0 && selectedOffDays.length === 0)}
                 className="w-full relative px-4 py-2.5 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 font-semibold flex items-center justify-center space-x-2 transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105 border border-green-500/20 overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 text-sm"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-green-400 to-emerald-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
@@ -487,7 +609,7 @@ export default function ProvidersTab() {
               </button>
               <button
                 onClick={applyPreferOnDays}
-                disabled={selectedProvider === null || selectedOnDays.length === 0}
+                disabled={selectedProvider === null || (selectedOnDays.length === 0 && selectedOffDays.length === 0)}
                 className="w-full relative px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 font-semibold flex items-center justify-center space-x-2 transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105 border border-blue-500/20 overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 text-sm"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-indigo-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
