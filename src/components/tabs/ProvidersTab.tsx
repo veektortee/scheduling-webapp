@@ -552,9 +552,14 @@ export default function ProvidersTab() {
               <IoPersonSharp className="w-5 h-5 text-white" />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Selected</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Idle</p>
               <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">
-                {selectedProvider !== null ? 1 : 0}
+                {schedulingCase.providers.filter(p => 
+                  (!p.forbidden_days_hard || p.forbidden_days_hard.length === 0) &&
+                  (!p.forbidden_days_soft || p.forbidden_days_soft.length === 0) &&
+                  (!p.preferred_days_hard || Object.keys(p.preferred_days_hard).length === 0) &&
+                  (!p.preferred_days_soft || Object.keys(p.preferred_days_soft).length === 0)
+                ).length}
               </p>
             </div>
           </div>
