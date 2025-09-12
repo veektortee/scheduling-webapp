@@ -48,11 +48,50 @@ interface Solution {
   feasible: boolean;
 }
 
-// Pure JavaScript/TypeScript serverless solver
-async function runServerlessSolver(caseData: Record<string, unknown>): Promise<SolverResult> {
+// Hybrid solver: tries local first (if available), then serverless fallback
+async function runHybridSolver(caseData: Record<string, unknown>): Promise<SolverResult> {
   const runId = `run_${Date.now()}`;
   const startTime = Date.now();
   
+  try {
+    // 1. Try local solver first (if user has installed it)
+    try {
+      console.log('🔍 Checking for local solver...');
+      const localResponse = await fetch('http://localhost:8000/solve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(caseData),
+        signal: AbortSignal.timeout(5000), // Quick timeout for local check
+      });
+      
+      if (localResponse.ok) {
+        const localResult = await localResponse.json();
+        console.log('✅ Using local high-performance solver');
+        return {
+          ...localResult,
+          statistics: {
+            ...localResult.statistics,
+            solverType: 'local_enhanced',
+            fallbackUsed: false
+          }
+        };
+      }
+    } catch (localError) {
+      console.log('💡 Local solver not available, using serverless fallback');
+    }
+    
+    // 2. Fallback to serverless solver
+    console.log('🌐 Using serverless solver...');
+    return await runServerlessSolver(caseData, runId, startTime);
+    
+  } catch (error) {
+    console.error('❌ Hybrid solver error:', error);
+    throw error;
+  }
+}
+  
+// Serverless solver function
+async function runServerlessSolver(caseData: Record<string, unknown>, runId: string, startTime: number): Promise<SolverResult> {
   try {
     console.log(`🚀 Starting serverless optimization for run: ${runId}`);
     
@@ -99,7 +138,8 @@ async function runServerlessSolver(caseData: Record<string, unknown>): Promise<S
           execution_time_ms: executionTime,
           solver_type: 'serverless_js',
           status: solutions.length > 0 ? 'OPTIMAL' : 'NO_SOLUTION',
-          algorithm: 'round_robin_with_constraints'
+          algorithm: 'round_robin_with_constraints',
+          fallbackUsed: true
         }
       },
       statistics: {
@@ -110,7 +150,8 @@ async function runServerlessSolver(caseData: Record<string, unknown>): Promise<S
         generatedSolutions: solutions.length,
         executionTimeMs: executionTime,
         solverType: 'serverless_js',
-        feasible: solutions.length > 0
+        feasible: solutions.length > 0,
+        fallbackUsed: true
       }
     };
     
@@ -128,11 +169,11 @@ async function runServerlessSolver(caseData: Record<string, unknown>): Promise<S
       statistics: {
         executionTimeMs: executionTime,
         solverType: 'serverless_js',
-        feasible: false
+        feasible: false,
+        fallbackUsed: true
       }
     };
   }
-}
 
 // Generate a scheduling solution using constraint-based assignment
 function generateSolution(
@@ -335,13 +376,26 @@ export async function POST(request: NextRequest) {
   try {
     const caseData = await request.json();
     
-    console.log('🚀 Starting serverless optimization...');
+    // Check if serverless mode is explicitly requested
+    const { searchParams } = new URL(request.url);
+    const mode = searchParams.get('mode');
+    
+    console.log('🚀 Starting optimization...');
     console.log(`📊 Case data: ${Object.keys(caseData).join(', ')}`);
+    console.log(`🎯 Requested mode: ${mode || 'auto'}`);
     
-    // Run the serverless solver directly
-    const result = await runServerlessSolver(caseData);
+    let result;
     
-    console.log('✅ Serverless optimization completed');
+    if (mode === 'serverless') {
+      // Force serverless mode
+      console.log('🌐 Forcing serverless mode...');
+      result = await runServerlessSolver(caseData, `run_${Date.now()}`, Date.now());
+    } else {
+      // Run hybrid solver (local first, then serverless fallback)
+      result = await runHybridSolver(caseData);
+    }
+    
+    console.log('✅ Optimization completed');
     
     return NextResponse.json(result);
     
