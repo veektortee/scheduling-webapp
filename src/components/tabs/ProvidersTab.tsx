@@ -8,12 +8,10 @@ import {
   IoPersonSharp, 
   IoMedkitSharp,
   IoHeartSharp,
-  IoCheckmarkCircleSharp,
-  IoSyncSharp,
-  IoTrashSharp,
   IoCloseCircleSharp,
   IoWarningSharp
 } from 'react-icons/io5';
+import { PlusCircleIcon, ArrowPathIcon, TrashIcon } from '@heroicons/react/24/solid';
 
 export default function ProvidersTab() {
   const { state, dispatch } = useScheduling();
@@ -267,9 +265,9 @@ export default function ProvidersTab() {
                 onClick={addProvider}
                 className="flex-1 relative px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:from-green-700 hover:to-emerald-700 font-semibold flex items-center justify-center space-x-2 transition-all duration-300 shadow-lg hover:shadow-2xl hover:scale-105 border border-green-500/20 overflow-hidden group"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-green-400 to-emerald-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
-                <IoCheckmarkCircleSharp className="w-4 h-4" />
-                <span className="relative z-10">Add</span>
+                <div className="absolute inset-0 z-0 bg-gradient-to-r from-green-400 to-emerald-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+                <PlusCircleIcon className="w-6 h-6 shrink-0 relative z-20 text-white fill-white" aria-hidden="true" />
+                <span className="relative z-20 font-bold">Add</span>
               </button>
               {selectedProvider !== null && (
                 <>
@@ -277,17 +275,17 @@ export default function ProvidersTab() {
                     onClick={updateProvider}
                     className="flex-1 relative px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 font-semibold flex items-center justify-center space-x-2 transition-all duration-300 shadow-lg hover:shadow-2xl hover:scale-105 border border-blue-500/20 overflow-hidden group"
                   >
-                    <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-indigo-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
-                    <IoSyncSharp className="w-4 h-4" />
-                    <span className="relative z-10">Update</span>
+                    <div className="absolute inset-0 z-0 bg-gradient-to-r from-blue-400 to-indigo-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+                    <ArrowPathIcon className="w-6 h-6 shrink-0 relative z-20 text-white fill-white" aria-hidden="true" />
+                    <span className="relative z-20 font-bold">Update</span>
                   </button>
                   <button
                     onClick={deleteProvider}
                     className="flex-1 relative px-6 py-3 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-xl hover:from-red-700 hover:to-rose-700 font-semibold flex items-center justify-center space-x-2 transition-all duration-300 shadow-lg hover:shadow-2xl hover:scale-105 border border-red-500/20 overflow-hidden group"
                   >
-                    <div className="absolute inset-0 bg-gradient-to-r from-red-400 to-rose-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
-                    <IoTrashSharp className="w-4 h-4" />
-                    <span className="relative z-10">Delete</span>
+                    <div className="absolute inset-0 z-0 bg-gradient-to-r from-red-400 to-rose-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+                    <TrashIcon className="w-6 h-6 shrink-0 relative z-20 text-white fill-white" aria-hidden="true" />
+                    <span className="relative z-20 font-bold">Delete</span>
                   </button>
                 </>
               )}
@@ -331,20 +329,20 @@ export default function ProvidersTab() {
             <button
               onClick={applyFixedOffDays}
               disabled={selectedProvider === null || selectedOffDays.length === 0}
-              className="w-full relative px-6 py-3 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-xl hover:from-red-700 hover:to-rose-700 font-semibold flex items-center justify-center space-x-2 transition-all duration-300 shadow-lg hover:shadow-2xl hover:scale-105 border border-red-500/20 overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+              className="w-full relative px-6 py-3 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-xl hover:from-red-700 hover:to-rose-700 font-semibold flex items-center justify-center space-x-3 transition-all duration-300 shadow-lg hover:shadow-2xl hover:scale-105 border border-red-500/20 overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-red-400 to-rose-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
-              <IoCloseCircleSharp className="w-4 h-4" />
-              <span className="relative z-10">Set FIXED OFF</span>
+              <IoCloseCircleSharp className="w-6 h-6 relative z-20 text-white drop-shadow-sm" />
+              <span className="relative z-20 font-bold">Set FIXED OFF</span>
             </button>
             <button
               onClick={applyPreferOffDays}
               disabled={selectedProvider === null || selectedOffDays.length === 0}
-              className="w-full relative px-6 py-3 bg-gradient-to-r from-orange-600 to-amber-600 text-white rounded-xl hover:from-orange-700 hover:to-amber-700 font-semibold flex items-center justify-center space-x-2 transition-all duration-300 shadow-lg hover:shadow-2xl hover:scale-105 border border-orange-500/20 overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+              className="w-full relative px-6 py-3 bg-gradient-to-r from-orange-600 to-amber-600 text-white rounded-xl hover:from-orange-700 hover:to-amber-700 font-semibold flex items-center justify-center space-x-3 transition-all duration-300 shadow-lg hover:shadow-2xl hover:scale-105 border border-orange-500/20 overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-amber-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
-              <IoWarningSharp className="w-4 h-4" />
-              <span className="relative z-10">Set PREFER OFF</span>
+              <IoWarningSharp className="w-6 h-6 relative z-20 text-white drop-shadow-sm" />
+              <span className="relative z-20 font-bold">Set PREFER OFF</span>
             </button>
           </div>
         </div>
