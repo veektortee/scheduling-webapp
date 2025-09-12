@@ -9,7 +9,8 @@ import {
   IoMedkitSharp,
   IoHeartSharp,
   IoCloseCircleSharp,
-  IoWarningSharp
+  IoWarningSharp,
+  IoCheckmarkCircleSharp
 } from 'react-icons/io5';
 import { PlusCircleIcon, ArrowPathIcon, TrashIcon } from '@heroicons/react/24/solid';
 import ProviderCalendar from '@/components/ProviderCalendar';
@@ -32,7 +33,7 @@ export default function ProvidersTab() {
   });
   const [selectedOffDays, setSelectedOffDays] = useState<string[]>([]);
   const [selectedOnDays, setSelectedOnDays] = useState<string[]>([]);
-  const [calendarMode, setCalendarMode] = useState<'off' | 'on'>('off');
+  const [calendarMode, setCalendarMode] = useState<'off' | 'on'>('on');
 
   const handleProviderSelect = (index: number) => {
     dispatch({ type: 'SELECT_PROVIDER', payload: index });
@@ -175,6 +176,31 @@ export default function ProvidersTab() {
     const updatedProvider: Provider = {
       ...provider,
       preferred_days_soft: newPreferredDaysSoft,
+    };
+
+    dispatch({
+      type: 'UPDATE_PROVIDER',
+      payload: { index: selectedProvider, provider: updatedProvider },
+    });
+    setSelectedOnDays([]);
+  };
+
+  const applyFixedOnDays = () => {
+    if (selectedProvider === null) return;
+    
+    const provider = schedulingCase.providers[selectedProvider];
+    // For fixed ON days, we'll add them to preferred_days_hard with shift types
+    // For simplicity, we'll use all available shift types for these days
+    const shiftTypes = ['DAY', 'EVENING', 'NIGHT', 'WEEKEND', 'FLEX']; // Common shift types
+    const newPreferredDaysHard = { ...provider.preferred_days_hard };
+    
+    selectedOnDays.forEach(day => {
+      newPreferredDaysHard[day] = shiftTypes;
+    });
+
+    const updatedProvider: Provider = {
+      ...provider,
+      preferred_days_hard: newPreferredDaysHard,
     };
 
     dispatch({
@@ -449,15 +475,26 @@ export default function ProvidersTab() {
               </button>
             </>
           ) : (
-            <button
-              onClick={applyPreferOnDays}
-              disabled={selectedProvider === null || selectedOnDays.length === 0}
-              className="w-full relative px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 font-semibold flex items-center justify-center space-x-2 transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105 border border-blue-500/20 overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 text-sm"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-indigo-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
-              <IoHeartSharp className="w-5 h-5 relative z-20 text-white drop-shadow-sm" />
-              <span className="relative z-20 font-bold">Set PREFER ON</span>
-            </button>
+            <>
+              <button
+                onClick={applyFixedOnDays}
+                disabled={selectedProvider === null || selectedOnDays.length === 0}
+                className="w-full relative px-4 py-2.5 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 font-semibold flex items-center justify-center space-x-2 transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105 border border-green-500/20 overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 text-sm"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-green-400 to-emerald-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+                <IoCheckmarkCircleSharp className="w-5 h-5 relative z-20 text-white drop-shadow-sm" />
+                <span className="relative z-20 font-bold">Set FIXED ON</span>
+              </button>
+              <button
+                onClick={applyPreferOnDays}
+                disabled={selectedProvider === null || selectedOnDays.length === 0}
+                className="w-full relative px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 font-semibold flex items-center justify-center space-x-2 transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105 border border-blue-500/20 overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 text-sm"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-indigo-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+                <IoHeartSharp className="w-5 h-5 relative z-20 text-white drop-shadow-sm" />
+                <span className="relative z-20 font-bold">Set PREFER ON</span>
+              </button>
+            </>
           )}
         </div>
       </div>
@@ -520,6 +557,23 @@ export default function ProvidersTab() {
                     <div className="space-y-1">
                       {Object.keys(schedulingCase.providers[selectedProvider].preferred_days_soft || {}).map(day => (
                         <div key={day} className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs inline-block mr-1 mb-1">
+                          {day}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <h5 className="font-medium text-gray-700 dark:text-gray-300 mb-2">Fixed ON Days</h5>
+                <div className="text-sm text-gray-600 dark:text-gray-400">
+                  {Object.keys(schedulingCase.providers[selectedProvider].preferred_days_hard || {}).length === 0 ? (
+                    <span className="text-gray-400 dark:text-gray-500">None</span>
+                  ) : (
+                    <div className="space-y-1">
+                      {Object.keys(schedulingCase.providers[selectedProvider].preferred_days_hard || {}).map(day => (
+                        <div key={day} className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs inline-block mr-1 mb-1">
                           {day}
                         </div>
                       ))}
