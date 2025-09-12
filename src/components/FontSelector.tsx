@@ -70,14 +70,14 @@ export default function FontSelector() {
           selectedFont === 'inter' ? 'font-sans' :
           selectedFont === 'roboto' ? 'font-sans' : 'font-sans'
         }`}>
-          Medical Staff Scheduling System
+          Staff Scheduling System
         </div>
         <div className={`text-sm text-gray-600 dark:text-gray-400 mt-1 ${
           selectedFont === 'geist-sans' ? 'font-sans' : 
           selectedFont === 'inter' ? 'font-sans' :
           selectedFont === 'roboto' ? 'font-sans' : 'font-sans'
         }`}>
-          Advanced scheduling and optimization for medical staff
+          Advanced scheduling and optimization for staff
         </div>
       </div>
     </div>

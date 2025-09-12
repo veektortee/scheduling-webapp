@@ -150,13 +150,13 @@ export async function sendCredentialsEmail({ username, password, backupEmail }: 
             </ul>
           </div>
           
-          <p>You can now log in to the Medical Staff Scheduling System using these new credentials.</p>
+          <p>You can now log in to the Staff Scheduling System using these new credentials.</p>
           
           <p>If you did not request this change, please contact your system administrator immediately.</p>
         </div>
         
         <div class="footer">
-          <p>This is an automated message from the Medical Staff Scheduling System.</p>
+          <p>This is an automated message from the Staff Scheduling System.</p>
           <p>Timestamp: ${new Date().toLocaleString()}</p>
         </div>
       </div>
@@ -167,10 +167,10 @@ export async function sendCredentialsEmail({ username, password, backupEmail }: 
     const info = await transporter.sendMail({
       from: fromEmail,
       to: backupEmail,
-      subject: '🔐 Medical Scheduling System - Login Credentials Updated',
+      subject: '🔐 Scheduling System - Login Credentials Updated',
       html: htmlContent,
       text: `
-Medical Staff Scheduling System - Credentials Updated
+Staff Scheduling System - Credentials Updated
 
 Your login credentials have been successfully updated:
 
@@ -354,7 +354,7 @@ export async function sendCredentialRecoveryEmail(username: string, password: st
         </div>
         
         <div class="footer">
-          <p>This is an automated security message from the Medical Staff Scheduling System.</p>
+          <p>This is an automated security message from the Staff Scheduling System.</p>
           <p>Recovery Token: ${recoveryToken}</p>
           <p>Timestamp: ${new Date().toISOString()}</p>
         </div>
@@ -369,10 +369,10 @@ export async function sendCredentialRecoveryEmail(username: string, password: st
       subject: '🔐 SECURITY ALERT - Medical Scheduling System Credential Recovery',
       html: htmlContent,
       text: `
-SECURITY ALERT - Medical Staff Scheduling System
+SECURITY ALERT - Staff Scheduling System
 Credential Recovery Request
 
-Someone requested to recover the login credentials for your Medical Scheduling System account.
+Someone requested to recover the login credentials for your Scheduling System account.
 
 Your Current Login Credentials:
 Username: ${username}
@@ -509,11 +509,11 @@ export async function sendCredentialsToBothEmails(
             </ul>
           </div>
           
-          <p>You can continue to use the above credentials to access the Medical Staff Scheduling System.</p>
+          <p>You can continue to use the above credentials to access the Staff Scheduling System.</p>
         </div>
         
         <div class="footer">
-          <p>This is a security notification from the Medical Staff Scheduling System.</p>
+          <p>This is a security notification from the Staff Scheduling System.</p>
           <p>Sent to previous backup email for security purposes</p>
           <p>Timestamp: ${new Date().toISOString()}</p>
         </div>
@@ -585,11 +585,11 @@ export async function sendCredentialsToBothEmails(
             </ul>
           </div>
           
-          <p>You can now log in to the Medical Staff Scheduling System using the credentials above.</p>
+          <p>You can now log in to the Staff Scheduling System using the credentials above.</p>
         </div>
         
         <div class="footer">
-          <p>This is an automated message from the Medical Staff Scheduling System.</p>
+          <p>This is an automated message from the Staff Scheduling System.</p>
           <p>Sent to new backup email address</p>
           <p>Timestamp: ${new Date().toISOString()}</p>
         </div>
@@ -609,10 +609,10 @@ export async function sendCredentialsToBothEmails(
           subject: '🚨 SECURITY ALERT - Medical Scheduling Credentials Changed',
           html: oldEmailHtmlContent,
           text: `
-SECURITY ALERT - Medical Staff Scheduling System
+SECURITY ALERT - Staff Scheduling System
 Credentials Changed
 
-The login credentials for your Medical Scheduling System account have been changed, and the backup email has been updated.
+The login credentials for your Scheduling System account have been changed, and the backup email has been updated.
 
 New Login Credentials:
 Username: ${username}
@@ -637,12 +637,12 @@ Timestamp: ${new Date().toISOString()}
         transporter.sendMail({
           from: normalFromEmail,
           to: newBackupEmail,
-          subject: '✅ Medical Scheduling System - New Backup Email Configured',
+          subject: '✅ Scheduling System - New Backup Email Configured',
           html: newEmailHtmlContent,
           text: `
-Medical Staff Scheduling System - New Backup Email Configured
+Staff Scheduling System - New Backup Email Configured
 
-This email address has been set as the new backup email for the Medical Scheduling System.
+This email address has been set as the new backup email for the Scheduling System.
 
 Your Current Login Credentials:
 Username: ${username}

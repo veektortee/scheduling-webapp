@@ -1,6 +1,6 @@
 @echo off
 echo ========================================
-echo   Medical Staff Scheduling System
+echo   Staff Scheduling System
 echo   FastAPI Solver Service Quick Start
 echo ========================================
 echo.

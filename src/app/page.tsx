@@ -191,7 +191,7 @@ export default function Home() {
           </div>
           <div className="mt-8">
             <p className="text-2xl font-bold text-gradient">
-              Medical Staff Scheduling
+              Staff Scheduling
             </p>
             <div className="flex items-center justify-center space-x-2 mt-2">
               <div className="h-1 w-16 bg-gradient-to-r from-slate-400 via-blue-500 to-teal-500 rounded-full animate-pulse"></div>
@@ -218,7 +218,7 @@ export default function Home() {
               <div className="flex flex-col space-y-2">
                 <div>
                   <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-gradient break-words">
-                    Medical Staff Scheduling System
+                    Staff Scheduling System
                   </h1>
                 </div>
                 <div className="flex items-center space-x-2 -mt-1">
@@ -226,7 +226,7 @@ export default function Home() {
                   <div className="h-2 w-2 bg-gradient-to-r from-blue-500 to-teal-500 rounded-full animate-pulse"></div>
                 </div>
                 <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 tracking-wide leading-relaxed">
-                  Advanced scheduling and optimization for medical staff
+                  Advanced scheduling and optimization for staff
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-3 sm:space-y-0 sm:space-x-3 lg:space-x-4">

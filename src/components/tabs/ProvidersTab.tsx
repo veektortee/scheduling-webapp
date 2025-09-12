@@ -19,7 +19,7 @@ export default function ProvidersTab() {
   const { case: schedulingCase, selectedProvider } = state;
   const [providerForm, setProviderForm] = useState<Partial<Provider>>({
     name: '',
-    type: 'MD',
+    type: 'Staff',
     max_consecutive_days: null,
     limits: {
       min_total: 0,
@@ -73,7 +73,7 @@ export default function ProvidersTab() {
     const newProvider: Provider = {
       id: providerForm.id || `provider_${Date.now()}`,
       name: providerForm.name,
-      type: providerForm.type || 'MD',
+      type: providerForm.type || 'Staff',
       max_consecutive_days: providerForm.max_consecutive_days,
       limits: providerForm.limits || { min_total: 0, max_total: null },
       forbidden_days_soft: providerForm.forbidden_days_soft || [],
@@ -110,7 +110,7 @@ export default function ProvidersTab() {
   const resetForm = () => {
     setProviderForm({
       name: '',
-      type: 'MD',
+      type: 'Staff',
       max_consecutive_days: null,
       limits: {
         min_total: 0,
@@ -165,7 +165,7 @@ export default function ProvidersTab() {
     const provider = schedulingCase.providers[selectedProvider];
     // For preferred ON days, we'll add them to preferred_days_soft with shift types
     // For simplicity, we'll use all available shift types for these days
-    const shiftTypes = ['MD_D', 'MD_S1', 'MD_S2', 'MD_S3', 'MD_N']; // Common shift types
+    const shiftTypes = ['DAY', 'EVENING', 'NIGHT', 'WEEKEND', 'FLEX']; // Common shift types
     const newPreferredDaysSoft = { ...provider.preferred_days_soft };
     
     selectedOnDays.forEach(day => {
@@ -211,7 +211,7 @@ export default function ProvidersTab() {
                 <IoPeopleSharp className="w-4 h-4 text-white" />
               </div>
               <h3 className="text-xl font-bold text-gradient">
-                Medical Providers
+                Providers
               </h3>
             </div>
             <div className="max-h-64 overflow-y-auto space-y-2">
@@ -258,14 +258,14 @@ export default function ProvidersTab() {
                 Type
               </label>
               <select
-                value={providerForm.type || 'MD'}
+                value={providerForm.type || 'Staff'}
                 onChange={(e) => handleProviderFormChange('type', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 dark:bg-gray-800 dark:text-white dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
-                <option value="MD">MD</option>
-                <option value="NP">NP</option>
-                <option value="PA">PA</option>
-                <option value="RN">RN</option>
+                <option value="Staff">Staff</option>
+                <option value="Manager">Manager</option>
+                <option value="Supervisor">Supervisor</option>
+                <option value="Lead">Lead</option>
               </select>
             </div>
 
@@ -524,9 +524,9 @@ export default function ProvidersTab() {
               <IoMedkitSharp className="w-5 h-5 text-white" />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">MD</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Staff</p>
               <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-                {schedulingCase.providers.filter(p => p.type === 'MD').length}
+                {schedulingCase.providers.filter(p => p.type === 'Staff').length}
               </p>
             </div>
           </div>
@@ -538,9 +538,9 @@ export default function ProvidersTab() {
               <IoHeartSharp className="w-5 h-5 text-white" />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">RN</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Manager</p>
               <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                {schedulingCase.providers.filter(p => p.type === 'RN').length}
+                {schedulingCase.providers.filter(p => p.type === 'Manager').length}
               </p>
             </div>
           </div>
