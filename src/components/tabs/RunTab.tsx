@@ -48,6 +48,22 @@ export default function RunTab() {
   const [localSolverAvailable, setLocalSolverAvailable] = useState<boolean | null>(null);
   const [solverInfo, setSolverInfo] = useState<{type: string; capabilities?: string[]} | null>(null);
   const [showInstallMenu, setShowInstallMenu] = useState(false);
+  const [installationStatus, setInstallationStatus] = useState<{
+    checked: boolean;
+    filesInstalled: boolean;
+    pythonAvailable: boolean;
+    lastChecked: string | null;
+    installedFiles: string[];
+    missingFiles: string[];
+  }>({
+    checked: false,
+    filesInstalled: false,
+    pythonAvailable: false,
+    lastChecked: null,
+    installedFiles: [],
+    missingFiles: []
+  });
+  const [isCheckingInstallation, setIsCheckingInstallation] = useState(false);
   const logsEndRef = useRef<HTMLDivElement>(null);
   const installMenuRef = useRef<HTMLDivElement>(null);
   const portalMenuRef = useRef<HTMLDivElement>(null);
@@ -115,7 +131,7 @@ export default function RunTab() {
         const info = await response.json();
         setLocalSolverAvailable(true);
         setSolverInfo(info);
-        addLog(`🚀 Local high-performance solver detected: ${info.solver_type}`, 'success');
+        addLog(`🚀 Local high-performance mode active: ${info.solver_type}`, 'success');
         if (info.ortools_available) {
           addLog('⚡ OR-Tools optimization engine available', 'success');
         }
@@ -124,13 +140,138 @@ export default function RunTab() {
       }
     } catch {
       setLocalSolverAvailable(false);
-      addLog('💡 Local solver not running - using serverless mode', 'info');
+      addLog('💡 Local mode not active - using serverless mode', 'info');
     }
   }, [addLog]);
 
+  // Installation status management functions
+  const STORAGE_KEY = 'localSolverInstallationStatus';
+
+  const loadInstallationStatus = useCallback(() => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        const status = JSON.parse(stored);
+        setInstallationStatus(status);
+        return status;
+      }
+    } catch (error) {
+      console.warn('Failed to load installation status:', error);
+    }
+    return null;
+  }, []);
+
+  const saveInstallationStatus = useCallback((status: typeof installationStatus) => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(status));
+      setInstallationStatus(status);
+    } catch (error) {
+      console.warn('Failed to save installation status:', error);
+    }
+  }, []);
+
+  const clearInstallationStatus = useCallback(() => {
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+      setInstallationStatus({
+        checked: false,
+        filesInstalled: false,
+        pythonAvailable: false,
+        lastChecked: null,
+        installedFiles: [],
+        missingFiles: []
+      });
+      addLog('Installation status cleared', 'info');
+    } catch (error) {
+      console.warn('Failed to clear installation status:', error);
+    }
+  }, [addLog]);
+
+  // Check if required files exist and local server is running
+  const checkInstallationStatus = useCallback(async () => {
+    if (isCheckingInstallation) return;
+    
+    setIsCheckingInstallation(true);
+    addLog('🔍 Checking local mode setup...', 'info');
+
+    const requiredFiles = [
+      'local_solver.py',
+      'start_local_solver.bat',
+      'start_local_solver.sh'
+    ];
+
+    const installedFiles: string[] = [];
+    const missingFiles: string[] = [];
+    let serverRunning = false;
+
+    // Check if files are available in public folder (downloadable)
+    for (const file of requiredFiles) {
+      try {
+        const response = await fetch(`/${file}`, { method: 'HEAD' });
+        if (response.ok) {
+          installedFiles.push(file);
+          addLog(`✅ Found ${file}`, 'success');
+        } else {
+          missingFiles.push(file);
+          addLog(`❌ Missing ${file}`, 'error');
+        }
+      } catch {
+        missingFiles.push(file);
+        addLog(`❌ Cannot access ${file}`, 'error');
+      }
+    }
+
+    // Check if local server is actually running
+    try {
+      const response = await fetch('http://localhost:8000/health', {
+        signal: AbortSignal.timeout(3000)
+      });
+      
+      if (response.ok) {
+        serverRunning = true;
+        addLog('✅ Local server is running on localhost:8000', 'success');
+      } else {
+        addLog('⚠️ Local server not responding', 'warning');
+      }
+    } catch {
+      addLog('⚠️ Local server not running', 'warning');
+    }
+
+    const newStatus = {
+      checked: true,
+      filesInstalled: missingFiles.length === 0,
+      pythonAvailable: serverRunning, // Server running = ready to use
+      lastChecked: new Date().toISOString(),
+      installedFiles,
+      missingFiles
+    };
+
+    saveInstallationStatus(newStatus);
+    
+    if (newStatus.filesInstalled && serverRunning) {
+      addLog('🎉 Local mode is fully ready!', 'success');
+      addLog('🚀 You can now use the "Local" run option for high performance!', 'success');
+      // Auto-refresh page when everything is detected as working
+      setTimeout(() => {
+        addLog('🔄 Refreshing page to update interface...', 'success');
+        window.location.reload();
+      }, 2000);
+    } else if (newStatus.filesInstalled && !serverRunning) {
+      addLog('📁 Files are installed but server is not running', 'info');
+      addLog('▶️ Start the local server by running the downloaded script', 'info');
+    } else {
+      addLog(`⚠️ Missing ${missingFiles.length} required files`, 'warning');
+      addLog('💾 Use "Enable Local Solver" to download missing files first', 'info');
+    }
+
+    setIsCheckingInstallation(false);
+  }, [addLog, saveInstallationStatus, isCheckingInstallation]);
+
   useEffect(() => {
     checkLocalSolverAvailability();
-  }, [checkLocalSolverAvailability]);
+    // Load saved installation status
+    loadInstallationStatus();
+  }, [checkLocalSolverAvailability, loadInstallationStatus]);
 
   // Auto-scroll logs to bottom
   const scrollToBottom = () => {
@@ -189,6 +330,86 @@ export default function RunTab() {
     }
   };
 
+  // Auto-start local server if files exist but server not running
+  const startLocalServer = useCallback(async () => {
+    addLog('🚀 Attempting to activate local server...', 'info');
+    
+    // Method 1: Try to wake up server with health check requests
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        addLog(`🔄 Activation attempt ${attempt}/3...`, 'info');
+        
+        const response = await fetch('http://localhost:8000/health', {
+          method: 'GET',
+          signal: AbortSignal.timeout(5000)
+        });
+        
+        if (response.ok) {
+          addLog('✅ Local server is now active!', 'success');
+          setLocalSolverAvailable(true);
+          // Refresh the installation status to reflect server is running
+          setTimeout(checkInstallationStatus, 1000);
+          // Refresh the page after successful detection
+          setTimeout(() => {
+            addLog('🔄 Refreshing page to update interface...', 'success');
+            window.location.reload();
+          }, 2000);
+          return true;
+        }
+      } catch {
+        // Wait between attempts
+        if (attempt < 3) {
+          await new Promise(resolve => setTimeout(resolve, 2000));
+        }
+      }
+    }
+
+    // Method 2: Try to trigger server via service worker or background script
+    try {
+      addLog('🔧 Trying alternative activation method...', 'info');
+      
+      // Create a temporary iframe to try to load a local file that might trigger the server
+      const iframe = document.createElement('iframe');
+      iframe.style.display = 'none';
+      iframe.src = 'http://localhost:8000/';
+      document.body.appendChild(iframe);
+      
+      // Wait a moment then check again
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
+      const healthResponse = await fetch('http://localhost:8000/health', {
+        signal: AbortSignal.timeout(3000)
+      });
+      
+      document.body.removeChild(iframe);
+      
+      if (healthResponse.ok) {
+        addLog('✅ Local server activated successfully!', 'success');
+        setLocalSolverAvailable(true);
+        setTimeout(checkInstallationStatus, 1000);
+        // Refresh the page after successful detection
+        setTimeout(() => {
+          addLog('🔄 Refreshing page to update interface...', 'success');
+          window.location.reload();
+        }, 2000);
+        return true;
+      }
+    } catch {
+      // Clean up iframe if it exists
+      const iframe = document.querySelector('iframe[src="http://localhost:8000/"]');
+      if (iframe) {
+        document.body.removeChild(iframe);
+      }
+    }
+
+    addLog('⚠️ Could not auto-activate local server', 'warning');
+    addLog('💡 Please run the start script manually: start_local_solver.bat (Windows) or ./start_local_solver.sh (Mac/Linux)', 'info');
+    addLog('📁 Files are downloaded and ready in your Downloads folder', 'info');
+    
+    return false;
+  }, [addLog, checkInstallationStatus]);
+
+  // Modified handleRunSolver to auto-start local server when needed
   const handleRunSolver = async (solverMode: 'auto' | 'local' | 'serverless' = 'auto') => {
     if (isRunning) return;
     
@@ -261,9 +482,38 @@ export default function RunTab() {
           }
         } catch (localError) {
           const errorMsg = localError instanceof Error ? localError.message : 'Unknown error';
-          addLog(`❌ Local solver failed: ${errorMsg}`, 'error');
+          addLog(`⚠️ Local solver not responding: ${errorMsg}`, 'warning');
           
-          if (!shouldTryServerless) {
+          // Try to auto-start the local server if files are available
+          if (installationStatus.filesInstalled) {
+            addLog('🔄 Attempting to start local server automatically...', 'info');
+            const serverStarted = await startLocalServer();
+            
+            if (serverStarted) {
+              // Retry the local solver request
+              try {
+                const retryResponse = await fetch('http://localhost:8000/solve', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(schedulingCase),
+                  signal: AbortSignal.timeout(60000),
+                });
+                
+                if (retryResponse.ok) {
+                  result = await retryResponse.json();
+                  addLog('⚡ Using LOCAL high-performance solver (auto-started)', 'success');
+                  
+                  if (result && result.statistics) {
+                    result.statistics.actualSolverUsed = 'local';
+                  }
+                }
+              } catch {
+                addLog('❌ Retry after auto-start failed', 'error');
+              }
+            }
+          }
+          
+          if (!result && !shouldTryServerless) {
             throw new Error(`Local solver required but failed: ${errorMsg}`);
           }
           
@@ -439,10 +689,10 @@ export default function RunTab() {
     await downloadPythonSolver();
     await downloadWindowsScript();
     addLog('✅ Windows installation files downloaded!', 'success');
-    addLog('📋 Next steps:', 'info');
-    addLog('   1. Make sure Python is installed on your system', 'info');
-    addLog('   2. Double-click start_local_solver.bat to run', 'info');
-    addLog('   3. Refresh this page to detect the local solver', 'info');
+    addLog('📋 One-time setup:', 'info');
+    addLog('   1. Run start_local_solver.bat once (double-click it)', 'info');
+    addLog('   2. After that, just click "Local" to run - it will auto-start!', 'info');
+    addLog('   3. Click "Check Local Mode Setup" to verify everything works', 'info');
     setShowInstallMenu(false);
   };
 
@@ -455,7 +705,7 @@ export default function RunTab() {
     addLog('   1. Open Terminal and navigate to the download folder', 'info');
     addLog('   2. Run: chmod +x start_local_solver.sh', 'info');
     addLog('   3. Run: ./start_local_solver.sh', 'info');
-    addLog('   4. Refresh this page to detect the local solver', 'info');
+    addLog('   4. Come back here and click "Check Local Mode Setup" to verify', 'info');
     setShowInstallMenu(false);
   };
 
@@ -468,7 +718,7 @@ export default function RunTab() {
     addLog('   1. Open Terminal and navigate to the download folder', 'info');
     addLog('   2. Run: chmod +x start_local_solver.sh', 'info');
     addLog('   3. Run: ./start_local_solver.sh', 'info');
-    addLog('   4. Refresh this page to detect the local solver', 'info');
+    addLog('   4. Come back here and click "Check Local Mode Setup" to verify', 'info');
     setShowInstallMenu(false);
   };
 
@@ -494,16 +744,16 @@ export default function RunTab() {
             <div>
               <h3 className="text-lg lg:text-xl font-bold text-gradient">
                 {localSolverAvailable === true 
-                  ? 'Local High-Performance Solver' 
+                  ? 'Local High-Performance Mode Active' 
                   : localSolverAvailable === false 
-                    ? 'Enable Local Mode' 
-                    : 'Checking Solver...'}
+                    ? 'Enable Local High-Performance Mode' 
+                    : 'Checking Mode...'}
               </h3>
               <p className="text-xs lg:text-sm text-gray-600 dark:text-gray-400">
                 {localSolverAvailable === true 
                   ? '10-100x faster optimization with OR-Tools' 
                   : localSolverAvailable === false 
-                    ? 'Install the Local Solver , Get faster Computation and better Performance'
+                    ? 'Install local files for faster computation and better performance'
                     : 'Detecting available optimization engines...'}
               </p>
             </div>
@@ -628,6 +878,216 @@ export default function RunTab() {
         )}
       </div>
 
+      {/* Installation Check Section */}
+      {localSolverAvailable === false && (
+        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 dark:border-gray-700/50 p-4 lg:p-8 hover-glow">
+          <div className="flex items-center space-x-3 mb-4 lg:mb-6">
+            <div className="w-6 h-6 lg:w-8 lg:h-8 bg-gradient-to-br from-orange-500 to-red-500 rounded-lg flex items-center justify-center">
+              <IoSync className="w-3 h-3 lg:w-4 lg:h-4 text-white" />
+            </div>
+            <h2 className="text-xl lg:text-2xl font-bold text-gradient">
+              Local Mode Setup
+            </h2>
+          </div>
+          
+          <div className="flex flex-col space-y-4">
+            {/* Check Installation Button */}
+            <div className="flex items-center space-x-3">
+              <button
+                onClick={checkInstallationStatus}
+                disabled={isCheckingInstallation}
+                className={`relative px-6 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center space-x-3 ${
+                  isCheckingInstallation
+                    ? 'bg-gray-400 text-white cursor-not-allowed'
+                    : installationStatus.checked
+                      ? installationStatus.filesInstalled && installationStatus.pythonAvailable
+                        ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:from-green-600 hover:to-emerald-600'
+                        : installationStatus.filesInstalled
+                          ? 'bg-gradient-to-r from-yellow-500 to-orange-500 text-white hover:from-yellow-600 hover:to-orange-600'
+                          : 'bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600'
+                      : 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white hover:from-blue-600 hover:to-cyan-600'
+                }`}
+              >
+                {isCheckingInstallation ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>Checking Installation...</span>
+                  </>
+                ) : (
+                  <>
+                    <IoSync className="w-5 h-5" />
+                    <span>Check Local Mode Setup</span>
+                    {installationStatus.checked && (
+                      <span className={`px-2 py-1 rounded-full text-xs font-bold ${
+                        installationStatus.filesInstalled && installationStatus.pythonAvailable
+                          ? 'bg-green-500/20 text-white'
+                          : installationStatus.filesInstalled
+                            ? 'bg-yellow-500/20 text-white'
+                            : 'bg-red-500/20 text-white'
+                      }`}>
+                        {installationStatus.filesInstalled && installationStatus.pythonAvailable
+                          ? 'Ready'
+                          : installationStatus.filesInstalled
+                            ? 'Auto-Start'
+                            : 'Setup Needed'}
+                      </span>
+                    )}
+                  </>
+                )}
+              </button>
+              
+              {/* Clear Status Button */}
+              {installationStatus.checked && (
+                <div className="flex space-x-3">
+                  <button
+                    onClick={clearInstallationStatus}
+                    className="px-4 py-3 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-xl hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors font-medium"
+                    title="Clear cached status and check again"
+                  >
+                    Clear Status
+                  </button>
+                  
+                  {/* Quick Start Server Button - Only show when files exist but server not running */}
+                  {installationStatus.filesInstalled && !installationStatus.pythonAvailable && (
+                    <button
+                      onClick={() => {
+                        addLog('🚀 Opening quick start instructions...', 'info');
+                        const platform = navigator.platform.toLowerCase();
+                        const isWindows = platform.includes('win');
+                        const instructions = isWindows 
+                          ? 'Double-click the downloaded "start_local_solver.bat" file in your Downloads folder'
+                          : 'Open Terminal, navigate to Downloads folder, and run: ./start_local_solver.sh';
+                        
+                        addLog(`📋 Quick Start: ${instructions}`, 'info');
+                        addLog('⏱️ After starting, come back and click "Check Local Mode Setup"', 'info');
+                        
+                        // Also try to open the downloads folder
+                        const link = document.createElement('a');
+                        link.href = '/start_local_solver.bat';
+                        link.download = 'start_local_solver.bat';
+                        link.click();
+                      }}
+                      className="px-4 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-xl hover:from-blue-600 hover:to-cyan-600 transition-all font-medium flex items-center space-x-2"
+                    >
+                      <IoPlaySharp className="w-4 h-4" />
+                      <span>Quick Start Server</span>
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+            
+            {/* Installation Status Display */}
+            {installationStatus.checked && (
+              <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-semibold text-gray-700 dark:text-gray-300">Installation Status</h3>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                    Last checked: {installationStatus.lastChecked && new Date(installationStatus.lastChecked).toLocaleString()}
+                  </span>
+                </div>
+                
+                {installationStatus.installedFiles.length > 0 && (
+                  <div className="mb-3">
+                    <p className="text-green-600 dark:text-green-400 font-medium mb-2 text-sm">
+                      ✅ Installed ({installationStatus.installedFiles.length}):
+                    </p>
+                    <ul className="space-y-1">
+                      {installationStatus.installedFiles.map(file => (
+                        <li key={file} className="text-green-600 dark:text-green-400 text-sm flex items-center space-x-2">
+                          <IoCheckmarkDoneSharp className="w-4 h-4 flex-shrink-0" />
+                          <span>{file}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                
+                {installationStatus.missingFiles.length > 0 && (
+                  <div className="mb-3">
+                    <p className="text-orange-600 dark:text-orange-400 font-medium mb-2 text-sm">
+                      ❌ Missing ({installationStatus.missingFiles.length}):
+                    </p>
+                    <ul className="space-y-1">
+                      {installationStatus.missingFiles.map(file => (
+                        <li key={file} className="text-orange-600 dark:text-orange-400 text-sm flex items-center space-x-2">
+                          <IoWarningSharp className="w-4 h-4 flex-shrink-0" />
+                          <span>{file}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Status Summary */}
+                <div className={`p-3 rounded-lg ${
+                  installationStatus.filesInstalled && installationStatus.pythonAvailable
+                    ? 'bg-green-100 dark:bg-green-900/30' 
+                    : installationStatus.filesInstalled
+                      ? 'bg-yellow-100 dark:bg-yellow-900/30'
+                      : 'bg-orange-100 dark:bg-orange-900/30'
+                }`}>
+                  <div className="flex items-center space-x-3">
+                    {installationStatus.filesInstalled && installationStatus.pythonAvailable ? (
+                      <IoCheckmarkDoneSharp className="w-6 h-6 text-green-600 dark:text-green-400" />
+                    ) : (
+                      <IoWarningSharp className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+                    )}
+                    <div>
+                      <p className={`font-medium text-sm ${
+                        installationStatus.filesInstalled && installationStatus.pythonAvailable
+                          ? 'text-green-700 dark:text-green-300' 
+                          : 'text-orange-700 dark:text-orange-300'
+                      }`}>
+                        {installationStatus.filesInstalled && installationStatus.pythonAvailable
+                          ? '🎉 Local Mode Fully Ready!' 
+                          : installationStatus.filesInstalled
+                            ? '📁 Files Ready - Server Not Running'
+                            : '⚠️ Setup Required'}
+                      </p>
+                      <p className={`text-xs ${
+                        installationStatus.filesInstalled && installationStatus.pythonAvailable
+                          ? 'text-green-600 dark:text-green-400' 
+                          : installationStatus.filesInstalled
+                            ? 'text-yellow-600 dark:text-yellow-400'
+                            : 'text-orange-600 dark:text-orange-400'
+                      }`}>
+                        {installationStatus.filesInstalled && installationStatus.pythonAvailable
+                          ? 'You can now use the "Local" run option for high-performance optimization' 
+                          : installationStatus.filesInstalled
+                            ? 'Click "Local" to run - the server will start automatically!'
+                            : 'Download the required files using "Enable Local Solver" button above'}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {/* Server Status Indicator */}
+                  {installationStatus.filesInstalled && (
+                    <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-600">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Local Server Status:</span>
+                        <span className={`px-2 py-1 rounded-full text-xs font-bold ${
+                          installationStatus.pythonAvailable
+                            ? 'bg-green-500 text-white'
+                            : 'bg-red-500 text-white'
+                        }`}>
+                          {installationStatus.pythonAvailable ? '🟢 Running' : '🔴 Not Running'}
+                        </span>
+                      </div>
+                      {!installationStatus.pythonAvailable && (
+                        <div className="mt-2 text-xs text-gray-600 dark:text-gray-400">
+                          💡 No manual setup needed - just click &quot;Local&quot; to run and it will auto-start!
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Run Settings */}
       <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 dark:border-gray-700/50 p-4 lg:p-8 hover-glow">
         <div className="flex items-center space-x-3 mb-4 lg:mb-6">
@@ -724,7 +1184,7 @@ export default function RunTab() {
                   ? 'bg-gray-400 text-white cursor-not-allowed'
                   : 'bg-gradient-to-br from-emerald-500 via-blue-500 to-indigo-600 text-white hover:from-emerald-600 hover:via-blue-600 hover:to-indigo-700 hover:scale-[1.02] transform'
               } backdrop-blur-sm border border-white/20 dark:border-gray-700/50`}
-              title="Automatically detects and uses the best available solver"
+              title="Automatically detects and uses the best available solver - recommended for most users"
             >
               {/* Animated background glow */}
               <div className="absolute inset-0 bg-gradient-to-br from-emerald-400/20 via-blue-400/20 to-indigo-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
@@ -743,7 +1203,10 @@ export default function RunTab() {
                     <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
                       <IoPlaySharp className="w-6 h-6" />
                     </div>
-                    <span className="font-bold">Smart Run</span>
+                    <div className="flex items-center space-x-2">
+                      <span className="font-bold">Smart Run</span>
+                      <span className="text-xs bg-white/20 px-2 py-1 rounded-full font-medium">Recommended</span>
+                    </div>
                     <span className="text-xs opacity-90 font-medium">(Auto-detect)</span>
                   </>
                 )}
@@ -763,7 +1226,7 @@ export default function RunTab() {
           <div className="flex flex-col">
             <button
               onClick={() => handleRunSolver('local')}
-              disabled={isRunning}
+              disabled={isRunning || !localSolverAvailable}
               className={`relative px-6 py-4 rounded-2xl font-bold text-base flex flex-col items-center justify-center space-y-2 transition-all duration-300 shadow-lg hover:shadow-2xl overflow-hidden group min-h-[120px] ${
                 isRunning
                   ? 'bg-gray-400 text-white cursor-not-allowed'
@@ -771,7 +1234,7 @@ export default function RunTab() {
                     ? 'bg-gradient-to-br from-orange-500 via-red-500 to-pink-600 text-white hover:from-orange-600 hover:via-red-600 hover:to-pink-700 hover:scale-[1.02] transform'
                     : 'bg-gradient-to-br from-gray-400 to-gray-500 text-white opacity-60 cursor-not-allowed'
               } backdrop-blur-sm border border-white/20 dark:border-gray-700/50`}
-              title={localSolverAvailable ? 'Run with local high-performance solver (10-100x faster)' : 'Local solver not available - start local_solver.py first'}
+              title={localSolverAvailable ? 'Run with local high-performance solver (10-100x faster)' : 'Local server not running - use Smart Run instead or start server manually'}
             >
               {/* Animated background glow - only when available */}
               {localSolverAvailable && !isRunning && (
