@@ -1,0 +1,69 @@
+{
+  "phase1": {
+    "status": 4,
+    "status_name": "OPTIMAL",
+    "response": "CpSolverResponse summary:\nstatus: OPTIMAL\nobjective: 0\nbest_bound: 0\nintegers: 13\nbooleans: 6\nconflicts: 0\nbranches: 5\npropagations: 7\ninteger_propagations: 25\nrestarts: 2\nlp_iterations: 0\nwalltime: 0.376671\nusertime: 0.376672\ndeterministic_time: 3.72e-06\ngap_integral: 2.32736e-05\nsolution_fingerprint: 0x2e9e6a52e2d9c948\n",
+    "solutions_collected": 1,
+    "solutions_selected": 2,
+    "best_objective": 0.0,
+    "best_bound": 0.0,
+    "per_table": [
+      {
+        "objective": 0.0,
+        "best_bound": 0.0,
+        "conflicts": 0,
+        "branches": 5,
+        "wall_time_s": 0.3255345,
+        "assignments": 0
+      },
+      {
+        "objective": 0.0,
+        "best_bound": 0.0,
+        "conflicts": 0,
+        "branches": 5,
+        "wall_time_s": 0.3255345,
+        "assignments": 0
+      }
+    ],
+    "L": 1
+  },
+  "phase2": {
+    "status": 4,
+    "status_name": "OPTIMAL",
+    "response": "CpSolverResponse summary:\nstatus: OPTIMAL\nobjective: 0\nbest_bound: 0\nintegers: 13\nbooleans: 6\nconflicts: 0\nbranches: 5\npropagations: 7\ninteger_propagations: 25\nrestarts: 2\nlp_iterations: 0\nwalltime: 0.376671\nusertime: 0.376672\ndeterministic_time: 3.72e-06\ngap_integral: 2.32736e-05\nsolution_fingerprint: 0x2e9e6a52e2d9c948\n",
+    "solutions_collected": 1,
+    "solutions_selected": 2,
+    "best_objective": 0.0,
+    "best_bound": 0.0,
+    "per_table": [
+      {
+        "objective": 0.0,
+        "best_bound": 0.0,
+        "conflicts": 0,
+        "branches": 5,
+        "wall_time_s": 0.3255345,
+        "assignments": 0
+      },
+      {
+        "objective": 0.0,
+        "best_bound": 0.0,
+        "conflicts": 0,
+        "branches": 5,
+        "wall_time_s": 0.3255345,
+        "assignments": 0
+      }
+    ],
+    "L": 1
+  },
+  "run": {
+    "timestamp": "20250913_205025",
+    "seed": 2,
+    "out_dir": "test2",
+    "files": {
+      "grid": "test2\\schedules.xlsx",
+      "hospital": "test2\\hospital_schedule.xlsx",
+      "calendar": "test2\\calendar.xlsx",
+      "capacity": "test2\\eligibility_capacity.json"
+    }
+  }
+}

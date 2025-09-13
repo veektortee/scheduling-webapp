@@ -1,0 +1,225 @@
+{
+  "constants": {
+    "solver": {
+      "max_time_in_seconds": 125999.99999999999,
+      "phase1_fraction": 0.4,
+      "relative_gap": 1e-05,
+      "num_threads": 16
+    },
+    "weights": {
+      "hard": {
+        "slack_unfilled": 20,
+        "slack_shift_less": 1,
+        "slack_shift_more": 1,
+        "slack_cant_work": 20,
+        "slack_consec": 1
+      },
+      "soft": {
+        "cluster": 10000,
+        "requested_off": 10000000,
+        "days_wanted_not_met": 10000000,
+        "cluster_weekend_start": 10000000,
+        "unfair_number": 5000,
+        "cluster_size": 10
+      }
+    },
+    "objective": {
+      "hard": 1,
+      "soft": 1,
+      "fair": 0
+    }
+  },
+  "calendar": {
+    "days": [
+      "2025-10-01",
+      "2025-10-02",
+      "2025-10-03",
+      "2025-10-04",
+      "2025-10-05",
+      "2025-10-06",
+      "2025-10-07",
+      "2025-10-08",
+      "2025-10-09",
+      "2025-10-10",
+      "2025-10-11",
+      "2025-10-12",
+      "2025-10-13",
+      "2025-10-14",
+      "2025-10-15",
+      "2025-10-16",
+      "2025-10-17",
+      "2025-10-18",
+      "2025-10-19",
+      "2025-10-20",
+      "2025-10-21",
+      "2025-10-22",
+      "2025-10-23",
+      "2025-10-24",
+      "2025-10-25",
+      "2025-10-26",
+      "2025-10-27",
+      "2025-10-28",
+      "2025-10-29",
+      "2025-10-30",
+      "2025-10-31"
+    ],
+    "weekend_days": [
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "shifts": [
+    {
+      "id": "2025-10-01_MD_D_TEST",
+      "date": "2025-10-01",
+      "type": "MD_D",
+      "start": "2025-10-01T08:00:00",
+      "end": "2025-10-01T16:00:00",
+      "allowed_provider_types": [
+        "MD"
+      ]
+    },
+    {
+      "id": "2025-10-01_MD_N_TEST",
+      "date": "2025-10-01",
+      "type": "MD_N",
+      "start": "2025-10-01T20:00:00",
+      "end": "2025-10-02T08:00:00",
+      "allowed_provider_types": [
+        "MD"
+      ]
+    }
+  ],
+  "providers": [
+    {
+      "id": "p_Isaac_Siegfried",
+      "name": "Isaac Siegfried",
+      "type": "MD2",
+      "weekday_pref": {},
+      "type_pref": {
+        "MD_D": 0.4,
+        "MD_S1": 0.15,
+        "MD_S2": 0.15,
+        "MD_S3": 0.15,
+        "MD_N": 0.15,
+        "MD_PEDS": 0.2
+      },
+      "requested_off_soft": [
+        "2025-10-09",
+        "2025-10-10"
+      ],
+      "preferred_days_soft": {},
+      "forbidden_days_hard": [
+        "2025-10-01",
+        "2025-10-02",
+        "2025-10-11",
+        "2025-10-12",
+        "2025-10-13",
+        "2025-10-14",
+        "2025-10-15",
+        "2025-10-16",
+        "2025-10-17",
+        "2025-10-18",
+        "2025-10-19",
+        "2025-10-20"
+      ],
+      "limits": {
+        "min_total": 12,
+        "max_total": 22,
+        "type_ranges": {}
+      },
+      "preferred_days_hard": {
+        "2025-10-21": [
+          "S2MD2",
+          "S3MD",
+          "S4MD"
+        ],
+        "2025-10-22": [
+          "S2MD2",
+          "S3MD",
+          "S4MD"
+        ]
+      },
+      "max_consecutive_days": 31,
+      "forbidden_days_soft": []
+    },
+    {
+      "id": "p_Nicholas_Levin",
+      "name": "Nicholas Levin",
+      "type": "MD2",
+      "weekday_pref": {},
+      "type_pref": {
+        "MD_D": 0.4,
+        "MD_S1": 0.15,
+        "MD_S2": 0.15,
+        "MD_S3": 0.15,
+        "MD_N": 0.15,
+        "MD_PEDS": 0.2
+      },
+      "requested_off_soft": [],
+      "preferred_days_soft": {
+        "2025-10-21": [
+          "S2MD2",
+          "S3MD",
+          "S4MD"
+        ],
+        "2025-10-22": [
+          "S2MD2",
+          "S3MD",
+          "S4MD"
+        ]
+      },
+      "forbidden_days_hard": [],
+      "limits": {
+        "min_total": 1,
+        "max_total": 22,
+        "type_ranges": {
+          "MD_N": [
+            0,
+            50
+          ]
+        }
+      },
+      "preferred_days_hard": {},
+      "max_consecutive_days": 8,
+      "forbidden_days_soft": []
+    },
+    {
+      "name": "P Extra",
+      "type": "MD2",
+      "forbidden_days_hard": [],
+      "forbidden_days_soft": [],
+      "preferred_days_hard": {
+        "2025-10-20": [
+          "S2MD2",
+          "S3MD",
+          "S4MD"
+        ],
+        "2025-10-21": [
+          "S2MD2",
+          "S3MD",
+          "S4MD"
+        ],
+        "2025-10-22": [
+          "S2MD2",
+          "S3MD",
+          "S4MD"
+        ]
+      },
+      "preferred_days_soft": {},
+      "max_consecutive_days": 2,
+      "limits": {
+        "min_total": 1,
+        "max_total": 22,
+        "type_ranges": {}
+      }
+    }
+  ],
+  "run": {
+    "out": "test2",
+    "k": 1,
+    "L": 2,
+    "seed": 2,
+    "time": 1500
+  }
+}

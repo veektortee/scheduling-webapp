@@ -8,8 +8,11 @@ interface SolverResult {
   progress?: number;
   results?: unknown;
   statistics?: Record<string, unknown>;
+  output_directory?: string;
   error?: string;
 }
+import fs from 'fs';
+import path from 'path';
 
 interface ShiftData {
   id?: string;
@@ -185,6 +188,41 @@ async function runServerlessSolver(caseData: Record<string, unknown>, runId: str
   try {
     console.log(`[STATUS] Starting serverless optimization for run: ${runId}`);
     
+
+// Helper: write serverless results to disk under solver_output/Result_N
+function persistServerlessResult(runId: string, results: SolverResult) {
+  try {
+    const base = path.join(process.cwd(), 'solver_output');
+    if (!fs.existsSync(base)) fs.mkdirSync(base, { recursive: true });
+
+    // Determine next available Result_N folder if runId isn't already prefixed
+    let folderName = runId;
+    if (!/^Result_/i.test(folderName)) {
+      // find next Result_N
+      const existing = fs.readdirSync(base).filter(f => /^Result_\d+$/i.test(f));
+      const nums = existing.map(f => parseInt(f.split('_')[1], 10)).filter(n => !isNaN(n));
+      const next = (nums.length > 0 ? Math.max(...nums) : 0) + 1;
+      folderName = `Result_${next}`;
+    }
+
+    const outDir = path.join(base, folderName);
+    if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
+
+    // Write results JSON
+    const resultPath = path.join(outDir, 'results.json');
+    fs.writeFileSync(resultPath, JSON.stringify(results, null, 2), 'utf8');
+
+    // Write a minimal run log
+    const logPath = path.join(outDir, 'scheduler_run.log');
+    const logContent = `[${new Date().toISOString()}] Serverless run persisted: ${folderName}\n`;
+    fs.writeFileSync(logPath, logContent, 'utf8');
+
+    return folderName;
+  } catch (err) {
+    console.error('Failed to persist serverless result:', err);
+    return null;
+  }
+}
     const shifts = (caseData.shifts as ShiftData[]) || [];
     const providers = (caseData.providers as ProviderData[]) || [];
     const calendarData = (caseData.calendar as Record<string, unknown>) || {};
@@ -226,11 +264,44 @@ async function runServerlessSolver(caseData: Record<string, unknown>, runId: str
     
     console.log(`[SUCCESS] Generated ${solutions.length} solutions in ${executionTime}ms`);
     
+    // Persist serverless result to disk so downloads and listing work
+    const persistedFolder = persistServerlessResult(runId, {
+      status: 'completed',
+      message: `Optimization completed successfully - generated ${solutions.length} solution(s)`,
+      run_id: runId,
+      progress: 100,
+      results: {
+        solutions: solutions,
+        solver_stats: {
+          total_solutions: solutions.length,
+          execution_time_ms: executionTime,
+          solver_type: 'serverless_js',
+          status: solutions.length > 0 ? 'OPTIMAL' : 'NO_SOLUTION',
+          algorithm: 'round_robin_with_constraints',
+          fallbackUsed: true
+        }
+      },
+      statistics: {
+        totalShifts: shifts.length,
+        totalProviders: providers.length,
+        totalDays: days.length,
+        requestedSolutions: requestedSolutions,
+        generatedSolutions: solutions.length,
+        executionTimeMs: executionTime,
+        solverType: 'serverless_js',
+        feasible: solutions.length > 0,
+        fallbackUsed: true
+      }
+    });
+
+    const outputDirectory = persistedFolder || `Result_${runId}`;
+
     return {
       status: 'completed',
       message: `Optimization completed successfully - generated ${solutions.length} solution(s)`,
       run_id: runId,
       progress: 100,
+      output_directory: outputDirectory,
       results: {
         solutions: solutions,
         solver_stats: {

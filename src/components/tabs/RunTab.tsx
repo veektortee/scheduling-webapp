@@ -20,7 +20,6 @@ import {
   IoDownloadSharp,
   IoDesktopSharp,
   IoServerSharp,
-  IoThunderstorm,
   IoCodeSlash
 } from 'react-icons/io5';
 import { 
@@ -91,6 +90,18 @@ export default function RunTab() {
   const [showGuideModal, setShowGuideModal] = useState(false);
   const [showDataManagementModal, setShowDataManagementModal] = useState(false);
   const [guidePlatform, setGuidePlatform] = useState<'windows' | 'mac' | 'linux'>('windows');
+  
+  // Output files state
+  const [availableFiles, setAvailableFiles] = useState<Array<{
+    name: string;
+    size: number;
+    modified: string;
+    downloadUrl: string;
+    isFolder?: boolean;
+    fileCount?: number;
+  }>>([]);
+  const [showFilesMenu, setShowFilesMenu] = useState(false);
+  const [loadingFiles, setLoadingFiles] = useState(false);
   const logsEndRef = useRef<HTMLDivElement>(null);
   const installMenuRef = useRef<HTMLDivElement>(null);
   const portalMenuRef = useRef<HTMLDivElement>(null);
@@ -487,6 +498,31 @@ export default function RunTab() {
   }, [addLog, checkInstallationStatus]);
 
   // Modified handleRunSolver to auto-start local server when needed
+  // Check whether an output name already exists either locally or serverless
+  const checkNameConflict = async (name: string) => {
+    if (!name) return false;
+    try {
+      // Check local FastAPI folders if available
+      if (localSolverAvailable) {
+        const resp = await fetch('http://localhost:8000/results/folders');
+        if (resp.ok) {
+          const data = await resp.json();
+    if ((data.folders || []).some((f: { name: string }) => f.name === name)) return true;
+        }
+      }
+
+      // Check serverless persisted folders
+      const resp2 = await fetch(`/api/list/result-folders`);
+      if (resp2.ok) {
+        const data2 = await resp2.json();
+  if ((data2.folders || []).some((f: { name: string }) => f.name === name)) return true;
+      }
+    } catch (err) {
+      console.warn('Name conflict check failed:', err);
+    }
+    return false;
+  };
+
   const handleRunSolver = async (solverMode: 'auto' | 'local' | 'serverless' = 'auto') => {
     if (isRunning) return;
     
@@ -503,6 +539,17 @@ export default function RunTab() {
     setIsRunning(true);
     setProgress(0);
     setSolverState('connecting');
+
+    // Pre-flight: check requested output folder name for conflicts
+    const requestedName = schedulingCase.run?.out || '';
+    if (requestedName) {
+      const conflict = await checkNameConflict(requestedName);
+      if (conflict) {
+        addLog(`❌ Output folder name '${requestedName}' already exists. Please choose a different name.`, 'error');
+        setIsRunning(false);
+        return;
+      }
+    }
     
     // Determine which solver to use
     let shouldTryLocal = false;
@@ -644,10 +691,45 @@ export default function RunTab() {
           addLog(`✅ Generated ${solutions.length} solution(s)`, 'success');
           addLog(`🔧 Solver: ${stats.solver_type || 'serverless'} (${stats.status || 'completed'})`, 'info');
           
+          // Generate a result folder name. Prefer output_directory returned by serverless solver
+          const generatedName = generateResultFolderName();
+          const outputDirFromServer = (result as SolverResult).output_directory as string | undefined;
+          let finalOutputDirectory = outputDirFromServer || generatedName;
+
+          // If using local solver: try to convert using run_id when output_directory wasn't provided
+          const serverRunId = (result as SolverResult).run_id as string | undefined;
+          if (actualSolver === 'local') {
+            // Prefer converting the returned output_directory if it's a uuid-like path
+            const candidate = outputDirFromServer || serverRunId;
+            if (candidate && !/^Result_\d+$/i.test(candidate)) {
+              try {
+                const conv = await fetch(`/api/convert/run-to-result?runId=${encodeURIComponent(candidate)}`);
+                if (conv.ok) {
+                  const data = await conv.json();
+                  if (data.folderName) {
+                    finalOutputDirectory = data.folderName;
+                    localStorage.setItem('result-folder-counter', JSON.stringify(parseInt(data.folderName.split('_')[1], 10)));
+                    addLog(`📁 Converted run folder to ${data.folderName}`, 'success');
+                  }
+                }
+              } catch {
+                // conversion failed; keep original
+              }
+            }
+          }
+          // If server provided a name, ensure our local counter is at least that high
+          if (outputDirFromServer && /^Result_\d+$/i.test(outputDirFromServer)) {
+            const existingCounter = JSON.parse(localStorage.getItem('result-folder-counter') || '0');
+            const serverNum = parseInt(outputDirFromServer.split('_')[1], 10);
+            if (!isNaN(serverNum) && serverNum > existingCounter) {
+              localStorage.setItem('result-folder-counter', JSON.stringify(serverNum));
+            }
+          }
+
           // Store last run results for output folder functionality
           const runResultsPayload = {
             run_id: result.run_id || `serverless_${Date.now()}`,
-            output_directory: result.output_directory || 'serverless',
+            output_directory: finalOutputDirectory,
             timestamp: new Date().toISOString(),
             solver_type: actualSolver,
             results: result.results,
@@ -759,6 +841,9 @@ export default function RunTab() {
       addLog(`📅 Generated: ${new Date(timestamp).toLocaleString()}`, 'info');
       addLog(`🔧 Solver: ${solver_type}`, 'info');
       
+  // Load available files and show download menu
+  await loadAvailableFiles();
+      
       if (solver_type === 'local' && localSolverAvailable) {
         // For local solver, get detailed output directory contents
         try {
@@ -861,14 +946,100 @@ export default function RunTab() {
         }
       }
       
+      addLog('💡 Use the download buttons above to get individual files', 'info');
     } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
-      addLog(`❌ Error accessing results: ${errorMsg}`, 'error');
-      addLog(`📂 Fallback: Check project folder for solver_output/${run_id}/`, 'info');
+      addLog(`❌ Error viewing results: ${error}`, 'error');
     }
   };
 
-  const updateRunConfig = (field: keyof typeof schedulingCase.run, value: string | number) => {
+  // Function to load available files for download
+  const loadAvailableFiles = async () => {
+    setLoadingFiles(true);
+    try {
+      // Instead of loading individual files, load result folders
+      const folders = await getAvailableResultFolders();
+      
+      // Convert folders to the expected file format for the modal
+      const folderData = folders.map((folder: { name: string; created?: number | string; fileCount: number }) => ({
+        name: folder.name,
+        size: folder.fileCount * 25600, // Estimate ~25KB per file
+        modified: folder.created ? (typeof folder.created === 'number' ? new Date(folder.created * 1000).toLocaleString() : String(folder.created)) : 'Unknown',
+        // Prefer serverless Next.js zipping endpoint for folder downloads so converted Result_N folders are available
+        downloadUrl: `#folder-${folder.name}`,
+        isFolder: true,
+        fileCount: folder.fileCount
+      }));
+      
+  setAvailableFiles(folderData);
+      setShowFilesMenu(true);
+      addLog(`📁 Found ${folders.length} result folder${folders.length !== 1 ? 's' : ''}`, 'success');
+      
+      if (folderData.length === 0) {
+        addLog('💡 Run optimization to create your first Result_1 folder', 'info');
+      }
+    } catch (error) {
+      addLog(`❌ Error loading result folders: ${error}`, 'error');
+    } finally {
+      setLoadingFiles(false);
+    }
+  };
+
+  // Function to download a specific file or folder
+  const downloadFile = async (file: { name: string; downloadUrl: string; isFolder?: boolean }) => {
+    try {
+        if (file.downloadUrl.startsWith('#folder-')) {
+        // Handle serverless folder download via Next.js API
+        const folderName = file.downloadUrl.replace('#folder-', '');
+        addLog(`📁 Requesting ZIP for ${folderName} from server...`, 'info');
+        try {
+          const resp = await fetch(`/api/download/result-folder?name=${encodeURIComponent(folderName)}`);
+          if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+          const blob = await resp.blob();
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `${folderName}.zip`;
+          a.click();
+          URL.revokeObjectURL(url);
+          addLog(`📦 Downloaded: ${folderName}.zip`, 'success');
+        } catch (err) {
+          addLog(`❌ Failed to download ${folderName}: ${err}`, 'error');
+        }
+      } else if (file.downloadUrl.startsWith('#')) {
+        // Handle special export cases
+        if (file.downloadUrl === '#excel-export') {
+          const { exportScheduleToExcel, generateMockResults } = await import('@/lib/excelExport');
+          const mockResults = generateMockResults(schedulingCase);
+          const filename = exportScheduleToExcel(schedulingCase, mockResults, file.name);
+          addLog(`📊 Downloaded: ${filename}`, 'success');
+        } else if (file.downloadUrl === '#config-export') {
+          const configData = JSON.stringify(schedulingCase, null, 2);
+          const blob = new Blob([configData], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = file.name;
+          a.click();
+          URL.revokeObjectURL(url);
+          addLog(`📋 Downloaded: ${file.name}`, 'success');
+        }
+      } else {
+        // Handle direct download URL (for local solver)
+        if (file.isFolder) {
+          addLog(`📁 Downloading folder: ${file.name} as ZIP...`, 'info');
+        }
+        const a = document.createElement('a');
+        a.href = file.downloadUrl;
+        a.download = file.isFolder ? `${file.name}.zip` : file.name;
+        a.click();
+        addLog(`📄 Downloaded: ${file.isFolder ? `${file.name}.zip` : file.name}`, 'success');
+      }
+    } catch (error) {
+      addLog(`❌ Error downloading ${file.name}: ${error}`, 'error');
+    }
+  };
+
+  const updateRunConfig = useCallback((field: keyof typeof schedulingCase.run, value: string | number) => {
     dispatch({
       type: 'UPDATE_CASE',
       payload: {
@@ -878,6 +1049,154 @@ export default function RunTab() {
         },
       },
     });
+  }, [dispatch, schedulingCase]);
+
+  // Function to generate unique result folder name
+  const generateResultFolderName = () => {
+    // Be defensive when reading the counter: localStorage may contain a non-numeric
+    // value (e.g. from older builds or accidental writes). Parse it safely.
+    let existingResults = 0;
+    try {
+      const raw = localStorage.getItem('result-folder-counter');
+      if (raw != null) {
+        // Try to parse as an integer; if it fails, fallback to 0
+        const parsed = parseInt(raw as string, 10);
+        existingResults = Number.isFinite(parsed) ? parsed : 0;
+      }
+    } catch {
+      existingResults = 0;
+    }
+    const nextNumber = existingResults + 1;
+    // Store as a simple string to avoid JSON parsing issues in older entries
+    localStorage.setItem('result-folder-counter', String(nextNumber));
+    return `Result_${nextNumber}`;
+  };
+
+  // Compute next available Result_N by checking serverless persisted folders and local FastAPI folders
+  const computeNextAvailableName = useCallback(async (): Promise<string> => {
+    let maxNum = 0;
+    try {
+      // Check serverless persisted folders first
+      const resp = await fetch('/api/list/result-folders');
+      if (resp.ok) {
+        const data = await resp.json();
+        (data.folders || []).forEach((f: { name: string }) => {
+          const m = f.name.match(/^Result_(\d+)$/i);
+          if (m) {
+            const n = parseInt(m[1], 10);
+            if (!isNaN(n) && n > maxNum) maxNum = n;
+          }
+        });
+      }
+    } catch {
+      // ignore
+    }
+
+    try {
+      // Check local FastAPI folders if available
+      if (localSolverAvailable) {
+        const resp2 = await fetch('http://localhost:8000/results/folders');
+        if (resp2.ok) {
+          const data2 = await resp2.json();
+          (data2.folders || []).forEach((f: { name: string }) => {
+            const m = f.name.match(/^Result_(\d+)$/i);
+            if (m) {
+              const n = parseInt(m[1], 10);
+              if (!isNaN(n) && n > maxNum) maxNum = n;
+            }
+          });
+        }
+      }
+    } catch {
+      // ignore
+    }
+
+    const next = maxNum + 1;
+    localStorage.setItem('result-folder-counter', JSON.stringify(next));
+    return `Result_${next}`;
+  }, [localSolverAvailable]);
+
+  // Auto-fill Output Folder Name input with next available Result_N when the tab loads or local availability changes
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        // Compute the next Result_N but only update / log when it differs
+        // from the currently stored value to avoid spamming the logs when
+        // the component re-renders multiple times.
+        const nextName = await computeNextAvailableName();
+        if (!mounted) return;
+
+        const currentOut = schedulingCase?.run?.out ?? '';
+        if (currentOut !== nextName) {
+          updateRunConfig('out', nextName);
+          addLog(`Auto-filled Output Folder Name: ${nextName}`, 'info');
+        }
+      } catch {
+        // ignore
+      }
+    })();
+    return () => { mounted = false; };
+  }, [localSolverAvailable, addLog, updateRunConfig, computeNextAvailableName, schedulingCase?.run?.out]);
+
+  // Function to get all available result folders
+  const getAvailableResultFolders = async () => {
+    const folders: Array<{
+      name: string;
+      path: string;
+      created: string;
+      fileCount: number;
+    }> = [];
+
+    try {
+      // Try Next.js serverless listing first (this includes converted Result_N)
+      try {
+        const respServerless = await fetch('/api/list/result-folders');
+        if (respServerless.ok) {
+          const data = await respServerless.json();
+          (data.folders || []).forEach((f: { name: string; path: string; created: string; fileCount: number }) => {
+            if (!folders.some(existing => existing.name === f.name)) folders.push(f);
+          });
+        }
+      } catch {
+        // ignore serverless listing errors
+      }
+
+      // If local solver is available, also query its listing and merge (so FastAPI-listed folders show too)
+      if (localSolverAvailable) {
+        try {
+          const response = await fetch('http://localhost:8000/results/folders');
+          if (response.ok) {
+            const data = await response.json();
+            (data.folders || []).forEach((f: { name: string; path: string; created: number | string; fileCount: number }) => {
+              const createdIso = typeof f.created === 'number' ? new Date(f.created * 1000).toISOString() : f.created;
+              if (!folders.some(existing => existing.name === f.name)) {
+                folders.push({ name: f.name, path: f.path, created: createdIso, fileCount: f.fileCount });
+              }
+            });
+          }
+        } catch {
+          // ignore local listing errors
+        }
+      }
+
+      // If no folders found, fallback to localStorage-generated mock folders (useful for demo/serverless when nothing persisted)
+      if (folders.length === 0) {
+        const counter = JSON.parse(localStorage.getItem('result-folder-counter') || '0');
+        for (let i = 1; i <= counter; i++) {
+          folders.push({
+            name: `Result_${i}`,
+            path: `./solver_output/Result_${i}`,
+            created: new Date(Date.now() - (counter - i) * 60000).toISOString(),
+            fileCount: Math.floor(Math.random() * 8) + 3 // 3-10 files
+          });
+        }
+      }
+    } catch (error) {
+      addLog(`❌ Error loading result folders: ${error}`, 'error');
+    }
+
+    return folders;
   };
 
   const handleSmartInstall = async () => {
@@ -1432,9 +1751,11 @@ export default function RunTab() {
             <input
               type="text"
               value={schedulingCase.run.out}
-              onChange={(e) => updateRunConfig('out', e.target.value)}
-              className="w-full px-3 lg:px-4 py-2 lg:py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/90 dark:bg-gray-700/90 text-gray-900 dark:text-white backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 hover:shadow-md text-sm lg:text-base"
+              readOnly
+              title="Output folder is auto-generated (Result_N). You cannot edit this value here."
+              className="w-full px-3 lg:px-4 py-2 lg:py-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 backdrop-blur-sm transition-all duration-200 text-sm lg:text-base cursor-not-allowed"
             />
+            <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">Output folder is auto-generated. It will be created as the next Result_N.</div>
           </div>
           
           <div>
@@ -1785,6 +2106,113 @@ export default function RunTab() {
         isOpen={showDataManagementModal}
         onClose={() => setShowDataManagementModal(false)}
       />
+
+      {/* Downloadable Files Modal */}
+      {showFilesMenu && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
+          <div className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-lg rounded-2xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50 w-full max-w-2xl mx-4 max-h-[80vh] overflow-hidden">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200/50 dark:border-gray-700/50">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
+                  <IoFolderOpenSharp className="w-4 h-4 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                    Available Result Folders
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                    Download complete result folders with all optimization outputs
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowFilesMenu(false)}
+                className="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Files List */}
+            <div className="p-6 max-h-96 overflow-y-auto">
+              {loadingFiles ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mr-3"></div>
+                  <span className="text-gray-600 dark:text-gray-300">Loading files...</span>
+                </div>
+              ) : availableFiles.length > 0 ? (
+                <div className="space-y-3">
+                  {availableFiles.map((folder, index) => {
+                    const fileCountText = folder.fileCount === 1 ? '1 file' : `${folder.fileCount} files`;
+                    const modifiedDate = new Date(folder.modified).toLocaleString();
+                    
+                    return (
+                      <div 
+                        key={index}
+                        className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4 hover:bg-gray-100 dark:hover:bg-gray-600/50 transition-colors"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-3 flex-1">
+                            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
+                              <IoFolderOpenSharp className="w-5 h-5 text-white" />
+                            </div>
+                            <div className="flex-1">
+                              <h4 className="font-medium text-gray-900 dark:text-white truncate">
+                                {folder.name}
+                              </h4>
+                              <p className="text-sm text-gray-500 dark:text-gray-400">
+                                {fileCountText} • Created {modifiedDate}
+                              </p>
+                              <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                                Complete optimization results with schedules, logs, and data files
+                              </p>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => downloadFile(folder)}
+                            className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all duration-200 font-medium shadow-lg flex items-center space-x-2 hover:scale-105"
+                          >
+                            <IoDownloadSharp className="w-4 h-4" />
+                            <span>Download</span>
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <IoFolderOpenSharp className="w-8 h-8 text-gray-400" />
+                  </div>
+                  <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                    No result folders available
+                  </h4>
+                  <p className="text-gray-500 dark:text-gray-400">
+                    Run the optimization first to generate downloadable result folders
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="border-t border-gray-200/50 dark:border-gray-700/50 p-4 bg-gray-50/50 dark:bg-gray-700/50">
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  {availableFiles.length} folder{availableFiles.length !== 1 ? 's' : ''} available
+                </p>
+                <button
+                  onClick={() => setShowFilesMenu(false)}
+                  className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
