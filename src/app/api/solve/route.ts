@@ -57,11 +57,15 @@ async function runHybridSolver(caseData: Record<string, unknown>): Promise<Solve
     // 1. Try local solver first (if user has installed it)
     try {
       console.log('🔍 Checking for local solver...');
+      // Use configurable timeout for local solver (default 30 minutes for very large problems)
+      const localTimeoutMs = parseInt(process.env.LOCAL_SOLVER_TIMEOUT_MS || '1800000', 10);
+      console.log(`🕐 Using local solver timeout: ${localTimeoutMs}ms (${localTimeoutMs / 60000} minutes)`);
+      
       const localResponse = await fetch('http://localhost:8000/solve', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(caseData),
-        signal: AbortSignal.timeout(5000), // Quick timeout for local check
+        signal: AbortSignal.timeout(localTimeoutMs),
       });
       
       if (localResponse.ok) {
@@ -76,7 +80,25 @@ async function runHybridSolver(caseData: Record<string, unknown>): Promise<Solve
           }
         };
       }
-    } catch {
+    } catch (localError) {
+      // Better error handling for local solver issues
+      const isTimeout = localError instanceof Error && localError.name === 'TimeoutError';
+      const isAbortError = localError instanceof Error && localError.name === 'AbortError';
+      const isNetworkError = localError instanceof Error && localError.message.includes('fetch');
+      
+      if (isTimeout || isAbortError) {
+        console.log('⏱️ Local solver timed out - the solver may still be working in background');
+        const shiftsCount = Array.isArray(caseData.shifts) ? caseData.shifts.length : 0;
+        console.log(`💡 For large problems (${shiftsCount} shifts), consider:`);
+        console.log('   - Waiting for the solver to finish (may take several minutes)');
+        console.log('   - Increasing timeout via LOCAL_SOLVER_TIMEOUT_MS environment variable');
+        console.log('   - Checking the local solver terminal for progress updates');
+      } else if (isNetworkError) {
+        console.log('🔌 Local solver connection failed - not installed or not running');
+      } else {
+        console.log('❌ Local solver error:', localError);
+      }
+      
       console.log('💡 Local solver not available, using serverless fallback');
     }
     
