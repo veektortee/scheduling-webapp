@@ -1,10 +1,11 @@
 'use client';
 
-import { createContext, useContext, useReducer, ReactNode, useEffect } from 'react';
+import { createContext, useContext, useReducer, ReactNode } from 'react';
 import { SchedulingCase, Shift, Provider } from '@/types/scheduling';
 import { DEFAULT_CASE } from '@/lib/scheduling';
 
 const LAST_RESULTS_STORAGE_KEY = 'scheduling-last-results-v1';
+const SCHEDULING_STATE_STORAGE_KEY = 'scheduling-state-v1';
 
 interface SolverResults {
   run_id: string;
@@ -22,6 +23,7 @@ interface SchedulingState {
   isLoading: boolean;
   error: string | null;
   lastResults: SolverResults | null;
+  hasLoadedFromStorage: boolean; // Track if we loaded from localStorage
 }
 
 type SchedulingAction =
@@ -47,7 +49,25 @@ const initialState: SchedulingState = {
   isLoading: false,
   error: null,
   lastResults: null,
+  hasLoadedFromStorage: false,
 };
+
+// Function to save scheduling state to localStorage
+function saveSchedulingState(state: SchedulingState): void {
+  if (typeof window === 'undefined') return;
+  
+  try {
+    const stateToSave = {
+      case: state.case,
+      selectedDate: state.selectedDate,
+      selectedProvider: state.selectedProvider,
+      timestamp: new Date().toISOString(),
+    };
+    localStorage.setItem(SCHEDULING_STATE_STORAGE_KEY, JSON.stringify(stateToSave));
+  } catch (error) {
+    console.warn('Failed to save scheduling state to localStorage:', error);
+  }
+}
 
 // Function to load initial state with localStorage data
 function getInitialState(): SchedulingState {
@@ -55,17 +75,43 @@ function getInitialState(): SchedulingState {
     return initialState;
   }
   
+  let loadedState = { ...initialState };
+  let hasLoadedSchedulingData = false;
+  
   try {
+    // Load scheduling state
+    const storedState = localStorage.getItem(SCHEDULING_STATE_STORAGE_KEY);
+    if (storedState) {
+      const parsedState = JSON.parse(storedState);
+      // Check if data is not too old (7 days for scheduling data)
+      const age = Date.now() - new Date(parsedState.timestamp).getTime();
+      if (age < 7 * 24 * 60 * 60 * 1000) {
+        loadedState = {
+          ...loadedState,
+          case: parsedState.case || loadedState.case,
+          selectedDate: parsedState.selectedDate || loadedState.selectedDate,
+          selectedProvider: parsedState.selectedProvider !== undefined ? parsedState.selectedProvider : loadedState.selectedProvider,
+        };
+        hasLoadedSchedulingData = true;
+      } else {
+        // Clear old scheduling data
+        localStorage.removeItem(SCHEDULING_STATE_STORAGE_KEY);
+      }
+    }
+  } catch (error) {
+    console.warn('Failed to load scheduling state from localStorage:', error);
+    localStorage.removeItem(SCHEDULING_STATE_STORAGE_KEY);
+  }
+  
+  try {
+    // Load results state (existing logic)
     const storedResults = localStorage.getItem(LAST_RESULTS_STORAGE_KEY);
     if (storedResults) {
       const parsedResults = JSON.parse(storedResults);
       // Check if data is not too old (24 hours)
       const age = Date.now() - new Date(parsedResults.timestamp).getTime();
       if (age < 24 * 60 * 60 * 1000) {
-        return {
-          ...initialState,
-          lastResults: parsedResults,
-        };
+        loadedState.lastResults = parsedResults;
       } else {
         // Clear old data
         localStorage.removeItem(LAST_RESULTS_STORAGE_KEY);
@@ -76,42 +122,55 @@ function getInitialState(): SchedulingState {
     localStorage.removeItem(LAST_RESULTS_STORAGE_KEY);
   }
   
-  return initialState;
+  loadedState.hasLoadedFromStorage = hasLoadedSchedulingData;
+  return loadedState;
 }
 
 function schedulingReducer(state: SchedulingState, action: SchedulingAction): SchedulingState {
+  let newState: SchedulingState;
+  
   switch (action.type) {
     case 'LOAD_CASE':
-      return {
+      // Only load case data if we haven't already loaded from storage
+      if (state.hasLoadedFromStorage) {
+        console.log('Ignoring LOAD_CASE because state was loaded from localStorage');
+        return state;
+      }
+      newState = {
         ...state,
         case: action.payload,
         error: null,
       };
+      break;
     case 'UPDATE_CASE':
-      return {
+      newState = {
         ...state,
         case: { ...state.case, ...action.payload },
       };
+      break;
     case 'SELECT_DATE':
-      return {
+      newState = {
         ...state,
         selectedDate: action.payload,
       };
+      break;
     case 'SELECT_PROVIDER':
-      return {
+      newState = {
         ...state,
         selectedProvider: action.payload,
       };
+      break;
     case 'ADD_SHIFT':
-      return {
+      newState = {
         ...state,
         case: {
           ...state.case,
           shifts: [...state.case.shifts, action.payload],
         },
       };
+      break;
     case 'UPDATE_SHIFT':
-      return {
+      newState = {
         ...state,
         case: {
           ...state.case,
@@ -120,24 +179,27 @@ function schedulingReducer(state: SchedulingState, action: SchedulingAction): Sc
           ),
         },
       };
+      break;
     case 'DELETE_SHIFT':
-      return {
+      newState = {
         ...state,
         case: {
           ...state.case,
           shifts: state.case.shifts.filter((_, index) => index !== action.payload),
         },
       };
+      break;
     case 'ADD_PROVIDER':
-      return {
+      newState = {
         ...state,
         case: {
           ...state.case,
           providers: [...state.case.providers, action.payload],
         },
       };
+      break;
     case 'UPDATE_PROVIDER':
-      return {
+      newState = {
         ...state,
         case: {
           ...state.case,
@@ -146,24 +208,28 @@ function schedulingReducer(state: SchedulingState, action: SchedulingAction): Sc
           ),
         },
       };
+      break;
     case 'DELETE_PROVIDER':
-      return {
+      newState = {
         ...state,
         case: {
           ...state.case,
           providers: state.case.providers.filter((_, index) => index !== action.payload),
         },
       };
+      break;
     case 'SET_LOADING':
-      return {
+      newState = {
         ...state,
         isLoading: action.payload,
       };
+      break;
     case 'SET_ERROR':
-      return {
+      newState = {
         ...state,
         error: action.payload,
       };
+      break;
     case 'SET_RESULTS':
       // Save to localStorage when results are updated
       if (typeof window !== 'undefined') {
@@ -177,12 +243,13 @@ function schedulingReducer(state: SchedulingState, action: SchedulingAction): Sc
           console.warn('Failed to save lastResults to localStorage:', error);
         }
       }
-      return {
+      newState = {
         ...state,
         lastResults: action.payload,
       };
+      break;
     case 'GENERATE_DAYS':
-      return {
+      newState = {
         ...state,
         case: {
           ...state.case,
@@ -192,9 +259,21 @@ function schedulingReducer(state: SchedulingState, action: SchedulingAction): Sc
           },
         },
       };
+      break;
     default:
       return state;
   }
+
+  // Save scheduling state for persistence (except for loading and error states)
+  if (action.type !== 'SET_LOADING' && 
+      action.type !== 'SET_ERROR' && 
+      action.type !== 'SET_RESULTS') {
+    saveSchedulingState(newState);
+    // Mark that we now have saved state
+    newState.hasLoadedFromStorage = true;
+  }
+
+  return newState;
 }
 
 const SchedulingContext = createContext<{
@@ -204,24 +283,6 @@ const SchedulingContext = createContext<{
 
 export function SchedulingProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(schedulingReducer, initialState, getInitialState);
-
-  // Effect to handle localStorage loading after hydration (for Next.js SSR)
-  useEffect(() => {
-    if (typeof window !== 'undefined' && state.lastResults === null) {
-      try {
-        const storedResults = localStorage.getItem(LAST_RESULTS_STORAGE_KEY);
-        if (storedResults) {
-          const parsedResults = JSON.parse(storedResults);
-          const age = Date.now() - new Date(parsedResults.timestamp).getTime();
-          if (age < 24 * 60 * 60 * 1000) {
-            dispatch({ type: 'SET_RESULTS', payload: parsedResults });
-          }
-        }
-      } catch (error) {
-        console.warn('Failed to load lastResults on mount:', error);
-      }
-    }
-  }, [state.lastResults]);
 
   return (
     <SchedulingContext.Provider value={{ state, dispatch }}>
