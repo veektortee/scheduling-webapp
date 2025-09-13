@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { SchedulingProvider } from "@/context/SchedulingContext";
+import { SchedulingResultsProvider } from "@/context/SchedulingResultsContext";
 import { ThemeProvider } from "@/context/ThemeContext";
 import AuthProvider from "@/components/AuthProvider";
 
@@ -42,7 +43,9 @@ export default function RootLayout({
         <ThemeProvider>
           <AuthProvider>
             <SchedulingProvider>
-              {children}
+              <SchedulingResultsProvider>
+                {children}
+              </SchedulingResultsProvider>
             </SchedulingProvider>
           </AuthProvider>
         </ThemeProvider>

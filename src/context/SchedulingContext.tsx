@@ -1,8 +1,10 @@
 'use client';
 
-import { createContext, useContext, useReducer, ReactNode } from 'react';
+import { createContext, useContext, useReducer, ReactNode, useEffect } from 'react';
 import { SchedulingCase, Shift, Provider } from '@/types/scheduling';
 import { DEFAULT_CASE } from '@/lib/scheduling';
+
+const LAST_RESULTS_STORAGE_KEY = 'scheduling-last-results-v1';
 
 interface SolverResults {
   run_id: string;
@@ -46,6 +48,36 @@ const initialState: SchedulingState = {
   error: null,
   lastResults: null,
 };
+
+// Function to load initial state with localStorage data
+function getInitialState(): SchedulingState {
+  if (typeof window === 'undefined') {
+    return initialState;
+  }
+  
+  try {
+    const storedResults = localStorage.getItem(LAST_RESULTS_STORAGE_KEY);
+    if (storedResults) {
+      const parsedResults = JSON.parse(storedResults);
+      // Check if data is not too old (24 hours)
+      const age = Date.now() - new Date(parsedResults.timestamp).getTime();
+      if (age < 24 * 60 * 60 * 1000) {
+        return {
+          ...initialState,
+          lastResults: parsedResults,
+        };
+      } else {
+        // Clear old data
+        localStorage.removeItem(LAST_RESULTS_STORAGE_KEY);
+      }
+    }
+  } catch (error) {
+    console.warn('Failed to load lastResults from localStorage:', error);
+    localStorage.removeItem(LAST_RESULTS_STORAGE_KEY);
+  }
+  
+  return initialState;
+}
 
 function schedulingReducer(state: SchedulingState, action: SchedulingAction): SchedulingState {
   switch (action.type) {
@@ -133,6 +165,18 @@ function schedulingReducer(state: SchedulingState, action: SchedulingAction): Sc
         error: action.payload,
       };
     case 'SET_RESULTS':
+      // Save to localStorage when results are updated
+      if (typeof window !== 'undefined') {
+        try {
+          if (action.payload) {
+            localStorage.setItem(LAST_RESULTS_STORAGE_KEY, JSON.stringify(action.payload));
+          } else {
+            localStorage.removeItem(LAST_RESULTS_STORAGE_KEY);
+          }
+        } catch (error) {
+          console.warn('Failed to save lastResults to localStorage:', error);
+        }
+      }
       return {
         ...state,
         lastResults: action.payload,
@@ -159,7 +203,25 @@ const SchedulingContext = createContext<{
 } | undefined>(undefined);
 
 export function SchedulingProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(schedulingReducer, initialState);
+  const [state, dispatch] = useReducer(schedulingReducer, initialState, getInitialState);
+
+  // Effect to handle localStorage loading after hydration (for Next.js SSR)
+  useEffect(() => {
+    if (typeof window !== 'undefined' && state.lastResults === null) {
+      try {
+        const storedResults = localStorage.getItem(LAST_RESULTS_STORAGE_KEY);
+        if (storedResults) {
+          const parsedResults = JSON.parse(storedResults);
+          const age = Date.now() - new Date(parsedResults.timestamp).getTime();
+          if (age < 24 * 60 * 60 * 1000) {
+            dispatch({ type: 'SET_RESULTS', payload: parsedResults });
+          }
+        }
+      } catch (error) {
+        console.warn('Failed to load lastResults on mount:', error);
+      }
+    }
+  }, [state.lastResults]);
 
   return (
     <SchedulingContext.Provider value={{ state, dispatch }}>

@@ -3,6 +3,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useScheduling } from '@/context/SchedulingContext';
+import { useSchedulingResults } from '@/context/SchedulingResultsContext';
 import { 
   IoRocketSharp,
   IoSettingsSharp,
@@ -17,13 +18,15 @@ import {
   IoCloudSharp,
   IoStopSharp,
   IoDownloadSharp,
-  IoDesktopSharp
+  IoDesktopSharp,
+  IoServerSharp
 } from 'react-icons/io5';
 import { 
   SiApple,
   SiLinux
 } from 'react-icons/si';
 import LocalSolverGuideModal from '@/components/LocalSolverGuideModal';
+import DataManagementModal from '@/components/DataManagementModal';
 
 interface SolverResult {
   status: string;
@@ -42,6 +45,7 @@ interface SolverResult {
 
 export default function RunTab() {
   const { state, dispatch } = useScheduling();
+  const { setResults: setSchedulingResults } = useSchedulingResults();
   const { case: schedulingCase, lastResults } = state;
   const [isRunning, setIsRunning] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -67,6 +71,7 @@ export default function RunTab() {
   });
   const [isCheckingInstallation, setIsCheckingInstallation] = useState(false);
   const [showGuideModal, setShowGuideModal] = useState(false);
+  const [showDataManagementModal, setShowDataManagementModal] = useState(false);
   const [guidePlatform, setGuidePlatform] = useState<'windows' | 'mac' | 'linux'>('windows');
   const logsEndRef = useRef<HTMLDivElement>(null);
   const installMenuRef = useRef<HTMLDivElement>(null);
@@ -570,17 +575,62 @@ export default function RunTab() {
           addLog(`🔧 Solver: ${stats.solver_type || 'serverless'} (${stats.status || 'completed'})`, 'info');
           
           // Store last run results for output folder functionality
+          const runResultsPayload = {
+            run_id: result.run_id || `serverless_${Date.now()}`,
+            output_directory: result.output_directory || 'serverless',
+            timestamp: new Date().toISOString(),
+            solver_type: actualSolver,
+            results: result.results,
+            statistics: result.statistics
+          };
+          
           dispatch({
             type: 'SET_RESULTS',
-            payload: {
-              run_id: result.run_id || `serverless_${Date.now()}`,
-              output_directory: result.output_directory || 'serverless',
-              timestamp: new Date().toISOString(),
-              solver_type: actualSolver,
-              results: result.results,
-              statistics: result.statistics
-            }
+            payload: runResultsPayload
           });
+          
+          // Also populate scheduling results context for calendar display
+          if (result.results && typeof result.results === 'object') {
+            try {
+              const resultData = result.results as { solutions?: Array<{ assignments?: Array<{ 
+                date: string; 
+                shift_id: string; 
+                shift_type: string; 
+                provider_id: string; 
+                provider_name: string; 
+                start_time: string; 
+                end_time: string; 
+              }> }> };
+              
+              if (resultData.solutions && resultData.solutions.length > 0 && resultData.solutions[0].assignments) {
+                const assignments = resultData.solutions[0].assignments.map(assignment => ({
+                  date: assignment.date,
+                  shiftId: assignment.shift_id || assignment.shift_id || 'unknown',
+                  shiftType: assignment.shift_type,
+                  providerId: assignment.provider_id,
+                  providerName: assignment.provider_name,
+                  startTime: assignment.start_time,
+                  endTime: assignment.end_time
+                }));
+
+                setSchedulingResults({
+                  assignments,
+                  runId: runResultsPayload.run_id,
+                  timestamp: runResultsPayload.timestamp,
+                  solverType: actualSolver as 'local' | 'serverless',
+                  summary: {
+                    totalAssignments: assignments.length,
+                    totalProviders: new Set(assignments.map(a => a.providerId)).size,
+                    totalShifts: assignments.length
+                  }
+                });
+                
+                addLog(`📅 Calendar data updated with ${assignments.length} scheduling assignments`, 'success');
+              }
+            } catch {
+              addLog('⚠️ Could not parse scheduling results for calendar display', 'warning');
+            }
+          }
           
           // Store results in context (note: this may need proper action type in context)
           // dispatch({
@@ -640,13 +690,50 @@ export default function RunTab() {
       addLog(`🔧 Solver: ${solver_type}`, 'info');
       
       if (solver_type === 'local' && localSolverAvailable) {
-        // For local solver, try to get output directory contents
+        // For local solver, get detailed output directory contents
         try {
           const response = await fetch(`http://localhost:8000/output/${run_id}`);
           if (response.ok) {
             const outputInfo = await response.json();
             addLog(`📁 Output directory: ${outputInfo.output_directory}`, 'success');
-            addLog(`📄 Files: ${outputInfo.files.join(', ')}`, 'info');
+            
+            // Display files with details and timestamps
+            if (outputInfo.files && outputInfo.files.length > 0) {
+              addLog('📄 Generated files:', 'info');
+              
+              // Sort files by modification time (newest first)
+              const sortedFiles = outputInfo.files.sort((a: { name: string; size: number; modified: string }, b: { name: string; size: number; modified: string }) => 
+                new Date(b.modified).getTime() - new Date(a.modified).getTime()
+              );
+              
+              sortedFiles.forEach((file: { name: string; size: number; modified: string }, index: number) => {
+                const sizeKB = Math.round(file.size / 1024);
+                const modifiedDate = new Date(file.modified).toLocaleString();
+                const isNewest = index === 0;
+                
+                if (file.name.endsWith('.xlsx')) {
+                  addLog(`   ${isNewest ? '⭐' : '📊'} ${file.name} - Excel schedule output (${sizeKB} KB, ${modifiedDate})`, 
+                         isNewest ? 'success' : 'info');
+                } else if (file.name.endsWith('.json')) {
+                  addLog(`   ${isNewest ? '⭐' : '📋'} ${file.name} - Configuration/Results data (${sizeKB} KB, ${modifiedDate})`, 
+                         isNewest ? 'success' : 'info');
+                } else {
+                  addLog(`   ${isNewest ? '⭐' : '📄'} ${file.name} (${sizeKB} KB, ${modifiedDate})`, 
+                         isNewest ? 'success' : 'info');
+                }
+              });
+              
+              // Highlight the newest Excel file
+              const excelFiles = sortedFiles.filter((f: { name: string; size: number; modified: string }) => f.name.endsWith('.xlsx'));
+              if (excelFiles.length > 0) {
+                const newestExcel = excelFiles[0];
+                addLog(`✨ Latest Excel output: ${newestExcel.name} (Modified: ${new Date(newestExcel.modified).toLocaleString()})`, 'success');
+                addLog('💡 This file contains the most recent schedule assignments and can be opened in Excel', 'info');
+                addLog(`🔗 Download link: http://localhost:8000/download/${run_id}/${newestExcel.name}`, 'info');
+              }
+            } else {
+              addLog('📄 Contains input_case.json and results.json', 'info');
+            }
             
             // For Windows, try to open the folder in explorer
             if (navigator.platform.includes('Win')) {
@@ -661,9 +748,20 @@ export default function RunTab() {
           addLog('💡 Check your project folder > solver_output > [run_id] for generated files', 'info');
         }
       } else {
-        // For serverless results
+        // For serverless results, show export options
         addLog('🌐 Serverless solver results are available in the export functions', 'success');
         addLog('📊 Use "Export Results" to download the generated schedule', 'info');
+        
+        // Auto-generate and display newest Excel export
+        try {
+          const { exportScheduleToExcel, generateMockResults } = await import('@/lib/excelExport');
+          const mockResults = generateMockResults(schedulingCase);
+          const filename = exportScheduleToExcel(schedulingCase, mockResults, `Latest_Schedule_${new Date().toISOString().split('T')[0]}.xlsx`);
+          addLog(`📊 Generated latest Excel export: ${filename}`, 'success');
+          addLog('✨ This file contains the newest schedule configuration and assignments', 'info');
+        } catch {
+          addLog('⚠️ Could not auto-generate Excel export', 'warning');
+        }
       }
       
       // Display summary of results if available
@@ -1503,6 +1601,16 @@ export default function RunTab() {
             <IoTerminalSharp className="w-5 h-5 relative z-10" />
             <span className="relative z-10">Clear Logs</span>
           </button>
+
+          {/* Data Management */}
+          <button
+            onClick={() => setShowDataManagementModal(true)}
+            className="relative px-6 py-3 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-xl hover:from-purple-700 hover:to-purple-800 font-semibold flex items-center justify-center space-x-2 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 overflow-hidden group"
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-purple-400/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <IoServerSharp className="w-5 h-5 relative z-10" />
+            <span className="relative z-10">Data Backup</span>
+          </button>
         </div>
 
         {/* Progress Bar */}
@@ -1600,6 +1708,12 @@ export default function RunTab() {
         isOpen={showGuideModal}
         onClose={() => setShowGuideModal(false)}
         platform={guidePlatform}
+      />
+      
+      {/* Data Management Modal */}
+      <DataManagementModal
+        isOpen={showDataManagementModal}
+        onClose={() => setShowDataManagementModal(false)}
       />
     </div>
   );

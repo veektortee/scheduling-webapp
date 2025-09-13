@@ -16,6 +16,7 @@ import {
   ClockIcon
 } from '@heroicons/react/24/outline';
 import { useCalendar, renderCategoryIcon } from '@/context/CalendarContext';
+import { useSchedulingResults } from '@/context/SchedulingResultsContext';
 import { CalendarEvent, CalendarView, EventCategory } from '@/types/calendar';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isSameMonth, isSameDay, addMonths, subMonths } from 'date-fns';
 import EventModal from '@/components/EventModal';
@@ -44,6 +45,42 @@ const CustomEvent = ({ event }: { event: CalendarEvent }) => {
   );
 };
 
+// Custom day cell component to show scheduling assignments
+const CustomDayCell = ({ date, getAssignmentsForDate }: { 
+  date: Date; 
+  getAssignmentsForDate: (date: string) => { shiftType: string; startTime: string; endTime: string; providerName: string }[]; 
+}) => {
+  const dateStr = format(date, 'yyyy-MM-dd');
+  const assignments = getAssignmentsForDate(dateStr);
+  
+  if (assignments.length === 0) return null;
+  
+  return (
+    <div className="absolute top-1 right-1 z-10">
+      <div className="bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold shadow-lg">
+        {assignments.length}
+      </div>
+      {assignments.length > 0 && (
+        <div className="absolute top-6 right-0 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg p-2 shadow-lg min-w-48 z-20 opacity-0 hover:opacity-100 transition-opacity">
+          <div className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+            Scheduled Shifts ({assignments.length})
+          </div>
+          {assignments.slice(0, 3).map((assignment, idx) => (
+            <div key={idx} className="text-xs text-gray-600 dark:text-gray-400 mb-1">
+              • {assignment.shiftType} ({assignment.startTime}-{assignment.endTime}): {assignment.providerName}
+            </div>
+          ))}
+          {assignments.length > 3 && (
+            <div className="text-xs text-blue-500 font-medium">
+              +{assignments.length - 3} more shifts...
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
 export default function ModernCalendar() {
   const { 
     state, 
@@ -53,6 +90,12 @@ export default function ModernCalendar() {
     getEventsForDate,
     dispatch 
   } = useCalendar();
+
+  const { 
+    results: schedulingResults, 
+    getAssignmentsForDate, 
+    hasResults 
+  } = useSchedulingResults();
 
   const [showMiniCalendar, setShowMiniCalendar] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -527,6 +570,27 @@ export default function ModernCalendar() {
               </div>
             )}
             
+            {/* Show scheduling results summary if available */}
+            {hasResults && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-4"
+              >
+                <div className="flex items-center space-x-3">
+                  <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                  <div>
+                    <div className="text-sm font-semibold text-green-700 dark:text-green-300">
+                      📅 Scheduling Results Loaded
+                    </div>
+                    <div className="text-xs text-green-600 dark:text-green-400">
+                      {schedulingResults?.summary?.totalAssignments} assignments across {schedulingResults?.summary?.totalProviders} providers
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+            
             <Calendar
               localizer={localizer}
               events={calendarEvents}
@@ -543,6 +607,14 @@ export default function ModernCalendar() {
               eventPropGetter={eventStyleGetter}
               components={{
                 event: CustomEvent,
+                month: {
+                  dateHeader: ({ date }: { date: Date }) => (
+                    <div className="relative">
+                      <span>{format(date, 'd')}</span>
+                      {hasResults && <CustomDayCell date={date} getAssignmentsForDate={getAssignmentsForDate} />}
+                    </div>
+                  ),
+                },
               }}
               messages={{
                 noEventsInRange: 'No events in this range',
