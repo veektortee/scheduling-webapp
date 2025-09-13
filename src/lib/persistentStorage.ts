@@ -123,18 +123,28 @@ export class PersistentStorage {
     if (typeof window === 'undefined') return '{}';
 
     const exportData: Record<string, unknown> = {};
+    // Include all keys that represent folders, providers, shifts and configs
     const schedulingKeys = [
       'scheduling-results-v1',
       'scheduling-last-results-v1',
+      'scheduling-state-v1',
+      'scheduling-results-v1',
       'calendarState',
-      'theme'
+      'theme',
+      'result-folder-counter',
+      'scheduling-session-id'
     ];
 
     try {
       schedulingKeys.forEach(key => {
         const data = localStorage.getItem(key);
         if (data) {
-          exportData[key] = JSON.parse(data);
+          try {
+            exportData[key] = JSON.parse(data);
+          } catch {
+            // Some keys may be stored as plain strings (counters, ids) - fall back to raw string
+            exportData[key] = data;
+          }
         }
       });
 

@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
     );
 
   } catch (error) {
-    console.error('❌ Error getting credentials:', error);
+  console.error('[ERROR] Error getting credentials:', error);
     return NextResponse.json(
       { message: 'Internal server error' },
       { status: 500 }

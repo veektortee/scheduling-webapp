@@ -77,11 +77,11 @@ export async function POST(request: NextRequest) {
     }
 
     if (!emailSuccess) {
-      console.log('❌ Failed to send backup emails, but credentials were updated');
+  console.log('[ERROR] Failed to send backup emails, but credentials were updated');
     }
 
     // Log the update
-    console.log('🔄 Credentials updated:', {
+  console.log('[INFO] Credentials updated:', {
       oldUsername: currentCredentials.username,
       newUsername: newUsername,
       oldBackupEmail: oldBackupEmail,
@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
     );
 
   } catch (error) {
-    console.error('❌ Error updating credentials:', error);
+  console.error('[ERROR] Error updating credentials:', error);
     return NextResponse.json(
       { message: 'Internal server error' },
       { status: 500 }

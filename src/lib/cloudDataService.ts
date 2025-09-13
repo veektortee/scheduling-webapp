@@ -119,7 +119,12 @@ export class CloudDataService {
       const exportData: Record<string, unknown> = {};
       const schedulingKeys = [
         'scheduling-results-v1',
-        'scheduling-last-results-v1'
+        'scheduling-last-results-v1',
+        'scheduling-state-v1',
+        'calendarState',
+        'theme',
+        'result-folder-counter',
+        'scheduling-session-id'
       ];
 
       // Collect data to sync
@@ -129,7 +134,8 @@ export class CloudDataService {
           try {
             exportData[key] = JSON.parse(data);
           } catch {
-            // Skip invalid JSON
+            // Not JSON, store raw string (counters/ids)
+            exportData[key] = data;
           }
         }
       });

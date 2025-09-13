@@ -118,8 +118,8 @@ async function runHybridSolver(caseData: Record<string, unknown>): Promise<Solve
     try {
       console.log('[STATUS] Checking for local solver...');
       // Use configurable timeout for local solver (default 30 minutes for very large problems)
-      const localTimeoutMs = parseInt(process.env.LOCAL_SOLVER_TIMEOUT_MS || '1800000', 10);
-      console.log(`🕐 Using local solver timeout: ${localTimeoutMs}ms (${localTimeoutMs / 60000} minutes)`);
+  const localTimeoutMs = parseInt(process.env.LOCAL_SOLVER_TIMEOUT_MS || '1800000', 10);
+  console.log(`[INFO] Using local solver timeout: ${localTimeoutMs}ms (${localTimeoutMs / 60000} minutes)`);
       
       const localResponse = await fetch('http://localhost:8000/solve', {
         method: 'POST',
@@ -145,21 +145,21 @@ async function runHybridSolver(caseData: Record<string, unknown>): Promise<Solve
           }
         };
       }
-    } catch (localError) {
+  } catch (localError) {
       // Better error handling for local solver issues
       const isTimeout = localError instanceof Error && localError.name === 'TimeoutError';
       const isAbortError = localError instanceof Error && localError.name === 'AbortError';
       const isNetworkError = localError instanceof Error && localError.message.includes('fetch');
       
       if (isTimeout || isAbortError) {
-        console.log('[TIMEOUT] Local solver timed out - the solver may still be working in background');
+        console.log('[WARN] Local solver timed out - the solver may still be working in background');
         const shiftsCount = Array.isArray(caseData.shifts) ? caseData.shifts.length : 0;
         console.log(`[INFO] For large problems (${shiftsCount} shifts), consider:`);
         console.log('   - Waiting for the solver to finish (may take several minutes)');
         console.log('   - Increasing timeout via LOCAL_SOLVER_TIMEOUT_MS environment variable');
         console.log('   - Checking the local solver terminal for progress updates');
       } else if (isNetworkError) {
-        console.log('[CONNECTION] Local solver connection failed - not installed or not running');
+        console.log('[ERROR] Local solver connection failed - not installed or not running');
       } else {
         console.log('[ERROR] Local solver error:', localError);
       }
@@ -177,7 +177,7 @@ async function runHybridSolver(caseData: Record<string, unknown>): Promise<Solve
     return result;
     
   } catch (error) {
-    console.error('❌ Hybrid solver error:', error);
+    console.error('[ERROR] Hybrid solver error:', error);
     globalProgressTracker?.cleanup();
     throw error;
   }
@@ -186,7 +186,7 @@ async function runHybridSolver(caseData: Record<string, unknown>): Promise<Solve
 // Serverless solver function
 async function runServerlessSolver(caseData: Record<string, unknown>, runId: string, startTime: number): Promise<SolverResult> {
   try {
-    console.log(`[STATUS] Starting serverless optimization for run: ${runId}`);
+  console.log(`[INFO] Starting serverless optimization for run: ${runId}`);
     
 
 // Helper: write serverless results to disk under solver_output/Result_N
@@ -327,7 +327,7 @@ function persistServerlessResult(runId: string, results: SolverResult) {
     };
     
   } catch (error) {
-    console.error('❌ Serverless solver error:', error);
+    console.error('[ERROR] Serverless solver error:', error);
     
     const executionTime = Date.now() - startTime;
     const errorMessage = error instanceof Error ? error.message : 'Unknown optimization error';
@@ -580,7 +580,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(result);
     
   } catch (error: unknown) {
-    console.error('❌ Serverless solver error:', error);
+  console.error('[ERROR] Serverless solver error:', error);
     
     // Cleanup progress tracker on error
     globalProgressTracker?.cleanup();

@@ -80,8 +80,8 @@ export async function sendCredentialsEmail({ username, password, backupEmail }: 
   try {
     console.log('[EMAIL] === EMAIL SERVICE ===');
     console.log('[EMAIL] Attempting to send credentials email...');
-    console.log('[EMAIL] Recipient:', backupEmail);
-    console.log('[EMAIL] Username:', username);
+      console.log('[EMAIL] Recipient:', backupEmail);
+      console.log('[EMAIL] Username:', username);
     
     // Create appropriate transporter
     let transporter = createEmailTransporter();
@@ -121,7 +121,7 @@ export async function sendCredentialsEmail({ username, password, backupEmail }: 
     <body>
       <div class="container">
         <div class="header">
-          <h1>� Staff Scheduling System</h1>
+          <h1>Staff Scheduling System</h1>
           <p>Login Credentials Updated</p>
         </div>
         
@@ -187,32 +187,32 @@ Timestamp: ${new Date().toLocaleString()}
       `
     });
 
-    console.log('[EMAIL] Email sent successfully!');
-    console.log('📧 Message ID:', info.messageId);
+  console.log('[EMAIL] Email sent successfully!');
+  console.log('[EMAIL] Message ID:', info.messageId);
     
     // Handle development vs production logging
     if (isDevelopment) {
       const previewUrl = nodemailer.getTestMessageUrl(info);
       if (previewUrl) {
-        console.log('📧 ✨ EMAIL PREVIEW URL (DEVELOPMENT MODE):');
-        console.log('📧 🔗', previewUrl);
-        console.log('📧 ⚠️  NOTE: This is DEVELOPMENT mode - email sent to test inbox');
-        console.log('📧 ⚠️  To send real emails, configure EMAIL_SERVICE in .env.local');
+        console.log('[EMAIL] EMAIL PREVIEW URL (DEVELOPMENT MODE):');
+        console.log('[EMAIL] PREVIEW URL:', previewUrl);
+        console.log('[NOTICE] NOTE: This is DEVELOPMENT mode - email sent to test inbox');
+        console.log('[NOTICE] To send real emails, configure EMAIL_SERVICE in .env.local');
       }
     } else {
-      console.log('📧 ✅ PRODUCTION: Email sent to real address:', backupEmail);
-      console.log('📧 📬 Email should arrive in recipient\'s inbox shortly');
+  console.log('[EMAIL] PRODUCTION: Email sent to real address:', backupEmail);
+  console.log('[EMAIL] Email should arrive in recipient\'s inbox shortly');
     }
     
-    console.log('📧 === EMAIL SERVICE COMPLETE ===');
+  console.log('[EMAIL] === EMAIL SERVICE COMPLETE ===');
 
     return true;
   } catch (error) {
-    console.error('❌ Failed to send email:', error);
+    console.error('[ERROR] Failed to send email:', error);
     if (error instanceof Error) {
-      console.error('❌ Error details:', error.message);
+      console.error('[ERROR] Error details:', error.message);
     }
-    console.log('📧 === EMAIL SERVICE FAILED ===');
+    console.log('[EMAIL] === EMAIL SERVICE FAILED ===');
     return false;
   }
 }
@@ -245,12 +245,12 @@ export async function sendCredentialsEmailProduction({ username, password, backu
     */
     
     // For now, just log the credentials (replace with actual email sending in production)
-    console.log('📧 [PRODUCTION] Would send email to:', backupEmail);
-    console.log('📧 [PRODUCTION] New credentials:', { username, password });
+  console.log('[EMAIL] [PRODUCTION] Would send email to:', backupEmail);
+  console.log('[EMAIL] [PRODUCTION] New credentials:', { username, password });
     
     return true;
   } catch (error) {
-    console.error('❌ Failed to send production email:', error);
+    console.error('[ERROR] Failed to send production email:', error);
     return false;
   }
 }
@@ -258,14 +258,14 @@ export async function sendCredentialsEmailProduction({ username, password, backu
 // Secure credential recovery email service
 export async function sendCredentialRecoveryEmail(username: string, password: string, backupEmail: string, recoveryToken: string): Promise<boolean> {
   try {
-    console.log('📧 === CREDENTIAL RECOVERY EMAIL SERVICE ===');
-    console.log('📧 Attempting to send credential recovery email...');
-    console.log('📧 Recipient (backup email):', backupEmail);
-    console.log('📧 Recovery token:', recoveryToken);
+  console.log('[EMAIL] === CREDENTIAL RECOVERY EMAIL SERVICE ===');
+  console.log('[EMAIL] Attempting to send credential recovery email...');
+  console.log('[EMAIL] Recipient (backup email):', backupEmail);
+  console.log('[EMAIL] Recovery token:', recoveryToken);
     
     // Create a test account for development
     const testAccount = await nodemailer.createTestAccount();
-    console.log('📧 Test account created:', testAccount.user);
+  console.log('[EMAIL] Test account created:', testAccount.user);
     
     const transporter = nodemailer.createTransport({
       host: 'smtp.ethereal.email',
@@ -302,20 +302,20 @@ export async function sendCredentialRecoveryEmail(username: string, password: st
     <body>
       <div class="container">
         <div class="header">
-          <h1>🔐 Staff Scheduling System</h1>
+          <h1>Staff Scheduling System</h1>
           <p>Credential Recovery Request</p>
         </div>
         
         <div class="content">
           <div class="security-alert">
-            <strong>🚨 SECURITY ALERT:</strong>
+            <strong>[ALERT] SECURITY ALERT:</strong>
             <p>Someone requested to recover the login credentials for your Staff Scheduling System account. This email was sent to your registered backup email address.</p>
           </div>
           
           <h2>Your Current Login Credentials</h2>
           
           <div class="credentials">
-            <h3>🔑 Login Information</h3>
+            <h3>[LOGIN] Login Information</h3>
             <div class="credential-item">
               <div class="label">Username:</div>
               <div class="value">${username}</div>
@@ -327,7 +327,7 @@ export async function sendCredentialRecoveryEmail(username: string, password: st
           </div>
           
           <div class="warning">
-            <strong>⚠️ IMPORTANT SECURITY NOTICE:</strong>
+            <strong>[WARNING] IMPORTANT SECURITY NOTICE:</strong>
             <ul>
               <li><strong>If you did NOT request this recovery, contact your system administrator immediately</strong></li>
               <li>This recovery request was made at: ${new Date().toLocaleString()}</li>
@@ -338,7 +338,7 @@ export async function sendCredentialRecoveryEmail(username: string, password: st
           </div>
           
           <div class="security-alert">
-            <strong>🛡️ Recovery Token:</strong>
+            <strong>[RECOVERY] Recovery Token:</strong>
             <div class="token">${recoveryToken}</div>
             <p><small>This token was generated for security tracking purposes.</small></p>
           </div>
@@ -366,7 +366,7 @@ export async function sendCredentialRecoveryEmail(username: string, password: st
     const info = await transporter.sendMail({
       from: '"Staff Scheduling System Security" <security@scheduling.com>',
       to: backupEmail,
-      subject: '🔐 SECURITY ALERT - Staff Scheduling System Credential Recovery',
+  subject: '[SECURITY] Staff Scheduling System - Credential Recovery',
       html: htmlContent,
       text: `
 SECURITY ALERT - Staff Scheduling System
@@ -397,23 +397,23 @@ If you have any concerns about this recovery request, please contact your system
       `
     });
 
-    console.log('📧 Credential recovery email sent successfully!');
-    console.log('📧 Message ID:', info.messageId);
+  console.log('[EMAIL] Credential recovery email sent successfully!');
+  console.log('[EMAIL] Message ID:', info.messageId);
     
     // For development, log the preview URL
     const previewUrl = nodemailer.getTestMessageUrl(info);
     if (previewUrl) {
-      console.log('📧 ✨ RECOVERY EMAIL PREVIEW URL:');
-      console.log('📧 🔗', previewUrl);
-      console.log('📧 ⚠️  NOTE: This is a TEST email service for development');
+      console.log('[EMAIL] RECOVERY EMAIL PREVIEW URL:');
+      console.log('[EMAIL] PREVIEW URL:', previewUrl);
+      console.log('[NOTICE] NOTE: This is a TEST email service for development');
     }
     
-    console.log('📧 === CREDENTIAL RECOVERY EMAIL COMPLETE ===');
+  console.log('[EMAIL] === CREDENTIAL RECOVERY EMAIL COMPLETE ===');
 
     return true;
   } catch (error) {
-    console.error('❌ Failed to send credential recovery email:', error);
-    console.log('📧 === CREDENTIAL RECOVERY EMAIL FAILED ===');
+  console.error('[ERROR] Failed to send credential recovery email:', error);
+  console.log('[EMAIL] === CREDENTIAL RECOVERY EMAIL FAILED ===');
     return false;
   }
 }
@@ -426,11 +426,11 @@ export async function sendCredentialsToBothEmails(
   newBackupEmail: string
 ): Promise<boolean> {
   try {
-    console.log('📧 === DUAL EMAIL CREDENTIAL SERVICE ===');
-    console.log('📧 Sending credentials to both old and new backup emails...');
-    console.log('📧 Old backup email:', oldBackupEmail);
-    console.log('📧 New backup email:', newBackupEmail);
-    console.log('📧 Username:', username);
+  console.log('[EMAIL] === DUAL EMAIL CREDENTIAL SERVICE ===');
+  console.log('[EMAIL] Sending credentials to both old and new backup emails...');
+  console.log('[EMAIL] Old backup email:', oldBackupEmail);
+  console.log('[EMAIL] New backup email:', newBackupEmail);
+  console.log('[EMAIL] Username:', username);
     
     // Create appropriate transporter
     let transporter = createEmailTransporter();
@@ -470,20 +470,20 @@ export async function sendCredentialsToBothEmails(
     <body>
       <div class="container">
         <div class="header">
-          <h1>🔐 Staff Scheduling System</h1>
+          <h1>Staff Scheduling System</h1>
           <p>Security Alert - Credentials Changed</p>
         </div>
         
         <div class="content">
           <div class="security-alert">
-            <strong>🚨 SECURITY NOTIFICATION:</strong>
+            <strong>[SECURITY] SECURITY NOTIFICATION:</strong>
             <p>The login credentials for your Staff Scheduling System account have been changed, and the backup email has been updated to a new address.</p>
           </div>
           
           <h2>New Login Credentials</h2>
           
           <div class="credentials">
-            <h3>🔑 Updated Login Information</h3>
+            <h3>[LOGIN] Updated Login Information</h3>
             <div class="credential-item">
               <div class="label">New Username:</div>
               <div class="value">${username}</div>
@@ -499,7 +499,7 @@ export async function sendCredentialsToBothEmails(
           </div>
           
           <div class="warning">
-            <strong>⚠️ IMPORTANT SECURITY NOTICE:</strong>
+            <strong>[WARNING] IMPORTANT SECURITY NOTICE:</strong>
             <ul>
               <li><strong>This email was sent to your previous backup email address</strong></li>
               <li><strong>If you did NOT make these changes, contact your system administrator immediately</strong></li>
@@ -546,20 +546,20 @@ export async function sendCredentialsToBothEmails(
     <body>
       <div class="container">
         <div class="header">
-          <h1>� Staff Scheduling System</h1>
+          <h1>Staff Scheduling System</h1>
           <p>Welcome - New Backup Email Configured</p>
         </div>
         
         <div class="content">
           <div class="welcome">
-            <strong>✅ WELCOME:</strong>
+            <strong>[OK] WELCOME:</strong>
             <p>This email address has been set as the new backup email for the Staff Scheduling System. You will now receive important security notifications and credential recovery emails at this address.</p>
           </div>
           
           <h2>Your Current Login Credentials</h2>
           
           <div class="credentials">
-            <h3>🔑 Login Information</h3>
+            <h3>[LOGIN] Login Information</h3>
             <div class="credential-item">
               <div class="label">Username:</div>
               <div class="value">${username}</div>
@@ -575,7 +575,7 @@ export async function sendCredentialsToBothEmails(
           </div>
           
           <div class="warning">
-            <strong>⚠️ SECURITY INFORMATION:</strong>
+            <strong>[WARNING] SECURITY INFORMATION:</strong>
             <ul>
               <li>This email address is now configured for credential recovery</li>
               <li>If you lose access to your account, you can use "Forgot your credentials?" on the login page</li>
@@ -606,7 +606,7 @@ export async function sendCredentialsToBothEmails(
         transporter.sendMail({
           from: securityFromEmail,
           to: oldBackupEmail,
-          subject: '🚨 SECURITY ALERT - Staff Scheduling Credentials Changed',
+          subject: '[SECURITY] Staff Scheduling - Credentials Changed',
           html: oldEmailHtmlContent,
           text: `
 SECURITY ALERT - Staff Scheduling System
@@ -637,7 +637,7 @@ Timestamp: ${new Date().toISOString()}
         transporter.sendMail({
           from: normalFromEmail,
           to: newBackupEmail,
-          subject: '✅ Scheduling System - New Backup Email Configured',
+          subject: '[OK] Scheduling System - New Backup Email Configured',
           html: newEmailHtmlContent,
           text: `
 Staff Scheduling System - New Backup Email Configured
@@ -664,7 +664,7 @@ Timestamp: ${new Date().toISOString()}
     // Wait for all emails to be sent
     const results = await Promise.all(emailPromises);
     
-    console.log('📧 All credential emails sent successfully!');
+  console.log('[EMAIL] All credential emails sent successfully!');
     
     // Log preview URLs for development
     results.forEach((result, index) => {
@@ -672,17 +672,17 @@ Timestamp: ${new Date().toISOString()}
       if (previewUrl) {
         const recipient = index === 0 && oldBackupEmail !== newBackupEmail ? oldBackupEmail : newBackupEmail;
         const type = index === 0 && oldBackupEmail !== newBackupEmail ? 'OLD' : 'NEW';
-        console.log(`📧 ✨ ${type} EMAIL PREVIEW URL (${recipient}):`);
-        console.log('📧 🔗', previewUrl);
+        console.log(`[EMAIL] ${type} EMAIL PREVIEW URL (${recipient}):`);
+        console.log('[EMAIL] PREVIEW URL:', previewUrl);
       }
     });
     
-    console.log('📧 === DUAL EMAIL CREDENTIAL SERVICE COMPLETE ===');
+  console.log('[EMAIL] === DUAL EMAIL CREDENTIAL SERVICE COMPLETE ===');
 
     return true;
   } catch (error) {
-    console.error('❌ Failed to send credential emails:', error);
-    console.log('📧 === DUAL EMAIL CREDENTIAL SERVICE FAILED ===');
+  console.error('[ERROR] Failed to send credential emails:', error);
+  console.log('[EMAIL] === DUAL EMAIL CREDENTIAL SERVICE FAILED ===');
     return false;
   }
 }

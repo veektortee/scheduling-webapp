@@ -39,7 +39,7 @@ export default function AppearanceSettings() {
               onClick={() => setIsOpen(false)}
               className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center justify-center transition-colors duration-200"
             >
-              <span className="text-gray-600 dark:text-gray-300 text-sm">✕</span>
+              <span className="text-gray-600 dark:text-gray-300 text-sm">X</span>
             </button>
           </div>
 

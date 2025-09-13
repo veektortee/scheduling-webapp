@@ -20,21 +20,21 @@ const handler = NextAuth({
         password: { label: 'Password', type: 'password' }
       },
       async authorize(credentials, req) {
-        console.log('🔐 Auth attempt:', { 
+  console.log('[SECURITY] Auth attempt:', { 
           email: credentials?.email, 
           hasPassword: !!credentials?.password,
           environment: process.env.NODE_ENV
         })
         
         if (!credentials?.email || !credentials?.password) {
-          console.log('❌ Missing credentials')
+          console.log('[ERROR] Missing credentials')
           return null
         }
 
         // Check if client is locked out
         const lockoutInfo = lockoutManager.getLockoutInfo(req);
         if (lockoutInfo.isLockedOut) {
-          console.log('🔒 Login attempt blocked - client is locked out');
+          console.log('[SECURITY] Login attempt blocked - client is locked out');
           const remainingTime = lockoutInfo.remainingTime 
             ? lockoutManager.getFormattedRemainingTime(lockoutInfo.remainingTime)
             : 'unknown time';
@@ -50,7 +50,7 @@ const handler = NextAuth({
         });
         
         if (isValid) {
-          console.log('✅ Authentication successful')
+          console.log('[SUCCESS] Authentication successful')
           // Reset failed attempts on successful login
           lockoutManager.resetAttempts(req);
           return {
@@ -65,7 +65,7 @@ const handler = NextAuth({
         lockoutManager.recordFailedAttempt(req);
         const newLockoutInfo = lockoutManager.getLockoutInfo(req);
         
-        console.log('❌ Authentication failed', {
+  console.log('[ERROR] Authentication failed', {
           attemptCount: newLockoutInfo.attemptCount,
           isNowLockedOut: newLockoutInfo.isLockedOut
         });
@@ -88,7 +88,7 @@ const handler = NextAuth({
       console.log('🔍 JWT callback:', { user: !!user, token: { sub: token.sub, role: token.role } });
       if (user) {
         token.role = user.role;
-        console.log('✅ User added to token:', { role: user.role });
+  console.log('[SUCCESS] User added to token:', { role: user.role });
       }
       return token;
     },
@@ -97,7 +97,7 @@ const handler = NextAuth({
       if (token) {
         session.user.id = token.sub!;
         session.user.role = token.role as string;
-        console.log('✅ Session updated:', { userId: session.user.id, role: session.user.role });
+  console.log('[SUCCESS] Session updated:', { userId: session.user.id, role: session.user.role });
       }
       return session;
     }

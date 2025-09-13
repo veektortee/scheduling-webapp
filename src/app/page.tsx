@@ -35,21 +35,21 @@ export default function Home() {
   useEffect(() => {
     if (status === 'loading') return; // Still loading
     
-    console.log('🔍 Auth status:', { status, session: !!session, role: session?.user?.role });
+    console.log('[INFO] Auth status:', { status, session: !!session, role: session?.user?.role });
     
     if (!session) {
-      console.log('❌ No session found, redirecting to login');
+      console.log('[WARN] No session found, redirecting to login');
       router.push('/login');
       return;
     }
     
     if (session.user?.role !== 'admin') {
-      console.log('❌ User is not admin, redirecting to login');
+      console.log('[WARN] User is not admin, redirecting to login');
       router.push('/login');
       return;
     }
     
-    console.log('✅ User is authenticated with admin role');
+    console.log('[OK] User is authenticated with admin role');
   }, [session, status, router]);
 
   useEffect(() => {

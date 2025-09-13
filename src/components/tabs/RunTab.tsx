@@ -490,9 +490,9 @@ export default function RunTab() {
       }
     }
 
-    addLog('⚠️ Could not auto-activate local server', 'warning');
-    addLog('💡 Please run the start script manually: start_local_solver.bat (Windows) or ./start_local_solver.sh (Mac/Linux)', 'info');
-    addLog('📁 Files are downloaded and ready in your Downloads folder', 'info');
+  addLog('[WARN] Could not auto-activate local server', 'warning');
+  addLog('[TIP] Please run the start script manually: start_local_solver.bat (Windows) or ./start_local_solver.sh (Mac/Linux)', 'info');
+  addLog('[FILE] Files are downloaded and ready in your Downloads folder', 'info');
     
     return false;
   }, [addLog, checkInstallationStatus]);
@@ -545,7 +545,7 @@ export default function RunTab() {
     if (requestedName) {
       const conflict = await checkNameConflict(requestedName);
       if (conflict) {
-        addLog(`❌ Output folder name '${requestedName}' already exists. Please choose a different name.`, 'error');
+        addLog(`[ERROR] Output folder name '${requestedName}' already exists. Please choose a different name.`, 'error');
         setIsRunning(false);
         return;
       }
@@ -559,22 +559,22 @@ export default function RunTab() {
       case 'local':
         shouldTryLocal = true;
         shouldTryServerless = false;
-        addLog('🚀 Starting LOCAL high-performance optimization...', 'info');
+  addLog('[RUN] Starting LOCAL high-performance optimization...', 'info');
         break;
       case 'serverless':
         shouldTryLocal = false;
         shouldTryServerless = true;
-        addLog('🌐 Starting SERVERLESS optimization...', 'info');
+  addLog('[RUN] Starting SERVERLESS optimization...', 'info');
         break;
       case 'auto':
       default:
         shouldTryLocal = localSolverAvailable === true;
         shouldTryServerless = true;
-        addLog('🔄 Starting optimization (auto-detect mode)...', 'info');
+  addLog('[RUN] Starting optimization (auto-detect mode)...', 'info');
         break;
     }
 
-    addLog(`📊 Processing ${schedulingCase.shifts.length} shifts and ${schedulingCase.providers.length} providers`);
+  addLog(`[INFO] Processing ${schedulingCase.shifts.length} shifts and ${schedulingCase.providers.length} providers`);
 
     try {
       const startTime = Date.now();
@@ -583,8 +583,8 @@ export default function RunTab() {
       // Try local solver first if requested
       if (shouldTryLocal) {
         setSolverState('running');
-        addLog('🔌 Connecting to local solver...', 'info');
-        addLog('⏱️ Complex optimizations may take several hours - please be patient...', 'info');
+            addLog('[CONNECT] Connecting to local solver...', 'info');
+            addLog('[INFO] Complex optimizations may take several hours - please be patient...', 'info');
         
         try {
           const localResponse = await fetch('http://localhost:8000/solve', {
@@ -596,7 +596,7 @@ export default function RunTab() {
           
           if (localResponse.ok) {
             result = await localResponse.json();
-            addLog('⚡ Using LOCAL high-performance solver', 'success');
+            addLog('[SUCCESS] Using LOCAL high-performance solver', 'success');
             
             // Add solver type info to result
             if (result && result.statistics) {
@@ -605,13 +605,13 @@ export default function RunTab() {
           } else {
             throw new Error(`Local solver returned ${localResponse.status}`);
           }
-        } catch (localError) {
+          } catch (localError) {
           const errorMsg = localError instanceof Error ? localError.message : 'Unknown error';
-          addLog(`⚠️ Local solver not responding: ${errorMsg}`, 'warning');
+          addLog(`[WARN] Local solver not responding: ${errorMsg}`, 'warning');
           
           // Try to auto-start the local server if files are available
           if (installationStatus.filesInstalled) {
-            addLog('🔄 Attempting to start local server automatically...', 'info');
+            addLog('[ACTION] Attempting to start local server automatically...', 'info');
             const serverStarted = await startLocalServer();
             
             if (serverStarted) {
@@ -626,14 +626,14 @@ export default function RunTab() {
                 
                 if (retryResponse.ok) {
                   result = await retryResponse.json();
-                  addLog('⚡ Using LOCAL high-performance solver (auto-started)', 'success');
+                  addLog('[SUCCESS] Using LOCAL high-performance solver (auto-started)', 'success');
                   
                   if (result && result.statistics) {
                     result.statistics.actualSolverUsed = 'local';
                   }
                 }
               } catch {
-                addLog('❌ Retry after auto-start failed', 'error');
+                addLog('[ERROR] Retry after auto-start failed', 'error');
               }
             }
           }
@@ -642,13 +642,13 @@ export default function RunTab() {
             throw new Error(`Local solver required but failed: ${errorMsg}`);
           }
           
-          addLog('🔄 Falling back to serverless solver...', 'warning');
+          addLog('[WARN] Falling back to serverless solver...', 'warning');
         }
       }
       
       // Try serverless if local failed or not requested
       if (!result && shouldTryServerless) {
-        addLog('📡 Connecting to serverless solver...', 'info');
+  addLog('[CONNECT] Connecting to serverless solver...', 'info');
         
         const serverlessResponse = await fetch('/api/solve?mode=serverless', {
           method: 'POST',
@@ -662,7 +662,7 @@ export default function RunTab() {
         }
 
         result = await serverlessResponse.json();
-        addLog('🌐 Using SERVERLESS solver', 'success');
+  addLog('[SUCCESS] Using SERVERLESS solver', 'success');
         
         // Add solver type info to result
         if (result && result.statistics) {
@@ -676,7 +676,7 @@ export default function RunTab() {
 
       const executionTime = Date.now() - startTime;
       const actualSolver = (result.statistics?.actualSolverUsed as string) || 'unknown';
-      addLog(`⚡ Optimization completed in ${executionTime}ms using ${actualSolver.toUpperCase()} solver`, 'success');
+  addLog(`[SUCCESS] Optimization completed in ${executionTime}ms using ${actualSolver.toUpperCase()} solver`, 'success');
       
       if (result.status === 'completed') {
         setSolverState('finished');
@@ -688,8 +688,8 @@ export default function RunTab() {
           const solutions = resultsData.solutions || [];
           const stats = resultsData.solver_stats || {};
           
-          addLog(`✅ Generated ${solutions.length} solution(s)`, 'success');
-          addLog(`🔧 Solver: ${stats.solver_type || 'serverless'} (${stats.status || 'completed'})`, 'info');
+          addLog(`[OK] Generated ${solutions.length} solution(s)`, 'success');
+          addLog(`[SOLVER] Solver: ${stats.solver_type || 'serverless'} (${stats.status || 'completed'})`, 'info');
           
           // Generate a result folder name. Prefer output_directory returned by serverless solver
           const generatedName = generateResultFolderName();
@@ -706,10 +706,10 @@ export default function RunTab() {
                 const conv = await fetch(`/api/convert/run-to-result?runId=${encodeURIComponent(candidate)}`);
                 if (conv.ok) {
                   const data = await conv.json();
-                  if (data.folderName) {
+                    if (data.folderName) {
                     finalOutputDirectory = data.folderName;
                     localStorage.setItem('result-folder-counter', JSON.stringify(parseInt(data.folderName.split('_')[1], 10)));
-                    addLog(`📁 Converted run folder to ${data.folderName}`, 'success');
+                    addLog(`[FILE] Converted run folder to ${data.folderName}`, 'success');
                   }
                 }
               } catch {
@@ -777,10 +777,10 @@ export default function RunTab() {
                   }
                 });
                 
-                addLog(`📅 Calendar data updated with ${assignments.length} scheduling assignments`, 'success');
+                addLog(`[INFO] Calendar data updated with ${assignments.length} scheduling assignments`, 'success');
               }
-            } catch {
-              addLog('⚠️ Could not parse scheduling results for calendar display', 'warning');
+              } catch {
+              addLog('[WARN] Could not parse scheduling results for calendar display', 'warning');
             }
           }
           
@@ -800,9 +800,9 @@ export default function RunTab() {
           // });
           
           // For now, just log the results
-          addLog(`📊 Results: ${JSON.stringify(result.results, null, 2).slice(0, 200)}...`, 'info');
+          addLog(`[INFO] Results: ${JSON.stringify(result.results, null, 2).slice(0, 200)}...`, 'info');
           
-          addLog('📋 Results saved and ready for export', 'success');
+          addLog('[INFO] Results saved and ready for export', 'success');
         }
         
       } else if (result.status === 'error') {
@@ -811,7 +811,7 @@ export default function RunTab() {
       
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      addLog(`❌ Optimization failed: ${errorMessage}`, 'error');
+  addLog(`[ERROR] Optimization failed: ${errorMessage}`, 'error');
       setSolverState('error');
       setProgress(0);
     } finally {
@@ -824,22 +824,22 @@ export default function RunTab() {
     setIsRunning(false);
     setSolverState('ready');
     setProgress(0);
-    addLog('🛑 Optimization stopped by user', 'warning');
+  addLog('[WARN] Optimization stopped by user', 'warning');
   };
 
   const handleOpenOutputFolder = async () => {
     if (!lastResults) {
-      addLog(`📂 No recent results available. Current output folder setting: ${schedulingCase.run.out}`, 'warning');
-      addLog('💡 Run optimization first to generate results that can be viewed', 'info');
+  addLog(`[WARN] No recent results available. Current output folder setting: ${schedulingCase.run.out}`, 'warning');
+  addLog('[TIP] Run optimization first to generate results that can be viewed', 'info');
       return;
     }
 
     const { run_id, output_directory, timestamp, solver_type } = lastResults;
     
     try {
-      addLog(`📂 Opening results for run: ${run_id}`, 'info');
-      addLog(`📅 Generated: ${new Date(timestamp).toLocaleString()}`, 'info');
-      addLog(`🔧 Solver: ${solver_type}`, 'info');
+  addLog(`[INFO] Opening results for run: ${run_id}`, 'info');
+  addLog(`[INFO] Generated: ${new Date(timestamp).toLocaleString()}`, 'info');
+  addLog(`[INFO] Solver: ${solver_type}`, 'info');
       
   // Load available files and show download menu
   await loadAvailableFiles();
@@ -850,11 +850,11 @@ export default function RunTab() {
           const response = await fetch(`http://localhost:8000/output/${run_id}`);
           if (response.ok) {
             const outputInfo = await response.json();
-            addLog(`📁 Output directory: ${outputInfo.output_directory}`, 'success');
+            addLog(`[FILE] Output directory: ${outputInfo.output_directory}`, 'success');
             
             // Display files with details and timestamps
             if (outputInfo.files && outputInfo.files.length > 0) {
-              addLog('📄 Generated files:', 'info');
+              addLog('[INFO] Generated files:', 'info');
               
               // Sort files by modification time (newest first)
               const sortedFiles = outputInfo.files.sort((a: { name: string; size: number; modified: string }, b: { name: string; size: number; modified: string }) => 
@@ -867,13 +867,13 @@ export default function RunTab() {
                 const isNewest = index === 0;
                 
                 if (file.name.endsWith('.xlsx')) {
-                  addLog(`   ${isNewest ? '⭐' : '📊'} ${file.name} - Excel schedule output (${sizeKB} KB, ${modifiedDate})`, 
+                  addLog(`   ${isNewest ? '[LATEST]' : '[EXCEL]'} ${file.name} - Excel schedule output (${sizeKB} KB, ${modifiedDate})`, 
                          isNewest ? 'success' : 'info');
                 } else if (file.name.endsWith('.json')) {
-                  addLog(`   ${isNewest ? '⭐' : '📋'} ${file.name} - Configuration/Results data (${sizeKB} KB, ${modifiedDate})`, 
+                  addLog(`   ${isNewest ? '[LATEST]' : '[JSON]'} ${file.name} - Configuration/Results data (${sizeKB} KB, ${modifiedDate})`, 
                          isNewest ? 'success' : 'info');
                 } else {
-                  addLog(`   ${isNewest ? '⭐' : '📄'} ${file.name} (${sizeKB} KB, ${modifiedDate})`, 
+                  addLog(`   ${isNewest ? '[LATEST]' : '[FILE]'} ${file.name} (${sizeKB} KB, ${modifiedDate})`, 
                          isNewest ? 'success' : 'info');
                 }
               });
@@ -882,40 +882,40 @@ export default function RunTab() {
               const excelFiles = sortedFiles.filter((f: { name: string; size: number; modified: string }) => f.name.endsWith('.xlsx'));
               if (excelFiles.length > 0) {
                 const newestExcel = excelFiles[0];
-                addLog(`✨ Latest Excel output: ${newestExcel.name} (Modified: ${new Date(newestExcel.modified).toLocaleString()})`, 'success');
-                addLog('💡 This file contains the most recent schedule assignments and can be opened in Excel', 'info');
-                addLog(`🔗 Download link: http://localhost:8000/download/${run_id}/${newestExcel.name}`, 'info');
+                addLog(`[LATEST] Latest Excel output: ${newestExcel.name} (Modified: ${new Date(newestExcel.modified).toLocaleString()})`, 'success');
+                addLog('[TIP] This file contains the most recent schedule assignments and can be opened in Excel', 'info');
+                addLog(`[LINK] Download link: http://localhost:8000/download/${run_id}/${newestExcel.name}`, 'info');
               }
             } else {
-              addLog('📄 Contains input_case.json and results.json', 'info');
+              addLog('[INFO] Contains input_case.json and results.json', 'info');
             }
             
             // For Windows, try to open the folder in explorer
             if (navigator.platform.includes('Win')) {
-              addLog('💡 On Windows: Open File Explorer and navigate to the solver_output folder in your project directory', 'info');
+              addLog('[TIP] On Windows: Open File Explorer and navigate to the solver_output folder in your project directory', 'info');
             }
           } else {
-            addLog(`📁 Output directory: ${output_directory}`, 'success');
-            addLog('📄 Contains input_case.json and results.json', 'info');
+            addLog(`[FILE] Output directory: ${output_directory}`, 'success');
+            addLog('[INFO] Contains input_case.json and results.json', 'info');
           }
         } catch {
-          addLog(`📁 Output directory: ${output_directory}`, 'success');
-          addLog('💡 Check your project folder > solver_output > [run_id] for generated files', 'info');
+          addLog(`[FILE] Output directory: ${output_directory}`, 'success');
+          addLog('[TIP] Check your project folder > solver_output > [run_id] for generated files', 'info');
         }
       } else {
         // For serverless results, show export options
-        addLog('🌐 Serverless solver results are available in the export functions', 'success');
-        addLog('📊 Use "Export Results" to download the generated schedule', 'info');
+  addLog('[INFO] Serverless solver results are available in the export functions', 'success');
+  addLog('[INFO] Use "Export Results" to download the generated schedule', 'info');
         
         // Auto-generate and display newest Excel export
         try {
           const { exportScheduleToExcel, generateMockResults } = await import('@/lib/excelExport');
           const mockResults = generateMockResults(schedulingCase);
           const filename = exportScheduleToExcel(schedulingCase, mockResults, `Latest_Schedule_${new Date().toISOString().split('T')[0]}.xlsx`);
-          addLog(`📊 Generated latest Excel export: ${filename}`, 'success');
-          addLog('✨ This file contains the newest schedule configuration and assignments', 'info');
+          addLog(`[DOWNLOADED] Generated latest Excel export: ${filename}`, 'success');
+          addLog('[TIP] This file contains the newest schedule configuration and assignments', 'info');
         } catch {
-          addLog('⚠️ Could not auto-generate Excel export', 'warning');
+    addLog('[WARN] Could not auto-generate Excel export', 'warning');
         }
       }
       
@@ -933,22 +933,22 @@ export default function RunTab() {
           };
         };
         if (results.summary) {
-          addLog(`📈 Solution summary:`, 'info');
+          addLog('[INFO] Solution summary:', 'info');
           addLog(`   • Total assignments: ${results.summary.total_assignments || 'N/A'}`, 'info');
           addLog(`   • Providers used: ${results.summary.total_providers || 'N/A'}`, 'info');
           addLog(`   • Shifts covered: ${results.summary.total_shifts || 'N/A'}`, 'info');
         }
         
         if (results.optimization_info) {
-          addLog(`⚡ Optimization info:`, 'info');
+          addLog('[INFO] Optimization info:', 'info');
           addLog(`   • Runtime: ${results.optimization_info.solver_runtime || 'N/A'}`, 'info');
           addLog(`   • Objective value: ${results.optimization_info.objective_value || 'N/A'}`, 'info');
         }
       }
       
-      addLog('💡 Use the download buttons above to get individual files', 'info');
+  addLog('[TIP] Use the download buttons above to get individual files', 'info');
     } catch (error) {
-      addLog(`❌ Error viewing results: ${error}`, 'error');
+      addLog(`[ERROR] Error viewing results: ${error}`, 'error');
     }
   };
 
@@ -971,14 +971,14 @@ export default function RunTab() {
       }));
       
   setAvailableFiles(folderData);
-      setShowFilesMenu(true);
-      addLog(`📁 Found ${folders.length} result folder${folders.length !== 1 ? 's' : ''}`, 'success');
+  setShowFilesMenu(true);
+  addLog(`[INFO] Found ${folders.length} result folder${folders.length !== 1 ? 's' : ''}`, 'success');
       
       if (folderData.length === 0) {
-        addLog('💡 Run optimization to create your first Result_1 folder', 'info');
+        addLog('[TIP] Run optimization to create your first Result_1 folder', 'info');
       }
     } catch (error) {
-      addLog(`❌ Error loading result folders: ${error}`, 'error');
+      addLog(`[ERROR] Error loading result folders: ${error}`, 'error');
     } finally {
       setLoadingFiles(false);
     }
@@ -990,7 +990,7 @@ export default function RunTab() {
         if (file.downloadUrl.startsWith('#folder-')) {
         // Handle serverless folder download via Next.js API
         const folderName = file.downloadUrl.replace('#folder-', '');
-        addLog(`📁 Requesting ZIP for ${folderName} from server...`, 'info');
+  addLog(`[INFO] Requesting ZIP for ${folderName} from server...`, 'info');
         try {
           const resp = await fetch(`/api/download/result-folder?name=${encodeURIComponent(folderName)}`);
           if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
@@ -1001,9 +1001,9 @@ export default function RunTab() {
           a.download = `${folderName}.zip`;
           a.click();
           URL.revokeObjectURL(url);
-          addLog(`📦 Downloaded: ${folderName}.zip`, 'success');
+          addLog(`[DOWNLOADED] Downloaded: ${folderName}.zip`, 'success');
         } catch (err) {
-          addLog(`❌ Failed to download ${folderName}: ${err}`, 'error');
+          addLog(`[ERROR] Failed to download ${folderName}: ${err}`, 'error');
         }
       } else if (file.downloadUrl.startsWith('#')) {
         // Handle special export cases
@@ -1011,7 +1011,7 @@ export default function RunTab() {
           const { exportScheduleToExcel, generateMockResults } = await import('@/lib/excelExport');
           const mockResults = generateMockResults(schedulingCase);
           const filename = exportScheduleToExcel(schedulingCase, mockResults, file.name);
-          addLog(`📊 Downloaded: ${filename}`, 'success');
+          addLog(`[DOWNLOADED] Downloaded: ${filename}`, 'success');
         } else if (file.downloadUrl === '#config-export') {
           const configData = JSON.stringify(schedulingCase, null, 2);
           const blob = new Blob([configData], { type: 'application/json' });
@@ -1021,21 +1021,21 @@ export default function RunTab() {
           a.download = file.name;
           a.click();
           URL.revokeObjectURL(url);
-          addLog(`📋 Downloaded: ${file.name}`, 'success');
+          addLog(`[DOWNLOADED] Downloaded: ${file.name}`, 'success');
         }
       } else {
         // Handle direct download URL (for local solver)
         if (file.isFolder) {
-          addLog(`📁 Downloading folder: ${file.name} as ZIP...`, 'info');
+          addLog(`[INFO] Downloading folder: ${file.name} as ZIP...`, 'info');
         }
         const a = document.createElement('a');
         a.href = file.downloadUrl;
         a.download = file.isFolder ? `${file.name}.zip` : file.name;
         a.click();
-        addLog(`📄 Downloaded: ${file.isFolder ? `${file.name}.zip` : file.name}`, 'success');
+          addLog(`[DOWNLOADED] Downloaded: ${file.isFolder ? `${file.name}.zip` : file.name}`, 'success');
       }
     } catch (error) {
-      addLog(`❌ Error downloading ${file.name}: ${error}`, 'error');
+      addLog(`[ERROR] Error downloading ${file.name}: ${error}`, 'error');
     }
   };
 
@@ -1193,18 +1193,18 @@ export default function RunTab() {
         }
       }
     } catch (error) {
-      addLog(`❌ Error loading result folders: ${error}`, 'error');
+      addLog(`[ERROR] Error loading result folders: ${error}`, 'error');
     }
 
     return folders;
   };
 
   const handleSmartInstall = async () => {
-    addLog('🚀 Starting Smart Install (Complete Package)...', 'info');
+    addLog('[ACTION] Starting Smart Install (Complete Package)...', 'info');
     
     try {
       // Download the complete ZIP package
-      addLog('📦 Downloading complete local solver package...', 'info');
+  addLog('[INFO] Downloading complete local solver package...', 'info');
       
       const response = await fetch('/api/download/local-solver');
       
@@ -1225,14 +1225,14 @@ export default function RunTab() {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
       
-      addLog('✅ Complete local solver package downloaded!', 'success');
-      addLog(`📊 Package size: ${(blob.size / 1024).toFixed(1)} KB`, 'info');
-      addLog('📦 Package includes:', 'info');
-      addLog('  • FastAPI solver service (advanced)', 'info');
-      addLog('  • Basic solver (fallback)', 'info');
-      addLog('  • Start scripts for Windows/Mac/Linux', 'info');
-      addLog('  • Complete documentation and setup guide', 'info');
-      addLog('🎯 Next: Extract the ZIP file and run the start script!', 'success');
+  addLog('[OK] Complete local solver package downloaded!', 'success');
+        addLog(`[INFO] Package size: ${(blob.size / 1024).toFixed(1)} KB`, 'info');
+        addLog('[INFO] Package includes:', 'info');
+    addLog('  • FastAPI solver service (advanced)', 'info');
+    addLog('  • Basic solver (fallback)', 'info');
+    addLog('  • Start scripts for Windows/Mac/Linux', 'info');
+    addLog('  • Complete documentation and setup guide', 'info');
+  addLog('[ACTION] Next: Extract the ZIP file and run the start script!', 'success');
       
       // Show the appropriate guide based on platform
       const platform = navigator.platform.toLowerCase();
@@ -1247,9 +1247,9 @@ export default function RunTab() {
       }
       
     } catch (error) {
-      addLog('❌ Failed to download complete package', 'error');
-      addLog(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`, 'error');
-      addLog('💡 Try using the Settings page download link as alternative', 'info');
+      addLog('[ERROR] Failed to download complete package', 'error');
+  addLog(`[ERROR] Error: ${error instanceof Error ? error.message : 'Unknown error'}`, 'error');
+  addLog('[TIP] Try using the Settings page download link as alternative', 'info');
     }
   };
 
@@ -1261,7 +1261,7 @@ export default function RunTab() {
   };
 
   const installForWindows = async () => {
-    addLog('🪟 Installing complete package for Windows...', 'info');
+  addLog('[INFO] Installing complete package for Windows...', 'info');
     
     try {
       // Download the complete ZIP package
@@ -1283,20 +1283,20 @@ export default function RunTab() {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
       
-      addLog('✅ Complete Windows package downloaded!', 'success');
-      addLog('📦 Extract ZIP → Double-click start_local_solver.bat', 'info');
+  addLog('[OK] Complete Windows package downloaded!', 'success');
+  addLog('[INFO] Extract ZIP → Double-click start_local_solver.bat', 'info');
       
       // Show the guide modal with step-by-step instructions
       showInstallGuide('windows');
       
     } catch (error) {
-      addLog('❌ Failed to download complete package', 'error');
+  addLog('[ERROR] Failed to download complete package', 'error');
       addLog(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`, 'error');
     }
   };
 
   const installForMac = async () => {
-    addLog('🍎 Installing complete package for macOS...', 'info');
+  addLog('[INFO] Installing complete package for macOS...', 'info');
     
     try {
       // Download the complete ZIP package
@@ -1318,21 +1318,21 @@ export default function RunTab() {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
       
-      addLog('✅ Complete macOS package downloaded!', 'success');
-      addLog('📦 Extract ZIP → Terminal: chmod +x start_local_solver.sh', 'info');
-      addLog('▶️ Then run: ./start_local_solver.sh', 'info');
+  addLog('[OK] Complete macOS package downloaded!', 'success');
+  addLog('[INFO] Extract ZIP → Terminal: chmod +x start_local_solver.sh', 'info');
+  addLog('[INFO] Then run: ./start_local_solver.sh', 'info');
       
       // Show the guide modal with step-by-step instructions
       showInstallGuide('mac');
       
     } catch (error) {
-      addLog('❌ Failed to download complete package', 'error');
+  addLog('[ERROR] Failed to download complete package', 'error');
       addLog(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`, 'error');
     }
   };
 
   const installForLinux = async () => {
-    addLog('🐧 Installing complete package for Linux...', 'info');
+  addLog('[INFO] Installing complete package for Linux...', 'info');
     
     try {
       // Download the complete ZIP package
@@ -1354,15 +1354,15 @@ export default function RunTab() {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
       
-      addLog('✅ Complete Linux package downloaded!', 'success');
-      addLog('📦 Extract ZIP → Terminal: chmod +x start_local_solver.sh', 'info');
-      addLog('▶️ Then run: ./start_local_solver.sh', 'info');
+  addLog('[OK] Complete Linux package downloaded!', 'success');
+  addLog('[INFO] Extract ZIP → Terminal: chmod +x start_local_solver.sh', 'info');
+  addLog('[INFO] Then run: ./start_local_solver.sh', 'info');
       
       // Show the guide modal with step-by-step instructions
       showInstallGuide('linux');
       
     } catch (error) {
-      addLog('❌ Failed to download complete package', 'error');
+  addLog('[ERROR] Failed to download complete package', 'error');
       addLog(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`, 'error');
     }
   };
@@ -1596,15 +1596,15 @@ export default function RunTab() {
                   {installationStatus.filesInstalled && !installationStatus.pythonAvailable && (
                     <button
                       onClick={() => {
-                        addLog('🚀 Opening quick start instructions...', 'info');
+                        addLog('[ACTION] Opening quick start instructions...', 'info');
                         const platform = navigator.platform.toLowerCase();
                         const isWindows = platform.includes('win');
                         const instructions = isWindows 
                           ? 'Double-click the downloaded "start_local_solver.bat" file in your Downloads folder'
                           : 'Open Terminal, navigate to Downloads folder, and run: ./start_local_solver.sh';
                         
-                        addLog(`📋 Quick Start: ${instructions}`, 'info');
-                        addLog('⏱️ After starting, come back and click "Check Local Mode Setup"', 'info');
+                        addLog(`[TIP] Quick Start: ${instructions}`, 'info');
+                        addLog('[TIP] After starting, come back and click "Check Local Mode Setup"', 'info');
                         
                         // Also try to open the downloads folder
                         const link = document.createElement('a');
@@ -1635,8 +1635,8 @@ export default function RunTab() {
                 {installationStatus.installedFiles.length > 0 && (
                   <div className="mb-3">
                     <p className="text-green-600 dark:text-green-400 font-medium mb-2 text-sm">
-                      ✅ Installed ({installationStatus.installedFiles.length}):
-                    </p>
+                                    [OK] Installed ({installationStatus.installedFiles.length}):
+                                  </p>
                     <ul className="space-y-1">
                       {installationStatus.installedFiles.map(file => (
                         <li key={file} className="text-green-600 dark:text-green-400 text-sm flex items-center space-x-2">
@@ -1651,7 +1651,7 @@ export default function RunTab() {
                 {installationStatus.missingFiles.length > 0 && (
                   <div className="mb-3">
                     <p className="text-orange-600 dark:text-orange-400 font-medium mb-2 text-sm">
-                      ❌ Missing ({installationStatus.missingFiles.length}):
+                      [ERROR] Missing ({installationStatus.missingFiles.length}):
                     </p>
                     <ul className="space-y-1">
                       {installationStatus.missingFiles.map(file => (
@@ -1685,10 +1685,10 @@ export default function RunTab() {
                           : 'text-orange-700 dark:text-orange-300'
                       }`}>
                         {installationStatus.filesInstalled && installationStatus.pythonAvailable
-                          ? '🎉 Local Mode Fully Ready!' 
+                          ? '[OK] Local Mode Fully Ready!' 
                           : installationStatus.filesInstalled
-                            ? '📁 Files Ready - Server Not Running'
-                            : '⚠️ Setup Required'}
+                            ? '[INFO] Files Ready - Server Not Running'
+                            : '[WARN] Setup Required'}
                       </p>
                       <p className={`text-xs ${
                         installationStatus.filesInstalled && installationStatus.pythonAvailable
@@ -1716,12 +1716,12 @@ export default function RunTab() {
                             ? 'bg-green-500 text-white'
                             : 'bg-red-500 text-white'
                         }`}>
-                          {installationStatus.pythonAvailable ? '🟢 Running' : '🔴 Not Running'}
+                          {installationStatus.pythonAvailable ? '[RUNNING] Running' : '[NOT RUNNING] Not Running'}
                         </span>
                       </div>
                       {!installationStatus.pythonAvailable && (
                         <div className="mt-2 text-xs text-gray-600 dark:text-gray-400">
-                          💡 No manual setup needed - just click &quot;Local&quot; to run and it will auto-start!
+                          [TIP] No manual setup needed - just click &quot;Local&quot; to run and it will auto-start!
                         </div>
                       )}
                     </div>
@@ -2021,7 +2021,7 @@ export default function RunTab() {
               />
             </div>
             <div className="mt-2 text-xs text-gray-600 dark:text-gray-400 text-center">
-              🤖 AI is optimizing your schedule...
+              [INFO] Optimization in progress...
             </div>
           </div>
         )}
@@ -2046,7 +2046,7 @@ export default function RunTab() {
           ) : (
             logs.map((log, index) => (
               <div key={index} className="mb-2 flex items-start space-x-2 animate-fade-in-up">
-                <span className="text-yellow-400 font-bold text-xs mt-0.5">►</span>
+                <span className="text-yellow-400 font-bold text-xs mt-0.5">•</span>
                 <span className="text-blue-300 text-xs">[{new Date().toLocaleTimeString()}]</span> 
                 <span className="flex-1">{log}</span>
               </div>
@@ -2130,7 +2130,7 @@ export default function RunTab() {
                 onClick={() => setShowFilesMenu(false)}
                 className="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
               >
-                ✕
+                X
               </button>
             </div>
 

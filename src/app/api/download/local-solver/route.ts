@@ -30,7 +30,7 @@ export async function GET() {
     const stats = statSync(zipPath);
     const fileSize = stats.size;
 
-    console.log(`📦 Serving local solver package: ${zipPath} (${fileSize} bytes)`);
+  console.log(`[INFO] Serving local solver package: ${zipPath} (${fileSize} bytes)`);
 
     // Read the ZIP file
     const buffer = await import('fs/promises').then(fs => fs.readFile(zipPath));

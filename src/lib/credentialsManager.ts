@@ -19,7 +19,7 @@ const isServerlessEnvironment = () => {
 // Initialize default credentials if file doesn't exist (local development only)
 function initializeCredentials() {
   if (isServerlessEnvironment()) {
-    console.log('🌐 Running in serverless environment - using environment variables');
+    console.log('[INFO] Running in serverless environment - using environment variables');
     return;
   }
 
@@ -32,9 +32,9 @@ function initializeCredentials() {
     
     try {
       fs.writeFileSync(CREDENTIALS_FILE, JSON.stringify(defaultCredentials, null, 2));
-      console.log('✅ Initialized default user credentials');
+      console.log('[OK] Initialized default user credentials');
     } catch (error) {
-      console.error('❌ Failed to create credentials file:', error);
+      console.error('[ERROR] Failed to create credentials file:', error);
     }
   }
 }
@@ -43,7 +43,7 @@ function initializeCredentials() {
 export function getCurrentCredentials(): UserCredentials {
   // In serverless environments, use environment variables
   if (isServerlessEnvironment()) {
-    console.log('🌐 Loading credentials from environment variables');
+    console.log('[INFO] Loading credentials from environment variables');
     
     // Prioritize ADMIN_USERNAME over ADMIN_EMAIL for consistency
     const username = process.env.ADMIN_USERNAME || process.env.ADMIN_EMAIL || 'admin@scheduling.com';
@@ -51,7 +51,7 @@ export function getCurrentCredentials(): UserCredentials {
     const password = process.env.ADMIN_PASSWORD || process.env.ADMIN_PASSWORD_HASH || 'admin123';
     const backupEmail = process.env.ADMIN_BACKUP_EMAIL || process.env.EMAIL_FROM_ADDRESS;
     
-    console.log('🔧 Environment variable mapping:', {
+  console.log('[INFO] Environment variable mapping:', {
       username,
       passwordSource: process.env.ADMIN_PASSWORD ? 'ADMIN_PASSWORD (plaintext)' : 
                      process.env.ADMIN_PASSWORD_HASH ? 'ADMIN_PASSWORD_HASH (bcrypt)' : 'default',
@@ -74,15 +74,15 @@ export function getCurrentCredentials(): UserCredentials {
     if (fs.existsSync(CREDENTIALS_FILE)) {
       const data = fs.readFileSync(CREDENTIALS_FILE, 'utf8');
       const fileCredentials = JSON.parse(data);
-      console.log('📁 Loaded credentials from file');
+      console.log('[INFO] Loaded credentials from file');
       return fileCredentials;
     }
   } catch (error) {
-    console.error('❌ Error reading credentials file:', error);
+    console.error('[ERROR] Error reading credentials file:', error);
   }
 
   // Fallback to environment variables even in development
-  console.log('🔄 Falling back to environment variables');
+  console.log('[INFO] Falling back to environment variables');
   
   const username = process.env.ADMIN_USERNAME || process.env.ADMIN_EMAIL || 'admin@scheduling.com';
   // Prioritize plaintext password over hash for easier configuration
@@ -101,8 +101,8 @@ export function getCurrentCredentials(): UserCredentials {
 export function updateCredentials(username: string, password: string, backupEmail?: string): boolean {
   // In serverless environments, credentials cannot be updated at runtime
   if (isServerlessEnvironment()) {
-    console.log('⚠️ Cannot update credentials in serverless environment - use environment variables instead');
-    console.log('🔧 To update credentials in production:');
+    console.log('[WARN] Cannot update credentials in serverless environment - use environment variables instead');
+    console.log('[INFO] To update credentials in production:');
     console.log('   - Set ADMIN_USERNAME environment variable');
     console.log('   - Set ADMIN_PASSWORD environment variable');
     console.log('   - Set ADMIN_BACKUP_EMAIL environment variable (optional)');
@@ -120,10 +120,10 @@ export function updateCredentials(username: string, password: string, backupEmai
     };
     
     fs.writeFileSync(CREDENTIALS_FILE, JSON.stringify(newCredentials, null, 2));
-    console.log('✅ Credentials updated successfully in local file');
+    console.log('[OK] Credentials updated successfully in local file');
     return true;
   } catch (error) {
-    console.error('❌ Error updating credentials:', error);
+    console.error('[ERROR] Error updating credentials:', error);
     return false;
   }
 }
@@ -136,7 +136,7 @@ export function validateCredentials(username: string, password: string): boolean
     // Check username match first
     const usernameMatch = currentCredentials.username === username;
     if (!usernameMatch) {
-      console.log('🔍 Credential validation:', {
+  console.log('[INFO] Credential validation:', {
         environment: isServerlessEnvironment() ? 'serverless' : 'local',
         providedUsername: username,
         expectedUsername: currentCredentials.username,
@@ -153,7 +153,7 @@ export function validateCredentials(username: string, password: string): boolean
     if (isHashedPassword) {
       // Use bcrypt to compare hashed password
       passwordMatch = bcrypt.compareSync(password, currentCredentials.password);
-      console.log('🔍 Credential validation (bcrypt):', {
+  console.log('[INFO] Credential validation (bcrypt):', {
         environment: isServerlessEnvironment() ? 'serverless' : 'local',
         providedUsername: username,
         usedBcrypt: true,
@@ -162,7 +162,7 @@ export function validateCredentials(username: string, password: string): boolean
     } else {
       // Plain text password comparison (for development)
       passwordMatch = currentCredentials.password === password;
-      console.log('🔍 Credential validation (plaintext):', {
+  console.log('[INFO] Credential validation (plaintext):', {
         environment: isServerlessEnvironment() ? 'serverless' : 'local',
         providedUsername: username,
         usedBcrypt: false,
@@ -172,8 +172,8 @@ export function validateCredentials(username: string, password: string): boolean
     }
     
     return passwordMatch;
-  } catch (error) {
-    console.error('❌ Error validating credentials:', error);
+    } catch (error) {
+    console.error('[ERROR] Error validating credentials:', error);
     return false;
   }
 }
@@ -184,7 +184,7 @@ export function getBackupEmail(): string | null {
     const currentCredentials = getCurrentCredentials();
     return currentCredentials.backupEmail || null;
   } catch (error) {
-    console.error('❌ Error retrieving backup email:', error);
+    console.error('[ERROR] Error retrieving backup email:', error);
     return null;
   }
 }
@@ -194,14 +194,14 @@ export function isBackupEmailConfigured(): boolean {
   try {
     const backupEmail = getBackupEmail();
     const isConfigured = !!backupEmail && backupEmail.includes('@');
-    console.log('📧 Backup email check:', {
+  console.log('[INFO] Backup email check:', {
       environment: isServerlessEnvironment() ? 'serverless' : 'local',
       isConfigured,
       hasEmail: !!backupEmail
     });
     return isConfigured;
-  } catch (error) {
-    console.error('❌ Error checking backup email configuration:', error);
+    } catch (error) {
+    console.error('[ERROR] Error checking backup email configuration:', error);
     return false;
   }
 }

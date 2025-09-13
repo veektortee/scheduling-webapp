@@ -225,11 +225,12 @@ export default function ProviderCalendar({
           <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center ${mode === 'off' ? 'bg-gradient-to-br from-red-500 to-pink-500' : 'bg-gradient-to-br from-blue-500 to-indigo-500'}`}>
             <CalendarDaysIcon className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
           </div>
-          <div>
+            <div>
             <h3 className={`text-sm sm:text-base font-bold ${mode === 'off' ? 'text-red-700 dark:text-red-300' : 'text-blue-700 dark:text-blue-300'}`}>
               Days {mode === 'off' ? 'OFF' : 'ON'} 
-              <span className={`ml-2 text-xs px-2 py-1 rounded-full ${mode === 'off' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'}`}>
-                {mode === 'off' ? '🔴' : '🔵'}
+              <span className={`ml-2 text-xs px-2 py-1 rounded-full inline-flex items-center justify-center ${mode === 'off' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'}`}>
+                <span className={mode === 'off' ? 'inline-block w-2 h-2 rounded-full bg-red-500' : 'inline-block w-2 h-2 rounded-full bg-blue-500'} aria-hidden="true" />
+                <span className="sr-only">{mode === 'off' ? 'Off' : 'On'}</span>
               </span>
             </h3>
             <p className="text-xs text-gray-600 dark:text-gray-400">

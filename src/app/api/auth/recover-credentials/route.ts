@@ -5,7 +5,7 @@ import { sendCredentialRecoveryEmail } from '@/lib/emailService';
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('🔑 === CREDENTIAL RECOVERY REQUEST ===');
+  console.log('[RECOVERY] === CREDENTIAL RECOVERY REQUEST ===');
     console.log('🌐 Environment:', {
       isVercel: !!process.env.VERCEL,
       nodeEnv: process.env.NODE_ENV,
@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     // Check if the request is locked out
     if (lockoutManager.isLockedOut(request)) {
       const lockoutInfo = lockoutManager.getLockoutInfo(request);
-      console.log('🔒 Recovery request blocked due to lockout:', lockoutInfo);
+  console.log('[SECURITY] Recovery request blocked due to lockout:', lockoutInfo);
       
       return NextResponse.json(
         {
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
 
     // Verify this is a legitimate recovery request
     if (!confirmRecovery) {
-      console.log('❌ Invalid recovery request - missing confirmation');
+  console.log('[ERROR] Invalid recovery request - missing confirmation');
       lockoutManager.recordFailedAttempt(request);
       return NextResponse.json(
         { success: false, error: 'Invalid recovery request' },
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
 
     // Check if backup email is configured
     if (!isBackupEmailConfigured()) {
-      console.log('❌ Recovery failed - no backup email configured');
+  console.log('[ERROR] Recovery failed - no backup email configured');
       console.log('🔧 Environment variables check:', {
         hasAdminBackupEmail: !!process.env.ADMIN_BACKUP_EMAIL,
         adminBackupEmail: process.env.ADMIN_BACKUP_EMAIL ? 'SET' : 'NOT SET'
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
     const backupEmail = getBackupEmail();
 
     if (!backupEmail) {
-      console.log('❌ Recovery failed - backup email not found');
+  console.log('[ERROR] Recovery failed - backup email not found');
       lockoutManager.recordFailedAttempt(request);
       return NextResponse.json(
         { success: false, error: 'Backup email not found. Please contact your system administrator.' },
@@ -81,12 +81,12 @@ export async function POST(request: NextRequest) {
     // Generate a unique recovery token for security tracking
     const recoveryToken = generateRecoveryToken();
     
-    console.log('🔑 Recovery details:');
-    console.log('🔑 Username:', credentials.username);
-    console.log('🔑 Backup email:', backupEmail);
-    console.log('🔑 Recovery token:', recoveryToken);
-    console.log('🔑 Request IP:', request.headers.get('x-forwarded-for') || 'unknown');
-    console.log('🔑 Request time:', new Date().toISOString());
+  console.log('[RECOVERY] Recovery details:');
+  console.log('[RECOVERY] Username:', credentials.username);
+  console.log('[RECOVERY] Backup email:', backupEmail);
+  console.log('[RECOVERY] Recovery token:', recoveryToken);
+  console.log('[RECOVERY] Request IP:', request.headers.get('x-forwarded-for') || 'unknown');
+  console.log('[RECOVERY] Request time:', new Date().toISOString());
 
     // Send the recovery email
     const emailSent = await sendCredentialRecoveryEmail(
@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
     );
 
     if (!emailSent) {
-      console.log('❌ Failed to send recovery email');
+  console.log('[ERROR] Failed to send recovery email');
       return NextResponse.json(
         { success: false, error: 'Failed to send recovery email. Please contact your system administrator.' },
         { status: 500 }
@@ -107,8 +107,8 @@ export async function POST(request: NextRequest) {
     // Reset any previous failed attempts on successful recovery
     lockoutManager.resetAttempts(request);
 
-    console.log('✅ Credential recovery email sent successfully');
-    console.log('🔑 === CREDENTIAL RECOVERY COMPLETE ===');
+  console.log('[SUCCESS] Credential recovery email sent successfully');
+  console.log('[RECOVERY] === CREDENTIAL RECOVERY COMPLETE ===');
 
     // Return success response with masked email for security
     const maskedEmail = maskEmail(backupEmail);
@@ -120,7 +120,7 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('❌ Credential recovery error:', error);
+  console.error('[ERROR] Credential recovery error:', error);
     
     // Record failed attempt on error
     lockoutManager.recordFailedAttempt(request);
@@ -176,7 +176,7 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('❌ Error checking recovery availability:', error);
+  console.error('[ERROR] Error checking recovery availability:', error);
     return NextResponse.json(
       { available: false, reason: 'error' },
       { status: 500 }

@@ -44,17 +44,17 @@ export default function LoginPage() {
   // Check if credential recovery is available
   const checkRecoveryAvailability = async () => {
     try {
-      console.log('🔍 Checking recovery availability...');
+  console.log('[INFO] Checking recovery availability...');
       const response = await fetch('/api/auth/recover-credentials');
       if (response.ok) {
         const data = await response.json();
-        console.log('🔍 Recovery availability response:', data);
+  console.log('[INFO] Recovery availability response:', data);
         setRecoveryAvailable(data.available);
         if (data.backupEmail) {
           setBackupEmailMask(data.backupEmail);
         }
       } else {
-        console.log('❌ Recovery availability check failed:', response.status);
+  console.log('[ERROR] Recovery availability check failed:', response.status);
       }
     } catch (error) {
       console.error('Error checking recovery availability:', error);
@@ -122,19 +122,19 @@ export default function LoginPage() {
     const checkAuthentication = async () => {
       try {
         const session = await getSession();
-        console.log('🔍 Auto-check session status:', session);
+  console.log('[INFO] Auto-check session status:', session);
         
         if (session) {
-          console.log('✅ User already authenticated, redirecting to home...');
+          console.log('[OK] User already authenticated, redirecting to home...');
           window.location.href = '/';
         } else {
-          console.log('👤 User not authenticated, staying on login page');
+          console.log('[USER] User not authenticated, staying on login page');
           // Check lockout status and recovery availability when page loads
           await checkLockoutStatus();
           await checkRecoveryAvailability();
         }
       } catch (error) {
-        console.log('❌ Error checking authentication:', error);
+  console.log('[ERROR] Error checking authentication:', error);
       } finally {
         setCheckingAuth(false);
       }
@@ -162,10 +162,10 @@ export default function LoginPage() {
         redirect: false,
       });
 
-      console.log('🔍 SignIn result:', result);
+  console.log('[INFO] SignIn result:', result);
 
       if (result?.error) {
-        console.log('❌ SignIn error:', result.error);
+  console.log('[ERROR] SignIn error:', result.error);
         
         // Check if it's a lockout error
         if (result.error.includes('wait')) {
@@ -176,13 +176,13 @@ export default function LoginPage() {
           setError('Invalid credentials. Please check your username and password.');
           // Mark that user has failed an attempt and check recovery availability
           setHasFailedAttempt(true);
-          console.log('🔍 Setting hasFailedAttempt to true after login failure');
+          console.log('[INFO] Setting hasFailedAttempt to true after login failure');
           await checkRecoveryAvailability();
           // Check updated lockout status after failed attempt
           setTimeout(checkLockoutStatus, 100);
         }
       } else if (result?.ok) {
-        console.log('✅ SignIn successful, waiting for session...');
+  console.log('[SUCCESS] SignIn successful, waiting for session...');
         
         // Wait a bit for session to be established
         await new Promise(resolve => setTimeout(resolve, 100));
@@ -200,22 +200,22 @@ export default function LoginPage() {
           }
         }
         
-        console.log('🔍 Final session check:', session);
+  console.log('[INFO] Final session check:', session);
         
         if (session) {
-          console.log('✅ Session confirmed, redirecting...');
+          console.log('[OK] Session confirmed, redirecting...');
           // Use window.location for a full page redirect to ensure middleware runs
           window.location.href = '/';
         } else {
-          console.log('❌ No session found after multiple attempts');
+          console.log('[ERROR] No session found after multiple attempts');
           setError('Authentication succeeded but session not established. Please try again.');
         }
       } else {
-        console.log('❌ Unexpected signIn result:', result);
+  console.log('[ERROR] Unexpected signIn result:', result);
         setError('Unexpected authentication result. Please try again.');
       }
     } catch (error) {
-      console.log('❌ SignIn exception:', error);
+  console.log('[ERROR] SignIn exception:', error);
       setError('An error occurred during login. Please try again.');
     } finally {
       setLoading(false);

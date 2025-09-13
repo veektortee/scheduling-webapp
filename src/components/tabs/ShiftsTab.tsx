@@ -162,42 +162,6 @@ export default function ShiftsTab() {
     }));
   };
 
-  const clearAllAndAddTestShifts = () => {
-    // Clear all existing shifts
-    const shiftsToDelete = [...schedulingCase.shifts];
-    shiftsToDelete.forEach(() => {
-      dispatch({ type: 'DELETE_SHIFT', payload: 0 }); // Always delete the first one since array shrinks
-    });
-
-    // Add one or two simple test shifts if there are calendar days
-    if (schedulingCase.calendar.days.length > 0) {
-      const firstDate = schedulingCase.calendar.days[0];
-      
-      // Add first test shift - Day Shift
-      const testShift1: Shift = {
-        id: `${firstDate}_MD_D_TEST`,
-        date: firstDate,
-        type: 'MD_D',
-        start: `${firstDate}T08:00:00`,
-        end: `${firstDate}T16:00:00`,
-        allowed_provider_types: ['MD'],
-      };
-      dispatch({ type: 'ADD_SHIFT', payload: testShift1 });
-
-      // Add second test shift - Night Shift (only if we have at least one day)
-      const testShift2: Shift = {
-        id: `${firstDate}_MD_N_TEST`,
-        date: firstDate,
-        type: 'MD_N',
-        start: `${firstDate}T20:00:00`,
-        end: schedulingCase.calendar.days.length > 1 
-          ? `${schedulingCase.calendar.days[1]}T08:00:00`
-          : `${firstDate}T23:59:00`,
-        allowed_provider_types: ['MD'],
-      };
-      dispatch({ type: 'ADD_SHIFT', payload: testShift2 });
-    }
-  };
 
   return (
     <div className="space-y-4 lg:space-y-8 animate-fade-in-up">
@@ -423,18 +387,7 @@ export default function ShiftsTab() {
                 )}
               </div>
 
-              {/* Test Mode Button */}
-              <div className="pt-4 border-t border-gray-200 dark:border-gray-600">
-                <button
-                  onClick={clearAllAndAddTestShifts}
-                  className="w-full px-4 py-2 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg hover:from-orange-600 hover:to-red-600 transform hover:scale-[1.02] transition-all duration-200 font-medium shadow-lg text-sm"
-                >
-                  🧪 Clear All & Add Test Shifts (1-2 shifts only)
-                </button>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-center">
-                  For testing purposes only
-                </p>
-              </div>
+              {/* Removed test-only button */}
             </div>
           </div>
         </div>

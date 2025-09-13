@@ -408,7 +408,7 @@ export default function SettingsPage() {
 
           {/* Security Notice */}
           <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl">
-            <h4 className="font-semibold text-blue-900 dark:text-blue-300 mb-2">📧 Email & Security Notice</h4>
+            <h4 className="font-semibold text-blue-900 dark:text-blue-300 mb-2">[EMAIL] Email & Security Notice</h4>
             <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
               <li>• You will be automatically logged out after updating credentials</li>
               <li>• New credentials will be sent to your backup email address</li>
@@ -421,7 +421,7 @@ export default function SettingsPage() {
           {/* Local Solver Download */}
           <div className="mt-6 p-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl">
             <h4 className="font-semibold text-green-900 dark:text-green-300 mb-3 flex items-center space-x-2">
-              <span>⚡</span>
+              <span className="font-mono text-sm">[SOLVER]</span>
               <span>High-Performance Local Solver</span>
             </h4>
             <p className="text-sm text-green-800 dark:text-green-200 mb-4">
@@ -436,7 +436,7 @@ export default function SettingsPage() {
                   className="inline-flex items-center space-x-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105"
                   download="local-solver-package.zip"
                 >
-                  <span>📦</span>
+                  <span className="font-mono text-sm">[PACKAGE]</span>
                   <span>Download Local Solver Package</span>
                   <span className="text-xs opacity-80">(ZIP)</span>
                 </a>
@@ -446,7 +446,7 @@ export default function SettingsPage() {
                   target="_blank"
                   className="inline-flex items-center space-x-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition-all duration-200 shadow-md hover:shadow-lg"
                 >
-                  <span>📖</span>
+                  <span className="font-mono text-sm">[GUIDE]</span>
                   <span>View Setup Guide</span>
                 </a>
               </div>
