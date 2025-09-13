@@ -44,10 +44,23 @@ export function getCurrentCredentials(): UserCredentials {
   // In serverless environments, use environment variables
   if (isServerlessEnvironment()) {
     console.log('🌐 Loading credentials from environment variables');
+    
+    // Prioritize ADMIN_USERNAME over ADMIN_EMAIL for consistency
+    const username = process.env.ADMIN_USERNAME || process.env.ADMIN_EMAIL || 'admin@scheduling.com';
+    const password = process.env.ADMIN_PASSWORD_HASH || process.env.ADMIN_PASSWORD || 'admin123';
+    const backupEmail = process.env.ADMIN_BACKUP_EMAIL || process.env.EMAIL_FROM_ADDRESS;
+    
+    console.log('🔧 Environment variable mapping:', {
+      username,
+      hasPasswordHash: !!process.env.ADMIN_PASSWORD_HASH,
+      hasPlaintextPassword: !!process.env.ADMIN_PASSWORD,
+      hasBackupEmail: !!backupEmail
+    });
+    
     return {
-      username: process.env.ADMIN_EMAIL || process.env.ADMIN_USERNAME || 'admin@scheduling.com',
-      password: process.env.ADMIN_PASSWORD_HASH || process.env.ADMIN_PASSWORD || 'admin123',
-      backupEmail: process.env.ADMIN_BACKUP_EMAIL || process.env.EMAIL_FROM_ADDRESS,
+      username,
+      password,
+      backupEmail,
       updatedAt: process.env.CREDENTIALS_UPDATED_AT || new Date().toISOString()
     };
   }
@@ -67,10 +80,15 @@ export function getCurrentCredentials(): UserCredentials {
 
   // Fallback to environment variables even in development
   console.log('🔄 Falling back to environment variables');
+  
+  const username = process.env.ADMIN_USERNAME || process.env.ADMIN_EMAIL || 'admin@scheduling.com';
+  const password = process.env.ADMIN_PASSWORD_HASH || process.env.ADMIN_PASSWORD || 'admin123';
+  const backupEmail = process.env.ADMIN_BACKUP_EMAIL || process.env.EMAIL_FROM_ADDRESS;
+  
   return {
-    username: process.env.ADMIN_EMAIL || process.env.ADMIN_USERNAME || 'admin@scheduling.com',
-    password: process.env.ADMIN_PASSWORD_HASH || process.env.ADMIN_PASSWORD || 'admin123',
-    backupEmail: process.env.ADMIN_BACKUP_EMAIL || process.env.EMAIL_FROM_ADDRESS,
+    username,
+    password,
+    backupEmail,
     updatedAt: process.env.CREDENTIALS_UPDATED_AT || new Date().toISOString()
   };
 }
