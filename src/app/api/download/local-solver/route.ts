@@ -36,7 +36,7 @@ export async function GET() {
     const buffer = await import('fs/promises').then(fs => fs.readFile(zipPath));
 
     // Return the ZIP file with appropriate headers
-    return new NextResponse(buffer, {
+    return new NextResponse(new Uint8Array(buffer), {
       status: 200,
       headers: {
         'Content-Type': 'application/zip',
