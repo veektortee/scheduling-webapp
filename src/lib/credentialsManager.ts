@@ -47,11 +47,14 @@ export function getCurrentCredentials(): UserCredentials {
     
     // Prioritize ADMIN_USERNAME over ADMIN_EMAIL for consistency
     const username = process.env.ADMIN_USERNAME || process.env.ADMIN_EMAIL || 'admin@scheduling.com';
-    const password = process.env.ADMIN_PASSWORD_HASH || process.env.ADMIN_PASSWORD || 'admin123';
+    // Prioritize plaintext password over hash for easier configuration
+    const password = process.env.ADMIN_PASSWORD || process.env.ADMIN_PASSWORD_HASH || 'admin123';
     const backupEmail = process.env.ADMIN_BACKUP_EMAIL || process.env.EMAIL_FROM_ADDRESS;
     
     console.log('🔧 Environment variable mapping:', {
       username,
+      passwordSource: process.env.ADMIN_PASSWORD ? 'ADMIN_PASSWORD (plaintext)' : 
+                     process.env.ADMIN_PASSWORD_HASH ? 'ADMIN_PASSWORD_HASH (bcrypt)' : 'default',
       hasPasswordHash: !!process.env.ADMIN_PASSWORD_HASH,
       hasPlaintextPassword: !!process.env.ADMIN_PASSWORD,
       hasBackupEmail: !!backupEmail
@@ -82,7 +85,8 @@ export function getCurrentCredentials(): UserCredentials {
   console.log('🔄 Falling back to environment variables');
   
   const username = process.env.ADMIN_USERNAME || process.env.ADMIN_EMAIL || 'admin@scheduling.com';
-  const password = process.env.ADMIN_PASSWORD_HASH || process.env.ADMIN_PASSWORD || 'admin123';
+  // Prioritize plaintext password over hash for easier configuration
+  const password = process.env.ADMIN_PASSWORD || process.env.ADMIN_PASSWORD_HASH || 'admin123';
   const backupEmail = process.env.ADMIN_BACKUP_EMAIL || process.env.EMAIL_FROM_ADDRESS;
   
   return {
