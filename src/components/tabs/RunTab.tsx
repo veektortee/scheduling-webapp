@@ -537,13 +537,14 @@ export default function RunTab() {
       if (shouldTryLocal) {
         setSolverState('running');
         addLog('🔌 Connecting to local solver...', 'info');
+        addLog('⏱️ Complex optimizations may take several hours - please be patient...', 'info');
         
         try {
           const localResponse = await fetch('http://localhost:8000/solve', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(schedulingCase),
-            signal: AbortSignal.timeout(60000), // 1 minute timeout for local
+            signal: AbortSignal.timeout(20000000), // 4 hour timeout for complex optimizations
           });
           
           if (localResponse.ok) {
@@ -573,7 +574,7 @@ export default function RunTab() {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify(schedulingCase),
-                  signal: AbortSignal.timeout(60000),
+                  signal: AbortSignal.timeout(20000000), // 4 hour timeout for retry
                 });
                 
                 if (retryResponse.ok) {

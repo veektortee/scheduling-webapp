@@ -1,0 +1,11 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Typecheck (tsc --noEmit)",
+			"type": "shell",
+			"command": "node -e \"try{require('child_process').execSync('npx tsc --noEmit', {stdio:'inherit'})}catch(e){process.exit(1)}\"",
+			"group": "build"
+		}
+	]
+}
