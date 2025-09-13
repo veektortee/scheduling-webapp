@@ -6,6 +6,11 @@ import { sendCredentialRecoveryEmail } from '@/lib/emailService';
 export async function POST(request: NextRequest) {
   try {
     console.log('🔑 === CREDENTIAL RECOVERY REQUEST ===');
+    console.log('🌐 Environment:', {
+      isVercel: !!process.env.VERCEL,
+      nodeEnv: process.env.NODE_ENV,
+      hasBackupEmail: !!process.env.ADMIN_BACKUP_EMAIL
+    });
     
     // Check if the request is locked out
     if (lockoutManager.isLockedOut(request)) {
@@ -44,9 +49,18 @@ export async function POST(request: NextRequest) {
     // Check if backup email is configured
     if (!isBackupEmailConfigured()) {
       console.log('❌ Recovery failed - no backup email configured');
+      console.log('🔧 Environment variables check:', {
+        hasAdminBackupEmail: !!process.env.ADMIN_BACKUP_EMAIL,
+        adminBackupEmail: process.env.ADMIN_BACKUP_EMAIL ? 'SET' : 'NOT SET'
+      });
       lockoutManager.recordFailedAttempt(request);
       return NextResponse.json(
-        { success: false, error: 'No backup email configured. Please contact your system administrator.' },
+        { 
+          success: false, 
+          error: process.env.VERCEL 
+            ? 'No backup email configured. Please set the ADMIN_BACKUP_EMAIL environment variable in your Vercel project settings.'
+            : 'No backup email configured. Please contact your system administrator.'
+        },
         { status: 400 }
       );
     }
