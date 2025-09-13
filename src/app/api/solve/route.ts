@@ -556,16 +556,16 @@ export async function GET(request: NextRequest) {
     message: 'Local High-Performance Mode Active - 10-100x faster optimization with OR-Tools',
     solver_type: 'hybrid_enhanced',
     capabilities: [
-      '🚀 High-performance OR-Tools optimization engine',
-      '⚡ 10-100x faster than serverless mode',
-      '🎯 Advanced constraint programming and mixed-integer programming',
-      '📊 Multi-objective optimization with Pareto frontier analysis',
-      '🔄 Real-time progress tracking and iterative improvement',
-      '🏆 Optimal and near-optimal solution guarantees',
-      '🔧 Configurable solver parameters and heuristics',
-      '📈 Scalable to 1000+ shifts and 100+ providers',
-      '💾 Solution caching and warm-start capabilities',
-      '🌐 Automatic fallback to serverless if local solver unavailable'
+      'High-performance OR-Tools optimization engine',
+      '10-100x faster than serverless mode',
+      'Advanced constraint programming and mixed-integer programming',
+      'Multi-objective optimization with Pareto frontier analysis',
+      'Real-time progress tracking and iterative improvement',
+      'Optimal and near-optimal solution guarantees',
+      'Configurable solver parameters and heuristics',
+      'Scalable to 1000+ shifts and 100+ providers',
+      'Solution caching and warm-start capabilities',
+      'Automatic fallback to serverless if local solver unavailable'
     ],
     endpoints: {
       'POST /api/solve': 'Submit scheduling case for optimization',

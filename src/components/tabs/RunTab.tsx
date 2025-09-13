@@ -19,7 +19,9 @@ import {
   IoStopSharp,
   IoDownloadSharp,
   IoDesktopSharp,
-  IoServerSharp
+  IoServerSharp,
+  IoThunderstorm,
+  IoCodeSlash
 } from 'react-icons/io5';
 import { 
   SiApple,
@@ -43,6 +45,22 @@ interface SolverResult {
   output_directory?: string;
 }
 
+// Minimal shapes for solver/health metadata used by this component
+interface SolverInfo {
+  type: 'local' | 'serverless';
+  solver_type?: string;
+  capabilities?: string[];
+  ortools_available?: boolean;
+}
+
+interface LocalHealthResponse {
+  status?: string;
+  message?: string;
+  solver_type?: string;
+  ortools_available?: boolean;
+  capabilities?: string[];
+}
+
 export default function RunTab() {
   const { state, dispatch } = useScheduling();
   const { setResults: setSchedulingResults } = useSchedulingResults();
@@ -52,7 +70,7 @@ export default function RunTab() {
   const [logs, setLogs] = useState<string[]>(['Ready to run optimization...']);
   const [solverState, setSolverState] = useState<'ready' | 'connecting' | 'running' | 'finished' | 'error'>('ready');
   const [localSolverAvailable, setLocalSolverAvailable] = useState<boolean | null>(null);
-  const [solverInfo, setSolverInfo] = useState<{type: string; capabilities?: string[]} | null>(null);
+  const [solverInfo, setSolverInfo] = useState<SolverInfo | null>(null);
   const [showInstallMenu, setShowInstallMenu] = useState(false);
   const [installationStatus, setInstallationStatus] = useState<{
     checked: boolean;
@@ -137,19 +155,70 @@ export default function RunTab() {
       });
       
       if (response.ok) {
-        const info = await response.json();
+        const info: LocalHealthResponse = await response.json();
         setLocalSolverAvailable(true);
-        setSolverInfo(info);
-        addLog(`STATUS: Local high-performance mode active: ${info.solver_type}`, 'success');
-        if (info.ortools_available) {
+
+        // Build a robust solverInfo with fallbacks when the health endpoint doesn't provide capabilities
+        const fallbackLocalCapabilities = [
+          'OR-Tools constraint programming (when installed)',
+          'Multi-solution generation and evaluation',
+          'Advanced optimization heuristics and search',
+          'High-performance local execution',
+        ];
+
+        // Some local services (FastAPI) may not include a capabilities array in /health
+        const normalizedInfo: SolverInfo = {
+          type: 'local',
+          solver_type: info.solver_type || 'local_enhanced',
+          capabilities:
+            Array.isArray(info.capabilities) && info.capabilities.length > 0
+              ? info.capabilities
+              : fallbackLocalCapabilities,
+          ortools_available: info.ortools_available,
+        };
+
+        setSolverInfo(normalizedInfo);
+        addLog(
+          `STATUS: Local high-performance mode active${normalizedInfo.solver_type ? `: ${normalizedInfo.solver_type}` : ''}`,
+          'success'
+        );
+        if (normalizedInfo.ortools_available) {
           addLog('STATUS: OR-Tools optimization engine available', 'success');
         }
       } else {
         setLocalSolverAvailable(false);
+        // Set fallback serverless solver info
+        setSolverInfo({
+          type: 'serverless',
+          solver_type: 'serverless_js',
+          capabilities: [
+            'Pure JavaScript/TypeScript implementation',
+            'No external dependencies required',
+            'Multi-solution generation with constraint satisfaction',
+            'Provider workload balancing and availability checking',
+            'Daily and weekly shift limit enforcement',
+            'Cross-platform compatibility',
+            'Vercel serverless function compatible'
+          ]
+        });
       }
     } catch {
       setLocalSolverAvailable(false);
       addLog('INFO: Local mode not active - using serverless mode', 'info');
+      // Set fallback serverless solver info for display
+      setSolverInfo({
+        type: 'serverless',
+        solver_type: 'serverless_js',
+        capabilities: [
+          'Pure JavaScript/TypeScript implementation',
+          'No external dependencies required',
+          'Multi-solution generation with constraint satisfaction',
+          'Provider workload balancing and availability checking',
+          'Daily and weekly shift limit enforcement',
+          'Cross-platform compatibility',
+          'Vercel serverless function compatible'
+        ]
+      });
     }
   }, [addLog]);
 
@@ -1422,7 +1491,7 @@ export default function RunTab() {
       <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 dark:border-gray-700/50 p-4 lg:p-8 hover-glow">
         <div className="flex items-center space-x-3 mb-4 lg:mb-6">
           <div className="w-6 h-6 lg:w-8 lg:h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
-            <IoRocketSharp className="w-3 h-3 lg:w-4 lg:h-4 text-white" />
+            <IoCodeSlash className="w-3 h-3 lg:w-4 lg:h-4 text-white" />
           </div>
           <h2 className="text-xl lg:text-2xl font-bold text-gradient">
             Optimization Control
