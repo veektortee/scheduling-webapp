@@ -66,7 +66,7 @@ export default function RunTab() {
   const { case: schedulingCase, lastResults } = state;
   const [isRunning, setIsRunning] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [logs, setLogs] = useState<string[]>(['Ready to run optimization...']);
+  const [logs, setLogs] = useState<string[]>([`${new Date().toLocaleTimeString()} [INFO] Ready to run optimization...`]);
   const [solverState, setSolverState] = useState<'ready' | 'connecting' | 'running' | 'finished' | 'error'>('ready');
   const [localSolverAvailable, setLocalSolverAvailable] = useState<boolean | null>(null);
   const [solverInfo, setSolverInfo] = useState<SolverInfo | null>(null);
@@ -154,8 +154,11 @@ export default function RunTab() {
       error: '[ERROR]',
       warning: '[WARNING]'
     }[type];
-    
-    setLogs(prev => [...prev, `${timestamp} ${prefix} ${message}`]);
+
+    // If message already contains a bracketed level like [SUCCESS], don't duplicate
+    const sanitizedMessage = message.match(/^\[.*\]\s*/)? message.replace(/^\[.*?\]\s*/, '') : message;
+
+    setLogs(prev => [...prev, `${timestamp} ${prefix} ${sanitizedMessage}`]);
   }, []);
 
   // Check local solver availability on component mount
@@ -1409,18 +1412,11 @@ export default function RunTab() {
             <div className="relative z-50" ref={installMenuRef}>
               <button
                 onClick={() => setShowInstallMenu(!showInstallMenu)}
-                className="relative px-8 py-4 text-lg font-bold bg-gradient-to-r from-emerald-500 via-blue-500 to-purple-500 text-white rounded-2xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.05] transform overflow-hidden group min-w-[200px]"
+                className="relative px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-xl hover:from-blue-600 hover:to-cyan-600 font-semibold flex items-center justify-center space-x-3 transition-all duration-300 shadow-lg overflow-hidden group min-w-[200px]"
               >
-                {/* Animated background glow */}
-                <div className="absolute inset-0 bg-gradient-to-r from-emerald-400/20 via-blue-400/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                
-                {/* Shimmer effect */}
-                <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent transform skew-x-12"></div>
-                
-                <div className="relative z-10 flex items-center justify-center space-x-3">
-                  <IoRocketSharp className="w-6 h-6" />
-                  <span>Enable Local Solver</span>
-                </div>
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-cyan-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+                <IoRocketSharp className="w-5 h-5 z-10" />
+                <span className="z-10">Enable Local Solver</span>
               </button>
               
               {/* Installation Menu Dropdown */}
@@ -1440,12 +1436,13 @@ export default function RunTab() {
                       {/* Smart Install Button */}
                       <button
                         onClick={handleSmartInstall}
-                        className="w-full px-4 py-3 bg-gradient-to-r from-emerald-500 to-blue-500 text-white rounded-xl hover:from-emerald-600 hover:to-blue-600 font-semibold flex items-center justify-center space-x-3 transition-all duration-200 hover:scale-[1.02] transform"
+                        className="w-full relative px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 font-semibold flex items-center justify-center space-x-3 transition-all duration-200 shadow-md overflow-hidden group"
                       >
-                        <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
-                          <IoDownloadSharp className="w-5 h-5 text-white" />
+                        <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+                        <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center z-10">
+                          <IoDownloadSharp className="w-5 h-5 text-white z-10" />
                         </div>
-                        <span>Smart Install (Auto-detect OS)</span>
+                        <span className="z-10">Smart Install (Auto-detect OS)</span>
                       </button>
                       
                       {/* Manual Platform Selection */}
@@ -1945,7 +1942,7 @@ export default function RunTab() {
                   <IoCloudSharp className="w-6 h-6" />
                 </div>
                 <span className="font-bold">Serverless</span>
-                <span className="text-xs opacity-90 font-medium">(Always works)</span>
+                <span className="text-xs opacity-90 font-medium">(Not Recommended)</span>
               </div>
             </button>
             
@@ -2049,7 +2046,6 @@ export default function RunTab() {
             logs.map((log, index) => (
               <div key={index} className="mb-2 flex items-start space-x-2 animate-fade-in-up">
                 <span className="text-yellow-400 font-bold text-xs mt-0.5">•</span>
-                <span className="text-blue-300 text-xs">[{new Date().toLocaleTimeString()}]</span> 
                 <span className="flex-1">{log}</span>
               </div>
             ))
