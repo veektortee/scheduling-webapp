@@ -733,6 +733,8 @@ export default function RunTab() {
             timestamp: new Date().toISOString(),
             solver_type: actualSolver,
             results: result.results,
+            // Include a snapshot of the scheduling case used to generate these results
+            caseSnapshot: schedulingCase,
             statistics: result.statistics
           };
           

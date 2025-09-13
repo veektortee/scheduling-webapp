@@ -73,13 +73,17 @@ export default function Home() {
   }, [dispatch]);
 
   const handleExportConfiguration = () => {
-    exportCurrentCaseToExcel(state.case);
+    // Prefer the configuration snapshot from the most recent run when available
+    const configToExport = state.lastResults?.caseSnapshot ?? state.case;
+    exportCurrentCaseToExcel(configToExport);
   };
 
   const handleExportResults = () => {
-    if (state.lastResults && state.lastResults.results) {
+    // Prefer last results and the exact case snapshot saved at run time
+    const resultsSource = state.lastResults;
+    if (resultsSource && resultsSource.results) {
       // Transform solver results to match export format
-      const solverResults = state.lastResults.results as {
+      const solverResults = resultsSource.results as {
         assignments?: Array<{
           shift_id: string;
           provider_id: string;
@@ -113,15 +117,18 @@ export default function Home() {
             shiftCoverage: solverResults.summary.shift_coverage || {}
           }
         };
-        
-        exportScheduleToExcel(state.case, transformedResults);
+
+        // Use the case snapshot saved with the run if available, otherwise current case
+        const caseForExport = (state.lastResults && state.lastResults.caseSnapshot) ? state.lastResults.caseSnapshot : state.case;
+        exportScheduleToExcel(caseForExport, transformedResults);
         return;
       }
     }
     
     // Fallback to mock results for demo if no real results available
-    const mockResults = generateMockResults(state.case);
-    exportScheduleToExcel(state.case, mockResults);
+    const caseForMock = state.lastResults?.caseSnapshot ?? state.case;
+    const mockResults = generateMockResults(caseForMock);
+    exportScheduleToExcel(caseForMock, mockResults);
   };
 
   const handleSignOut = () => {

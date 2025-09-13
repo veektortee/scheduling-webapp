@@ -13,6 +13,8 @@ interface SolverResults {
   timestamp: string;
   solver_type: string;
   results?: unknown;
+  // Snapshot of the scheduling case used for this run (so exports can use the exact configuration)
+  caseSnapshot?: SchedulingCase;
   statistics?: Record<string, unknown>;
 }
 
