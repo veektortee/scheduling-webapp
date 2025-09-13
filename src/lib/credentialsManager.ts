@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import bcrypt from 'bcryptjs';
 
 interface UserCredentials {
   username: string;
@@ -44,9 +45,9 @@ export function getCurrentCredentials(): UserCredentials {
   if (isServerlessEnvironment()) {
     console.log('🌐 Loading credentials from environment variables');
     return {
-      username: process.env.ADMIN_USERNAME || 'admin@scheduling.com',
-      password: process.env.ADMIN_PASSWORD || 'admin123',
-      backupEmail: process.env.ADMIN_BACKUP_EMAIL,
+      username: process.env.ADMIN_EMAIL || process.env.ADMIN_USERNAME || 'admin@scheduling.com',
+      password: process.env.ADMIN_PASSWORD_HASH || process.env.ADMIN_PASSWORD || 'admin123',
+      backupEmail: process.env.ADMIN_BACKUP_EMAIL || process.env.EMAIL_FROM_ADDRESS,
       updatedAt: process.env.CREDENTIALS_UPDATED_AT || new Date().toISOString()
     };
   }
@@ -67,9 +68,9 @@ export function getCurrentCredentials(): UserCredentials {
   // Fallback to environment variables even in development
   console.log('🔄 Falling back to environment variables');
   return {
-    username: process.env.ADMIN_USERNAME || 'admin@scheduling.com',
-    password: process.env.ADMIN_PASSWORD || 'admin123',
-    backupEmail: process.env.ADMIN_BACKUP_EMAIL,
+    username: process.env.ADMIN_EMAIL || process.env.ADMIN_USERNAME || 'admin@scheduling.com',
+    password: process.env.ADMIN_PASSWORD_HASH || process.env.ADMIN_PASSWORD || 'admin123',
+    backupEmail: process.env.ADMIN_BACKUP_EMAIL || process.env.EMAIL_FROM_ADDRESS,
     updatedAt: process.env.CREDENTIALS_UPDATED_AT || new Date().toISOString()
   };
 }
@@ -109,13 +110,46 @@ export function updateCredentials(username: string, password: string, backupEmai
 export function validateCredentials(username: string, password: string): boolean {
   try {
     const currentCredentials = getCurrentCredentials();
-    const isValid = currentCredentials.username === username && currentCredentials.password === password;
-    console.log('🔍 Credential validation:', {
-      environment: isServerlessEnvironment() ? 'serverless' : 'local',
-      providedUsername: username,
-      isValid
-    });
-    return isValid;
+    
+    // Check username match first
+    const usernameMatch = currentCredentials.username === username;
+    if (!usernameMatch) {
+      console.log('🔍 Credential validation:', {
+        environment: isServerlessEnvironment() ? 'serverless' : 'local',
+        providedUsername: username,
+        expectedUsername: currentCredentials.username,
+        isValid: false,
+        reason: 'username_mismatch'
+      });
+      return false;
+    }
+
+    // Check if password is a bcrypt hash (starts with $2a$, $2b$, or $2y$)
+    const isHashedPassword = /^\$2[aby]\$/.test(currentCredentials.password);
+    
+    let passwordMatch: boolean;
+    if (isHashedPassword) {
+      // Use bcrypt to compare hashed password
+      passwordMatch = bcrypt.compareSync(password, currentCredentials.password);
+      console.log('🔍 Credential validation (bcrypt):', {
+        environment: isServerlessEnvironment() ? 'serverless' : 'local',
+        providedUsername: username,
+        usedBcrypt: true,
+        isValid: passwordMatch
+      });
+    } else {
+      // Plain text password comparison (for development)
+      passwordMatch = currentCredentials.password === password;
+      console.log('🔍 Credential validation (plaintext):', {
+        environment: isServerlessEnvironment() ? 'serverless' : 'local',
+        providedUsername: username,
+        usedBcrypt: false,
+        isValid: passwordMatch,
+        warning: 'Using plaintext password - consider using bcrypt hash in production'
+      });
+    }
+    
+    return passwordMatch;
   } catch (error) {
     console.error('❌ Error validating credentials:', error);
     return false;
