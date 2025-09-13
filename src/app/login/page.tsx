@@ -250,7 +250,7 @@ export default function LoginPage() {
           <div className="mt-6 lg:mt-8 text-center">
             <div>
               <h2 className="text-2xl lg:text-4xl font-extrabold tracking-tight text-gradient break-words">
-                Medical Staff Scheduling System
+                Staff Scheduling System
               </h2>
             </div>
             <div className="mt-3 flex items-center justify-center space-x-2">

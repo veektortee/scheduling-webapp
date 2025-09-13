@@ -10,7 +10,7 @@ interface EmailCredentials {
 function createEmailTransporter() {
   const emailService = process.env.EMAIL_SERVICE || 'development';
   
-  console.log(`📧 Configuring email service: ${emailService}`);
+  console.log(`[EMAIL] Configuring email service: ${emailService}`);
 
   switch (emailService.toLowerCase()) {
     case 'gmail':
@@ -55,15 +55,15 @@ function createEmailTransporter() {
 
     default:
       // Development mode - use test account
-      console.log('📧 ⚠️  Using DEVELOPMENT mode - emails will not be sent to real addresses');
+      console.log('[EMAIL] [DEV] Using DEVELOPMENT mode - emails will not be sent to real addresses');
       return null; // Will be handled separately for development
   }
 }
 
 async function createDevelopmentTransporter() {
-  console.log('📧 Creating test email account for development...');
+  console.log('[EMAIL] Creating test email account for development...');
   const testAccount = await nodemailer.createTestAccount();
-  console.log('📧 Test account created:', testAccount.user);
+  console.log('[EMAIL] Test account created:', testAccount.user);
   
   return nodemailer.createTransport({
     host: 'smtp.ethereal.email',
@@ -78,10 +78,10 @@ async function createDevelopmentTransporter() {
 
 export async function sendCredentialsEmail({ username, password, backupEmail }: EmailCredentials): Promise<boolean> {
   try {
-    console.log('📧 === EMAIL SERVICE ===');
-    console.log('📧 Attempting to send credentials email...');
-    console.log('📧 Recipient:', backupEmail);
-    console.log('📧 Username:', username);
+    console.log('[EMAIL] === EMAIL SERVICE ===');
+    console.log('[EMAIL] Attempting to send credentials email...');
+    console.log('[EMAIL] Recipient:', backupEmail);
+    console.log('[EMAIL] Username:', username);
     
     // Create appropriate transporter
     let transporter = createEmailTransporter();
@@ -94,7 +94,7 @@ export async function sendCredentialsEmail({ username, password, backupEmail }: 
     }
 
     // Get sender information
-    const fromName = process.env.EMAIL_FROM_NAME || 'Medical Scheduling System';
+    const fromName = process.env.EMAIL_FROM_NAME || 'Staff Scheduling System';
     const fromAddress = process.env.EMAIL_FROM_ADDRESS || 'noreply@scheduling.com';
     const fromEmail = `"${fromName}" <${fromAddress}>`;
 
@@ -104,7 +104,7 @@ export async function sendCredentialsEmail({ username, password, backupEmail }: 
     <html>
     <head>
       <meta charset="utf-8">
-      <title>Medical Scheduling System - New Credentials</title>
+      <title>Staff Scheduling System - New Credentials</title>
       <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
@@ -121,7 +121,7 @@ export async function sendCredentialsEmail({ username, password, backupEmail }: 
     <body>
       <div class="container">
         <div class="header">
-          <h1>🏥 Medical Scheduling System</h1>
+          <h1>� Staff Scheduling System</h1>
           <p>Login Credentials Updated</p>
         </div>
         
@@ -129,7 +129,7 @@ export async function sendCredentialsEmail({ username, password, backupEmail }: 
           <h2>Your login credentials have been successfully updated!</h2>
           
           <div class="credentials">
-            <h3>🔐 New Login Information</h3>
+            <h3>[SECURITY] New Login Information</h3>
             <div class="credential-item">
               <div class="label">Username:</div>
               <div class="value">${username}</div>
@@ -141,7 +141,7 @@ export async function sendCredentialsEmail({ username, password, backupEmail }: 
           </div>
           
           <div class="warning">
-            <strong>⚠️ Security Notice:</strong>
+            <strong>[WARNING] Security Notice:</strong>
             <ul>
               <li>Please store these credentials securely</li>
               <li>Consider using a password manager</li>
@@ -167,7 +167,7 @@ export async function sendCredentialsEmail({ username, password, backupEmail }: 
     const info = await transporter.sendMail({
       from: fromEmail,
       to: backupEmail,
-      subject: '🔐 Scheduling System - Login Credentials Updated',
+      subject: '[SECURITY] Scheduling System - Login Credentials Updated',
       html: htmlContent,
       text: `
 Staff Scheduling System - Credentials Updated
@@ -187,7 +187,7 @@ Timestamp: ${new Date().toLocaleString()}
       `
     });
 
-    console.log('📧 Email sent successfully!');
+    console.log('[EMAIL] Email sent successfully!');
     console.log('📧 Message ID:', info.messageId);
     
     // Handle development vs production logging
@@ -283,7 +283,7 @@ export async function sendCredentialRecoveryEmail(username: string, password: st
     <html>
     <head>
       <meta charset="utf-8">
-      <title>Medical Scheduling System - Credential Recovery</title>
+      <title>Staff Scheduling System - Credential Recovery</title>
       <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
@@ -302,14 +302,14 @@ export async function sendCredentialRecoveryEmail(username: string, password: st
     <body>
       <div class="container">
         <div class="header">
-          <h1>🔐 Medical Scheduling System</h1>
+          <h1>🔐 Staff Scheduling System</h1>
           <p>Credential Recovery Request</p>
         </div>
         
         <div class="content">
           <div class="security-alert">
             <strong>🚨 SECURITY ALERT:</strong>
-            <p>Someone requested to recover the login credentials for your Medical Scheduling System account. This email was sent to your registered backup email address.</p>
+            <p>Someone requested to recover the login credentials for your Staff Scheduling System account. This email was sent to your registered backup email address.</p>
           </div>
           
           <h2>Your Current Login Credentials</h2>
@@ -364,9 +364,9 @@ export async function sendCredentialRecoveryEmail(username: string, password: st
     `;
 
     const info = await transporter.sendMail({
-      from: '"Medical Scheduling System Security" <security@scheduling.com>',
+      from: '"Staff Scheduling System Security" <security@scheduling.com>',
       to: backupEmail,
-      subject: '🔐 SECURITY ALERT - Medical Scheduling System Credential Recovery',
+      subject: '🔐 SECURITY ALERT - Staff Scheduling System Credential Recovery',
       html: htmlContent,
       text: `
 SECURITY ALERT - Staff Scheduling System
@@ -441,7 +441,7 @@ export async function sendCredentialsToBothEmails(
     }
 
     // Get sender information
-    const fromName = process.env.EMAIL_FROM_NAME || 'Medical Scheduling System';
+    const fromName = process.env.EMAIL_FROM_NAME || 'Staff Scheduling System';
     const fromAddress = process.env.EMAIL_FROM_ADDRESS || 'security@scheduling.com';
     const securityFromEmail = `"${fromName} Security" <${fromAddress}>`;
     const normalFromEmail = `"${fromName}" <${fromAddress}>`;
@@ -452,7 +452,7 @@ export async function sendCredentialsToBothEmails(
     <html>
     <head>
       <meta charset="utf-8">
-      <title>Medical Scheduling System - Credentials Changed</title>
+      <title>Staff Scheduling System - Credentials Changed</title>
       <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
@@ -470,14 +470,14 @@ export async function sendCredentialsToBothEmails(
     <body>
       <div class="container">
         <div class="header">
-          <h1>🔐 Medical Scheduling System</h1>
+          <h1>🔐 Staff Scheduling System</h1>
           <p>Security Alert - Credentials Changed</p>
         </div>
         
         <div class="content">
           <div class="security-alert">
             <strong>🚨 SECURITY NOTIFICATION:</strong>
-            <p>The login credentials for your Medical Scheduling System account have been changed, and the backup email has been updated to a new address.</p>
+            <p>The login credentials for your Staff Scheduling System account have been changed, and the backup email has been updated to a new address.</p>
           </div>
           
           <h2>New Login Credentials</h2>
@@ -528,7 +528,7 @@ export async function sendCredentialsToBothEmails(
     <html>
     <head>
       <meta charset="utf-8">
-      <title>Medical Scheduling System - New Backup Email Configured</title>
+      <title>Staff Scheduling System - New Backup Email Configured</title>
       <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
@@ -546,14 +546,14 @@ export async function sendCredentialsToBothEmails(
     <body>
       <div class="container">
         <div class="header">
-          <h1>🏥 Medical Scheduling System</h1>
+          <h1>� Staff Scheduling System</h1>
           <p>Welcome - New Backup Email Configured</p>
         </div>
         
         <div class="content">
           <div class="welcome">
             <strong>✅ WELCOME:</strong>
-            <p>This email address has been set as the new backup email for the Medical Scheduling System. You will now receive important security notifications and credential recovery emails at this address.</p>
+            <p>This email address has been set as the new backup email for the Staff Scheduling System. You will now receive important security notifications and credential recovery emails at this address.</p>
           </div>
           
           <h2>Your Current Login Credentials</h2>
@@ -606,7 +606,7 @@ export async function sendCredentialsToBothEmails(
         transporter.sendMail({
           from: securityFromEmail,
           to: oldBackupEmail,
-          subject: '🚨 SECURITY ALERT - Medical Scheduling Credentials Changed',
+          subject: '🚨 SECURITY ALERT - Staff Scheduling Credentials Changed',
           html: oldEmailHtmlContent,
           text: `
 SECURITY ALERT - Staff Scheduling System

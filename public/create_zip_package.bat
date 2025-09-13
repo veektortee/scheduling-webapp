@@ -21,7 +21,7 @@ copy "scheduler_sat_core.py" "temp-package\"
 REM Create comprehensive README
 echo [CREATE] Creating README.txt...
 (
-echo # Local Medical Staff Scheduling Optimizer
+echo # Local Staff Scheduling Optimizer
 echo.
 echo ## 🚀 Quick Start Guide
 echo.
@@ -90,7 +90,7 @@ echo - If webapp can't connect: Check firewall allows localhost:8000
 echo.
 echo ## 📞 Support
 echo.
-echo This is a high-performance local solver for medical staff scheduling.
+echo This is a high-performance local solver for staff scheduling.
 echo It uses Google OR-Tools constraint programming for optimal solutions.
 echo.
 echo Generated: %DATE% %TIME%
@@ -98,7 +98,7 @@ echo Generated: %DATE% %TIME%
 
 echo [CREATE] Creating requirements.txt for easy installation...
 (
-echo # Local Medical Staff Scheduling Solver - Python Dependencies
+echo # Local Staff Scheduling Solver - Python Dependencies
 echo # Auto-installed by start scripts, but available for manual installation
 echo.
 echo fastapi^>=0.104.0

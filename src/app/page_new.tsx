@@ -81,7 +81,7 @@ export default function Home() {
             <div className="flex flex-col space-y-2">
               <div className="flex items-end space-x-3">
                 <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 bg-clip-text text-transparent">
-                  Medical Staff Scheduling
+                  Staff Scheduling
                 </h1>
                 <span className="text-2xl font-bold bg-gradient-to-r from-teal-600 to-blue-600 bg-clip-text text-transparent pb-1">
                   System
@@ -92,7 +92,7 @@ export default function Home() {
                 <div className="h-2 w-2 bg-gradient-to-r from-purple-500 to-teal-500 rounded-full animate-pulse"></div>
               </div>
               <p className="text-sm font-medium text-gray-600 tracking-wide leading-relaxed">
-                🏥 Advanced scheduling and optimization for medical staff
+                 Advanced scheduling and optimization for staff
               </p>
             </div>
             {state.error && (

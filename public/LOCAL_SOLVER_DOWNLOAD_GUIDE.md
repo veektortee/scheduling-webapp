@@ -1,7 +1,7 @@
-# 🚀 Local Medical Staff Scheduling Solver Package
+# 🚀 Local Staff Scheduling Solver Package
 
 ## Overview
-This ZIP package contains a complete high-performance local solver for medical staff scheduling optimization. It runs on your computer to provide faster, more advanced scheduling compared to the basic online solver.
+This ZIP package contains a complete high-performance local solver for staff scheduling optimization. It runs on your computer to provide faster, more advanced scheduling compared to the basic online solver.
 
 ## 📦 Package Contents
 - **start_local_solver.bat** - Windows one-click launcher
@@ -16,7 +16,7 @@ This ZIP package contains a complete high-performance local solver for medical s
 
 ### Windows Users:
 1. **Download**: Get `local-solver-package.zip` from your webapp settings
-2. **Extract**: Unzip to any folder (e.g., `C:\medical-scheduler\`)
+2. **Extract**: Unzip to any folder (e.g., `C:\staff-scheduler\`)
 3. **Launch**: Double-click `start_local_solver.bat`
 4. **Wait**: Let it install dependencies automatically
 5. **Use**: Keep the window open while using your webapp!

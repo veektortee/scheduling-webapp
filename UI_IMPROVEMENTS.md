@@ -1,6 +1,6 @@
 # UI Improvements - Enhanced Navigation
 
-This document describes the user interface improvements made to the Medical Staff Scheduling System.
+This document describes the user interface improvements made to the Staff Scheduling System.
 
 ## Recent Changes
 

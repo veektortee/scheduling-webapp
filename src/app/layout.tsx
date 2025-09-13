@@ -17,8 +17,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Medical Staff Scheduling System",
-  description: "Advanced scheduling system for medical staff and shifts",
+  title: "Staff Scheduling System",
+  description: "Advanced scheduling system for staff and shifts",
   viewport: {
     width: "device-width",
     initialScale: 1,

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Local Python Solver Service for Medical Staff Scheduling
+Local Python Solver Service for Staff Scheduling
 
 This service runs locally on the admin's machine and provides an API endpoint
 for the web application to trigger the optimization solver.
@@ -196,7 +196,7 @@ def get_output(run_id: str):
         return jsonify({"status": "error", "message": str(e)}), 500
 
 if __name__ == '__main__':
-    print("Starting Medical Staff Scheduling Solver Service...")
+    print("Starting Staff Scheduling Solver Service...")
     print("Service will be available at: http://localhost:8000")
     print("Endpoints:")
     print("  POST /solve    - Submit scheduling case for optimization")

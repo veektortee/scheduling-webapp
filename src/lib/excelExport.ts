@@ -117,7 +117,7 @@ export function exportScheduleToExcel(
 
   // Generate filename with timestamp
   const timestamp = new Date().toISOString().split('T')[0];
-  const defaultFilename = `Medical_Schedule_${timestamp}.xlsx`;
+  const defaultFilename = `Staff_Schedule_${timestamp}.xlsx`;
   const finalFilename = filename || defaultFilename;
 
   // Write and download file

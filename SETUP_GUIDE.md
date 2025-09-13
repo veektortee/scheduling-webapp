@@ -1,6 +1,6 @@
-# Medical Staff Scheduling System
+# Staff Scheduling System
 
-A modern web-based scheduling system for medical staff with AI-powered optimization.
+A modern web-based scheduling system for staff with AI-powered optimization.
 
 ## 🏗️ Architecture
 
@@ -52,7 +52,7 @@ The solver service will be available at `http://localhost:8000`
 1. **Run** - Execute optimization solver, track progress, view logs
 2. **Calendar** - Generate calendar days, configure weekends
 3. **Shifts** - Create and manage shift templates and assignments
-4. **Providers** - Manage medical staff, preferences, and constraints
+4. **Providers** - Manage staff, preferences, and constraints
 5. **Config** - Adjust solver parameters and optimization settings
 
 ### **Key Capabilities**

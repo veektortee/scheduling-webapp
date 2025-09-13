@@ -120,10 +120,10 @@ export default function RunTab() {
   const addLog = useCallback((message: string, type: 'info' | 'success' | 'error' | 'warning' = 'info') => {
     const timestamp = new Date().toLocaleTimeString();
     const prefix = {
-      info: '🔵',
-      success: '✅', 
-      error: '❌',
-      warning: '⚠️'
+      info: '[INFO]',
+      success: '[SUCCESS]', 
+      error: '[ERROR]',
+      warning: '[WARNING]'
     }[type];
     
     setLogs(prev => [...prev, `${timestamp} ${prefix} ${message}`]);
@@ -140,16 +140,16 @@ export default function RunTab() {
         const info = await response.json();
         setLocalSolverAvailable(true);
         setSolverInfo(info);
-        addLog(`🚀 Local high-performance mode active: ${info.solver_type}`, 'success');
+        addLog(`STATUS: Local high-performance mode active: ${info.solver_type}`, 'success');
         if (info.ortools_available) {
-          addLog('⚡ OR-Tools optimization engine available', 'success');
+          addLog('STATUS: OR-Tools optimization engine available', 'success');
         }
       } else {
         setLocalSolverAvailable(false);
       }
     } catch {
       setLocalSolverAvailable(false);
-      addLog('💡 Local mode not active - using serverless mode', 'info');
+      addLog('INFO: Local mode not active - using serverless mode', 'info');
     }
   }, [addLog]);
 
@@ -201,7 +201,7 @@ export default function RunTab() {
     if (isCheckingInstallation) return;
     
     setIsCheckingInstallation(true);
-    addLog('🔍 Checking local mode setup...', 'info');
+    addLog('STATUS: Checking local mode setup...', 'info');
 
     const requiredFiles = [
       'local_solver.py',
@@ -219,14 +219,14 @@ export default function RunTab() {
         const response = await fetch(`/${file}`, { method: 'HEAD' });
         if (response.ok) {
           installedFiles.push(file);
-          addLog(`✅ Found ${file}`, 'success');
+          addLog(`FOUND: ${file}`, 'success');
         } else {
           missingFiles.push(file);
-          addLog(`❌ Missing ${file}`, 'error');
+          addLog(`MISSING: ${file}`, 'error');
         }
       } catch {
         missingFiles.push(file);
-        addLog(`❌ Cannot access ${file}`, 'error');
+        addLog(`ACCESS ERROR: Cannot access ${file}`, 'error');
       }
     }
 
@@ -238,12 +238,12 @@ export default function RunTab() {
       
       if (response.ok) {
         serverRunning = true;
-        addLog('✅ Local server is running on localhost:8000', 'success');
+        addLog('OK: Local server is running on localhost:8000', 'success');
       } else {
-        addLog('⚠️ Local server not responding', 'warning');
+        addLog('WARNING: Local server not responding', 'warning');
       }
     } catch {
-      addLog('⚠️ Local server not running', 'warning');
+      addLog('WARNING: Local server not running', 'warning');
     }
 
     const newStatus = {
@@ -258,19 +258,19 @@ export default function RunTab() {
     saveInstallationStatus(newStatus);
     
     if (newStatus.filesInstalled && serverRunning) {
-      addLog('🎉 Local mode is fully ready!', 'success');
-      addLog('🚀 You can now use the "Local" run option for high performance!', 'success');
+      addLog('READY: Local mode is fully ready!', 'success');
+      addLog('STATUS: You can now use the "Local" run option for high performance!', 'success');
       // Auto-refresh page when everything is detected as working
       setTimeout(() => {
-        addLog('🔄 Refreshing page to update interface...', 'success');
+        addLog('STATUS: Refreshing page to update interface...', 'success');
         window.location.reload();
       }, 2000);
     } else if (newStatus.filesInstalled && !serverRunning) {
-      addLog('📁 Files are installed but server is not running', 'info');
-      addLog('▶️ Start the local server by running the downloaded script', 'info');
+      addLog('INFO: Files are installed but server is not running', 'info');
+      addLog('ACTION: Start the local server by running the downloaded script', 'info');
     } else {
-      addLog(`⚠️ Missing ${missingFiles.length} required files`, 'warning');
-      addLog('💾 Use "Enable Local Solver" to download missing files first', 'info');
+      addLog(`WARNING: Missing ${missingFiles.length} required files`, 'warning');
+      addLog('ACTION: Use "Enable Local Solver" to download missing files first', 'info');
     }
 
     setIsCheckingInstallation(false);
@@ -340,12 +340,12 @@ export default function RunTab() {
 
   // Auto-start local server if files exist but server not running
   const startLocalServer = useCallback(async () => {
-    addLog('🚀 Attempting to activate local server...', 'info');
+    addLog('STATUS: Attempting to activate local server...', 'info');
     
     // Method 1: Try to wake up server with health check requests
     for (let attempt = 1; attempt <= 3; attempt++) {
       try {
-        addLog(`🔄 Activation attempt ${attempt}/3...`, 'info');
+        addLog(`STATUS: Activation attempt ${attempt}/3...`, 'info');
         
         const response = await fetch('http://localhost:8000/health', {
           method: 'GET',
@@ -353,13 +353,13 @@ export default function RunTab() {
         });
         
         if (response.ok) {
-          addLog('✅ Local server is now active!', 'success');
+          addLog('SUCCESS: Local server is now active!', 'success');
           setLocalSolverAvailable(true);
           // Refresh the installation status to reflect server is running
           setTimeout(checkInstallationStatus, 1000);
           // Refresh the page after successful detection
           setTimeout(() => {
-            addLog('🔄 Refreshing page to update interface...', 'success');
+            addLog('STATUS: Refreshing page to update interface...', 'success');
             window.location.reload();
           }, 2000);
           return true;
@@ -374,7 +374,7 @@ export default function RunTab() {
 
     // Method 2: Try to trigger server via service worker or background script
     try {
-      addLog('🔧 Trying alternative activation method...', 'info');
+      addLog('INFO: Trying alternative activation method...', 'info');
       
       // Create a temporary iframe to try to load a local file that might trigger the server
       const iframe = document.createElement('iframe');
@@ -392,12 +392,12 @@ export default function RunTab() {
       document.body.removeChild(iframe);
       
       if (healthResponse.ok) {
-        addLog('✅ Local server activated successfully!', 'success');
+        addLog('SUCCESS: Local server activated successfully!', 'success');
         setLocalSolverAvailable(true);
         setTimeout(checkInstallationStatus, 1000);
         // Refresh the page after successful detection
         setTimeout(() => {
-          addLog('🔄 Refreshing page to update interface...', 'success');
+          addLog('STATUS: Refreshing page to update interface...', 'success');
           window.location.reload();
         }, 2000);
         return true;
