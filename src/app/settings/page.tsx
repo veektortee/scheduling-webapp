@@ -417,6 +417,53 @@ export default function SettingsPage() {
               <li>• Use a strong password with at least 6 characters</li>
             </ul>
           </div>
+
+          {/* Local Solver Download */}
+          <div className="mt-6 p-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl">
+            <h4 className="font-semibold text-green-900 dark:text-green-300 mb-3 flex items-center space-x-2">
+              <span>⚡</span>
+              <span>High-Performance Local Solver</span>
+            </h4>
+            <p className="text-sm text-green-800 dark:text-green-200 mb-4">
+              Download our optimized local solver package for maximum performance. This runs on your computer 
+              and provides faster scheduling with advanced OR-Tools optimization.
+            </p>
+            
+            <div className="space-y-3">
+              <div className="flex flex-wrap gap-3">
+                <a
+                  href="/api/download/local-solver"
+                  className="inline-flex items-center space-x-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105"
+                  download="local-solver-package.zip"
+                >
+                  <span>📦</span>
+                  <span>Download Local Solver Package</span>
+                  <span className="text-xs opacity-80">(ZIP)</span>
+                </a>
+                
+                <a
+                  href="/LOCAL_SOLVER_DOWNLOAD_GUIDE.md"
+                  target="_blank"
+                  className="inline-flex items-center space-x-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition-all duration-200 shadow-md hover:shadow-lg"
+                >
+                  <span>📖</span>
+                  <span>View Setup Guide</span>
+                </a>
+              </div>
+              
+              <div className="text-xs text-green-700 dark:text-green-300 space-y-1">
+                <div><strong>Features:</strong></div>
+                <ul className="ml-4 space-y-0.5">
+                  <li>• One-click setup for Windows (.bat) and Mac/Linux (.sh)</li>
+                  <li>• Advanced OR-Tools constraint programming</li>
+                  <li>• Auto-detects testcase_gui.py for maximum optimization</li>
+                  <li>• WebSocket real-time progress updates</li>
+                  <li>• Complete with all dependencies and documentation</li>
+                </ul>
+                <div className="mt-2"><strong>Usage:</strong> Extract ZIP → Run start script → Keep running while using webapp</div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

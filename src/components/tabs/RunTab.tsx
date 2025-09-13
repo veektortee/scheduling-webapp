@@ -712,62 +712,57 @@ export default function RunTab() {
     });
   };
 
-  // Download functions for different platforms
-  const downloadFile = (filename: string, content: string) => {
-    const blob = new Blob([content], { type: 'text/plain' });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
-  };
-
-  const downloadPythonSolver = async () => {
-    try {
-      const response = await fetch('/local_solver.py');
-      const content = await response.text();
-      downloadFile('local_solver.py', content);
-      addLog('📁 Downloaded local_solver.py', 'success');
-    } catch {
-      addLog('❌ Failed to download local_solver.py', 'error');
-    }
-  };
-
-  const downloadWindowsScript = async () => {
-    try {
-      const response = await fetch('/start_local_solver.bat');
-      const content = await response.text();
-      downloadFile('start_local_solver.bat', content);
-      addLog('📁 Downloaded Windows start script', 'success');
-    } catch {
-      addLog('❌ Failed to download Windows script', 'error');
-    }
-  };
-
-  const downloadUnixScript = async () => {
-    try {
-      const response = await fetch('/start_local_solver.sh');
-      const content = await response.text();
-      downloadFile('start_local_solver.sh', content);
-      addLog('📁 Downloaded Unix/Linux/Mac start script', 'success');
-    } catch {
-      addLog('❌ Failed to download Unix script', 'error');
-    }
-  };
-
-  const handleSmartInstall = () => {
-    const platform = navigator.platform.toLowerCase();
-    const userAgent = navigator.userAgent.toLowerCase();
+  const handleSmartInstall = async () => {
+    addLog('🚀 Starting Smart Install (Complete Package)...', 'info');
     
-    if (platform.includes('win') || userAgent.includes('windows')) {
-      installForWindows();
-    } else if (platform.includes('mac') || userAgent.includes('mac')) {
-      installForMac();
-    } else {
-      installForLinux();
+    try {
+      // Download the complete ZIP package
+      addLog('📦 Downloading complete local solver package...', 'info');
+      
+      const response = await fetch('/api/download/local-solver');
+      
+      if (!response.ok) {
+        throw new Error(`Download failed: ${response.status} ${response.statusText}`);
+      }
+      
+      // Get the ZIP file as blob
+      const blob = await response.blob();
+      
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'local-solver-package.zip';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      addLog('✅ Complete local solver package downloaded!', 'success');
+      addLog(`📊 Package size: ${(blob.size / 1024).toFixed(1)} KB`, 'info');
+      addLog('📦 Package includes:', 'info');
+      addLog('  • FastAPI solver service (advanced)', 'info');
+      addLog('  • Basic solver (fallback)', 'info');
+      addLog('  • Start scripts for Windows/Mac/Linux', 'info');
+      addLog('  • Complete documentation and setup guide', 'info');
+      addLog('🎯 Next: Extract the ZIP file and run the start script!', 'success');
+      
+      // Show the appropriate guide based on platform
+      const platform = navigator.platform.toLowerCase();
+      const userAgent = navigator.userAgent.toLowerCase();
+      
+      if (platform.includes('win') || userAgent.includes('windows')) {
+        showInstallGuide('windows');
+      } else if (platform.includes('mac') || userAgent.includes('mac')) {
+        showInstallGuide('mac');
+      } else {
+        showInstallGuide('linux');
+      }
+      
+    } catch (error) {
+      addLog('❌ Failed to download complete package', 'error');
+      addLog(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`, 'error');
+      addLog('💡 Try using the Settings page download link as alternative', 'info');
     }
   };
 
@@ -779,33 +774,110 @@ export default function RunTab() {
   };
 
   const installForWindows = async () => {
-    addLog('🪟 Installing for Windows...', 'info');
-    await downloadPythonSolver();
-    await downloadWindowsScript();
-    addLog('✅ Windows installation files downloaded!', 'success');
+    addLog('🪟 Installing complete package for Windows...', 'info');
     
-    // Show the guide modal with step-by-step instructions
-    showInstallGuide('windows');
+    try {
+      // Download the complete ZIP package
+      const response = await fetch('/api/download/local-solver');
+      
+      if (!response.ok) {
+        throw new Error(`Download failed: ${response.status}`);
+      }
+      
+      const blob = await response.blob();
+      
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'local-solver-package.zip';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      addLog('✅ Complete Windows package downloaded!', 'success');
+      addLog('📦 Extract ZIP → Double-click start_local_solver.bat', 'info');
+      
+      // Show the guide modal with step-by-step instructions
+      showInstallGuide('windows');
+      
+    } catch (error) {
+      addLog('❌ Failed to download complete package', 'error');
+      addLog(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`, 'error');
+    }
   };
 
   const installForMac = async () => {
-    addLog('🍎 Installing for macOS...', 'info');
-    await downloadPythonSolver();
-    await downloadUnixScript();
-    addLog('✅ macOS installation files downloaded!', 'success');
+    addLog('🍎 Installing complete package for macOS...', 'info');
     
-    // Show the guide modal with step-by-step instructions
-    showInstallGuide('mac');
+    try {
+      // Download the complete ZIP package
+      const response = await fetch('/api/download/local-solver');
+      
+      if (!response.ok) {
+        throw new Error(`Download failed: ${response.status}`);
+      }
+      
+      const blob = await response.blob();
+      
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'local-solver-package.zip';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      addLog('✅ Complete macOS package downloaded!', 'success');
+      addLog('📦 Extract ZIP → Terminal: chmod +x start_local_solver.sh', 'info');
+      addLog('▶️ Then run: ./start_local_solver.sh', 'info');
+      
+      // Show the guide modal with step-by-step instructions
+      showInstallGuide('mac');
+      
+    } catch (error) {
+      addLog('❌ Failed to download complete package', 'error');
+      addLog(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`, 'error');
+    }
   };
 
   const installForLinux = async () => {
-    addLog('🐧 Installing for Linux...', 'info');
-    await downloadPythonSolver();
-    await downloadUnixScript();
-    addLog('✅ Linux installation files downloaded!', 'success');
+    addLog('🐧 Installing complete package for Linux...', 'info');
     
-    // Show the guide modal with step-by-step instructions
-    showInstallGuide('linux');
+    try {
+      // Download the complete ZIP package
+      const response = await fetch('/api/download/local-solver');
+      
+      if (!response.ok) {
+        throw new Error(`Download failed: ${response.status}`);
+      }
+      
+      const blob = await response.blob();
+      
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'local-solver-package.zip';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      addLog('✅ Complete Linux package downloaded!', 'success');
+      addLog('📦 Extract ZIP → Terminal: chmod +x start_local_solver.sh', 'info');
+      addLog('▶️ Then run: ./start_local_solver.sh', 'info');
+      
+      // Show the guide modal with step-by-step instructions
+      showInstallGuide('linux');
+      
+    } catch (error) {
+      addLog('❌ Failed to download complete package', 'error');
+      addLog(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`, 'error');
+    }
   };
 
   return (
