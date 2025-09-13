@@ -23,21 +23,55 @@ fi
 
 echo "[OK] Python found ($PYTHON_CMD)"
 echo ""
-echo "Installing/checking dependencies..."
+echo "Preparing environment and installing/checking dependencies..."
 echo ""
 
+# Upgrade pip and tooling first
+echo "[INFO] Upgrading pip and setuptools..."
+$PYTHON_CMD -m pip install --upgrade pip setuptools wheel || {
+    echo "[WARN] Could not upgrade pip/setuptools; continuing with existing environment"
+}
+
+# Create and use a virtual environment if not already inside one
+if [ -z "$VIRTUAL_ENV" ]; then
+    if [ ! -d ".venv" ]; then
+        echo "[INFO] Creating virtual environment in ./ .venv"
+        $PYTHON_CMD -m venv .venv || echo "[WARN] Could not create virtualenv"
+    fi
+    if [ -f ".venv/bin/activate" ]; then
+        echo "[INFO] Activating virtual environment"
+        . .venv/bin/activate
+    fi
+fi
+
+# Prefer requirements.txt if present (install with --upgrade to get latest compatible versions)
 if [ -f requirements.txt ]; then
-    echo "[INSTALL] Using requirements.txt"
-    $PYTHON_CMD -m pip install -r requirements.txt || {
-        echo "[ERROR] Failed to install requirements"
+    echo "[INSTALL] Installing/Upgrading from requirements.txt"
+    $PYTHON_CMD -m pip install --upgrade -r requirements.txt || {
+        echo "[ERROR] Failed to install/upgrade requirements"
         exit 1
     }
 else
-    echo "[INSTALL] Installing core packages (fastapi, uvicorn, websockets, python-multipart, ortools, openpyxl, colorama)"
-    $PYTHON_CMD -m pip install fastapi 'uvicorn[standard]' websockets python-multipart ortools openpyxl colorama || {
+    echo "[INSTALL] Installing/Upgrading core packages (fastapi, uvicorn, websockets, python-multipart, ortools, openpyxl, colorama)"
+    $PYTHON_CMD -m pip install --upgrade fastapi 'uvicorn[standard]' websockets python-multipart ortools openpyxl colorama || {
         echo "[ERROR] Failed to install core packages"
         exit 1
     }
+fi
+
+# If Node project present, ensure JS packages are synced to lockfile (prefer npm ci for reproducible installs)
+if [ -f package.json ]; then
+    if command -v npm >/dev/null 2>&1; then
+        if [ -f package-lock.json ] || [ -f pnpm-lock.yaml ]; then
+            echo "[INFO] Running 'npm ci' to install JS dependencies from lockfile (reproducible)"
+            npm ci || echo "[WARN] 'npm ci' failed; falling back to 'npm install'" && npm install || echo "[WARN] npm install also failed"
+        else
+            echo "[INFO] Running 'npm install' to ensure JS dependencies are present"
+            npm install || echo "[WARN] npm install failed"
+        fi
+    else
+        echo "[WARN] npm not found; skipping JS dependency sync"
+    fi
 fi
 
 echo ""

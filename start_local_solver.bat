@@ -6,7 +6,6 @@ echo.
 echo ================================================================
 echo  ONE-CLICK LOCAL SCHEDULER OPTIMIZER
 echo ================================================================
-echo.
 echo Checking Python installation...
 
 python --version >nul 2>&1
@@ -21,16 +20,30 @@ for /f "tokens=*" %%v in ('python -c "import sys;print(sys.executable)"') do set
 echo [OK] Python found: %PY_EXE%
 
 echo.
-echo Installing/checking dependencies...
+echo Preparing environment and installing/checking dependencies...
 echo.
 
-REM Prefer requirements.txt if present
+REM Upgrade pip and setuptools
+"%PY_EXE%" -m pip install --upgrade pip setuptools wheel || echo [WARN] Could not upgrade pip
+
+REM Create virtualenv if missing
+if not exist .venv\Scripts\activate.bat (
+    echo [INFO] Creating virtual environment in .venv
+    "%PY_EXE%" -m venv .venv || echo [WARN] Could not create virtualenv
+)
+
+REM Activate venv for subsequent installs (best-effort)
+if exist .venv\Scripts\activate.bat (
+    call .venv\Scripts\activate.bat
+)
+
+REM Prefer requirements.txt if present (use --upgrade to fetch current compatible versions)
 if exist requirements.txt (
-    echo [INSTALL] Using requirements.txt
-    "%PY_EXE%" -m pip install -r requirements.txt
+    echo [INSTALL] Installing/Upgrading from requirements.txt
+    "%PY_EXE%" -m pip install --upgrade -r requirements.txt
 ) else (
-    echo [INSTALL] Installing core packages (fastapi, uvicorn, websockets, python-multipart, ortools, openpyxl, colorama)
-    "%PY_EXE%" -m pip install fastapi uvicorn[standard] websockets python-multipart ortools openpyxl colorama
+    echo [INSTALL] Installing/Upgrading core packages (fastapi, uvicorn, websockets, python-multipart, ortools, openpyxl, colorama)
+    "%PY_EXE%" -m pip install --upgrade fastapi uvicorn[standard] websockets python-multipart ortools openpyxl colorama
 )
 
 if errorlevel 1 (
@@ -38,6 +51,22 @@ if errorlevel 1 (
     pause
     popd
     exit /b 1
+)
+
+REM Sync JS dependencies if project has a package.json
+if exist package.json (
+    where npm >nul 2>&1
+    if errorlevel 1 (
+        echo [WARN] npm not found; skipping JS dependency sync
+    ) else (
+        if exist package-lock.json (
+            echo [INFO] Running npm ci to install JS deps from lockfile
+            npm ci || (echo [WARN] npm ci failed & echo [INFO] falling back to npm install & npm install)
+        ) else (
+            echo [INFO] Running npm install to ensure JS deps are present
+            npm install || echo [WARN] npm install failed
+        )
+    )
 )
 
 echo.

@@ -386,14 +386,23 @@ class AdvancedSchedulingSolver:
         
         # Add workload balancing terms (simplified)
         if provider_workloads:
-            avg_workload = sum(provider_workloads) // len(provider_workloads)
-            for workload in provider_workloads:
-                # Penalty for being too far from average
-                deviation = model.NewIntVar(-1000, 1000, 'deviation')
-                model.Add(deviation == workload - avg_workload)
-                abs_deviation = model.NewIntVar(0, 1000, 'abs_deviation')
-                model.AddAbsEquality(abs_deviation, deviation)
-                objective_terms.append(-abs_deviation)  # Minimize deviation
+            # Create a variable for total workload and average
+            total_workload = model.NewIntVar(0, len(shifts) * len(providers), 'total_workload')
+            model.Add(total_workload == sum(provider_workloads))
+
+            # For small numbers of providers, we'll use a simpler approach
+            # Instead of calculating exact average, we'll just minimize max-min difference
+            if len(provider_workloads) > 1:
+                min_workload = model.NewIntVar(0, len(shifts), 'min_workload')
+                max_workload = model.NewIntVar(0, len(shifts), 'max_workload')
+                
+                for workload in provider_workloads:
+                    model.Add(min_workload <= workload)
+                    model.Add(max_workload >= workload)
+                
+                workload_range = model.NewIntVar(0, len(shifts), 'workload_range')
+                model.Add(workload_range == max_workload - min_workload)
+                objective_terms.append(-workload_range)  # Minimize workload range
         
         if objective_terms:
             model.Maximize(sum(objective_terms))

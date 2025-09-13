@@ -28,15 +28,47 @@ if errorlevel 1 (
 
 echo [OK] pip is available
 
-:: Install dependencies
+:: Prepare environment and install dependencies
 echo.
-echo [INSTALL] Installing Python dependencies...
-pip install -r requirements.txt
+echo [INFO] Upgrading pip and setuptools
+python -m pip install --upgrade pip setuptools wheel || echo [WARN] Could not upgrade pip
+
+:: Create virtualenv if not present
+if not exist .venv\Scripts\activate.bat (
+    echo [INFO] Creating virtual environment in .venv
+    python -m venv .venv || echo [WARN] Could not create virtualenv
+)
+
+if exist .venv\Scripts\activate.bat (
+    call .venv\Scripts\activate.bat
+)
+
+echo [INSTALL] Installing/Upgrading Python dependencies (from requirements.txt if present)
+if exist requirements.txt (
+    python -m pip install --upgrade -r requirements.txt
+) else (
+    python -m pip install --upgrade fastapi uvicorn[standard] websockets python-multipart ortools openpyxl colorama
+)
 
 if errorlevel 1 (
     echo [ERROR] Failed to install dependencies
-    echo    Trying individual installation...
-    pip install fastapi uvicorn websockets python-multipart ortools openpyxl colorama
+    echo    Please inspect error messages above
+)
+
+:: Sync JS dependencies if present
+if exist package.json (
+    where npm >nul 2>&1
+    if errorlevel 1 (
+        echo [WARN] npm not found; skipping JS dependency sync
+    ) else (
+        if exist package-lock.json (
+            echo [INFO] Running npm ci to install JS deps from lockfile
+            npm ci || (echo [WARN] npm ci failed & echo [INFO] falling back to npm install & npm install)
+        ) else (
+            echo [INFO] Running npm install to ensure JS deps are present
+            npm install || echo [WARN] npm install failed
+        )
+    )
 )
 
 :: Check if FastAPI service file exists
