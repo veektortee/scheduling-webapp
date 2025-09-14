@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useScheduling } from '@/context/SchedulingContext';
-import { Provider } from '@/types/scheduling';
+import { Provider, DEFAULT_SHIFT_TYPES } from '@/types/scheduling';
 import { 
   IoPeopleSharp, 
   IoPersonSharp, 
@@ -13,11 +13,12 @@ import {
   IoCheckmarkCircleSharp
 } from 'react-icons/io5';
 import { PlusCircleIcon, ArrowPathIcon, TrashIcon } from '@heroicons/react/24/solid';
-import ProviderCalendar from '@/components/ProviderCalendar';
+import SchedulingCalendar from '@/components/SchedulingCalendar';
 
 export default function ProvidersTab() {
   const { state, dispatch } = useScheduling();
   const { case: schedulingCase, selectedProvider } = state;
+  const [newProviderType, setNewProviderType] = useState<string>('');
   const [providerForm, setProviderForm] = useState<Partial<Provider>>({
     name: '',
     type: 'Staff',
@@ -31,10 +32,30 @@ export default function ProvidersTab() {
     preferred_days_hard: {},
     preferred_days_soft: {},
   });
+  // Note: provider types are managed via the top "Provider Types" input; the per-provider editor
+  // uses a simple select to choose among those types.
   const [selectedOffDays, setSelectedOffDays] = useState<string[]>([]);
   const [selectedOnDays, setSelectedOnDays] = useState<string[]>([]);
   const [calendarMode, setCalendarMode] = useState<'off' | 'on'>('on');
   const [selectedDateForShifts, setSelectedDateForShifts] = useState<string | null>(null);
+  // Selected shift types to apply when setting FIXED ON / PREFER ON
+  const [selectedOnShiftTypes, setSelectedOnShiftTypes] = useState<string[]>([]);
+
+  // Derive shift type options from multiple sources (case shifts, providers' preferences, defaults)
+  const shiftTypesFromShifts = Array.from(new Set((schedulingCase.shifts || []).map(s => s.type))).filter((type): type is string => Boolean(type));
+  const shiftTypesFromProviders = Array.from(new Set(
+    (schedulingCase.providers || []).flatMap(p => [
+      ...Object.values(p.preferred_days_hard || {}).flat(),
+      ...Object.values(p.preferred_days_soft || {}).flat()
+    ])
+  )).filter((type): type is string => Boolean(type));
+  const defaultShiftIds = DEFAULT_SHIFT_TYPES.map(s => s.id);
+  const providerTypes = Array.from(new Set((schedulingCase.providers || []).map(p => p.type).filter((type): type is string => Boolean(type))));
+  // Merge: shift ids, provider-referenced shift types, defaults, then provider types
+  const shiftTypeOptions = Array.from(new Set([...shiftTypesFromShifts, ...shiftTypesFromProviders, ...defaultShiftIds, ...providerTypes]));
+  const shiftTypeNameMap: Record<string, string> = Object.fromEntries(
+    DEFAULT_SHIFT_TYPES.map(st => [st.id, st.name])
+  );
 
   const handleProviderSelect = (index: number) => {
     // If the same provider is clicked again, deselect it
@@ -57,9 +78,16 @@ export default function ProvidersTab() {
     // Clear selected days when switching providers
     setSelectedOffDays([]);
     setSelectedOnDays([]);
+  // Clear selected shift-type filters when switching providers
+  setSelectedOnShiftTypes([]);
     // Clear selected date for shifts when a provider is selected
     setSelectedDateForShifts(null);
   };
+
+  // If available options change, remove any selected types that are no longer valid
+  useEffect(() => {
+    setSelectedOnShiftTypes(prev => prev.filter(t => shiftTypeOptions.includes(t)));
+  }, [shiftTypeOptions]);
 
   const handleProviderFormChange = (field: keyof Provider, value: string | number | null | string[] | Record<string, string[]>) => {
     setProviderForm(prev => ({ ...prev, [field]: value }));
@@ -138,6 +166,8 @@ export default function ProvidersTab() {
     setSelectedOnDays([]);
     // Clear selected date for shifts when resetting
     setSelectedDateForShifts(null);
+    // Clear selected shift types when resetting
+    setSelectedOnShiftTypes([]);
   };
 
   const applyFixedOffDays = () => {
@@ -226,14 +256,19 @@ export default function ProvidersTab() {
     // Use the currently selected days based on the calendar mode
     const daysToApply = calendarMode === 'on' ? selectedOnDays : selectedOffDays;
     if (daysToApply.length === 0) return;
-    
+    // Require shift types to be selected
+    if (selectedOnShiftTypes.length === 0) {
+      alert('Please select one or more shift types to apply for PREFER ON');
+      return;
+    }
+
     const provider = schedulingCase.providers[selectedProvider];
-    const shiftTypes = ['DAY', 'EVENING', 'NIGHT', 'WEEKEND', 'FLEX'];
-    
+    const shiftTypesToApply = selectedOnShiftTypes;
+
     // Clear any existing preferences for these days first (override functionality)
     const newPreferredDaysSoft = { ...provider.preferred_days_soft };
     daysToApply.forEach(day => {
-      newPreferredDaysSoft[day] = shiftTypes;
+      newPreferredDaysSoft[day] = shiftTypesToApply;
     });
 
     const updatedProvider: Provider = {
@@ -270,14 +305,19 @@ export default function ProvidersTab() {
     // Use the currently selected days based on the calendar mode
     const daysToApply = calendarMode === 'on' ? selectedOnDays : selectedOffDays;
     if (daysToApply.length === 0) return;
-    
+    // Require shift types to be selected
+    if (selectedOnShiftTypes.length === 0) {
+      alert('Please select one or more shift types to apply for FIXED ON');
+      return;
+    }
+
     const provider = schedulingCase.providers[selectedProvider];
-    const shiftTypes = ['DAY', 'EVENING', 'NIGHT', 'WEEKEND', 'FLEX'];
-    
+    const shiftTypesToApply = selectedOnShiftTypes;
+
     // Clear any existing preferences for these days first (override functionality)
     const newPreferredDaysHard = { ...provider.preferred_days_hard };
     daysToApply.forEach(day => {
-      newPreferredDaysHard[day] = shiftTypes;
+      newPreferredDaysHard[day] = shiftTypesToApply;
     });
 
     const updatedProvider: Provider = {
@@ -308,38 +348,10 @@ export default function ProvidersTab() {
     });
   };
 
-  const handleDayClear = (day: string) => {
-    if (selectedProvider === null) return;
-    
-    const provider = schedulingCase.providers[selectedProvider];
-    
-    // Remove from all possible arrays/objects
-    const updatedProvider: Provider = {
-      ...provider,
-      forbidden_days_hard: (provider.forbidden_days_hard || []).filter(d => d !== day),
-      forbidden_days_soft: (provider.forbidden_days_soft || []).filter(d => d !== day),
-      preferred_days_hard: Object.fromEntries(
-        Object.entries(provider.preferred_days_hard || {}).filter(([d]) => d !== day)
-      ),
-      preferred_days_soft: Object.fromEntries(
-        Object.entries(provider.preferred_days_soft || {}).filter(([d]) => d !== day)
-      ),
-    };
-
-    dispatch({
-      type: 'UPDATE_PROVIDER',
-      payload: { index: selectedProvider, provider: updatedProvider },
-    });
-    
-    // Update form state
-    setProviderForm({
-      ...updatedProvider,
-      limits: updatedProvider.limits || { min_total: 0, max_total: null },
-      forbidden_days_soft: updatedProvider.forbidden_days_soft || [],
-      forbidden_days_hard: updatedProvider.forbidden_days_hard || [],
-      preferred_days_hard: updatedProvider.preferred_days_hard || {},
-      preferred_days_soft: updatedProvider.preferred_days_soft || {},
-    });
+  const handleDaySelect = (day: string) => {
+    if (selectedProvider === null) {
+      setSelectedDateForShifts(day);
+    }
   };
 
   const handleDayToggle = (day: string, selected: boolean) => {
@@ -384,6 +396,50 @@ export default function ProvidersTab() {
                 Providers
               </h3>
             </div>
+            {/* Provider types management */}
+            <div className="mb-4 w-full">
+              <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">Provider Types</label>
+              <div className="flex items-center gap-2 mb-2 w-full">
+                <input
+                  type="text"
+                  value={newProviderType}
+                  onChange={(e) => setNewProviderType(e.target.value)}
+                  placeholder="Add type (e.g. NP, PA)"
+                  className="flex-1 min-w-0 px-2 py-1 border border-gray-300 rounded-md bg-white text-gray-900 dark:bg-gray-800 dark:text-white"
+                />
+                <button
+                  onClick={() => {
+                    const t = (newProviderType || '').trim();
+                    if (!t) return;
+                    const types = Array.from(new Set([...(schedulingCase.provider_types || []), t]));
+                    dispatch({ type: 'UPDATE_CASE', payload: { provider_types: types } });
+                    setNewProviderType('');
+                  }}
+                  className="px-3 py-1.5 flex-shrink-0 bg-green-600 text-white rounded-md text-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400"
+                >Add type</button>
+              </div>
+              <div className="flex flex-wrap gap-2 max-w-full">
+                {(schedulingCase.provider_types || []).map((type) => (
+                  <div key={type} className="inline-flex items-center space-x-2 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-md text-sm max-w-[12rem]">
+                        <span className="font-medium truncate max-w-[9rem]">{type}</span>
+                        <button
+                          onClick={() => {
+                            const types = (schedulingCase.provider_types || []).filter(t => t !== type);
+                            // Also clear any providers that were using this type (set to 'Staff')
+                            const updatedProviders = schedulingCase.providers.map(p => p.type === type ? { ...p, type: 'Staff' } : p);
+                            dispatch({ type: 'UPDATE_CASE', payload: { provider_types: types, providers: updatedProviders } });
+                          }}
+                          title="Remove type"
+                          aria-label={`Remove provider type ${type}`}
+                          className="ml-1 w-3 h-3 flex items-center justify-center bg-red-600 hover:bg-red-700 text-white rounded-full text-[9px] shrink-0"
+                        >
+                          ✕
+                        </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             <div className="max-h-64 overflow-y-auto space-y-2">
             {schedulingCase.providers.map((provider, index) => (
               <div
@@ -423,21 +479,7 @@ export default function ProvidersTab() {
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Type
-              </label>
-              <select
-                value={providerForm.type || 'Staff'}
-                onChange={(e) => handleProviderFormChange('type', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 dark:bg-gray-800 dark:text-white dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="Staff">Staff</option>
-                <option value="Manager">Manager</option>
-                <option value="Supervisor">Supervisor</option>
-                <option value="Lead">Lead</option>
-              </select>
-            </div>
+            {/* Provider type is managed at the top 'Provider Types' list; removed duplicate editor here. */}
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -576,20 +618,40 @@ export default function ProvidersTab() {
           </div>
         )}
 
-        <ProviderCalendar
+        <SchedulingCalendar
           availableDays={schedulingCase.calendar.days}
           selectedDays={selectedProvider === null ? (selectedDateForShifts ? [selectedDateForShifts] : []) : (calendarMode === 'off' ? selectedOffDays : selectedOnDays)}
           onDayToggle={handleDayToggle}
-          onDayClear={handleDayClear}
-          fixedOffDays={selectedProvider !== null ? schedulingCase.providers[selectedProvider]?.forbidden_days_hard || [] : []}
-          preferOffDays={selectedProvider !== null ? schedulingCase.providers[selectedProvider]?.forbidden_days_soft || [] : []}
-          fixedOnDays={selectedProvider !== null ? Object.keys(schedulingCase.providers[selectedProvider]?.preferred_days_hard || {}) : []}
-          preferOnDays={selectedProvider !== null ? Object.keys(schedulingCase.providers[selectedProvider]?.preferred_days_soft || {}) : []}
-          mode={calendarMode}
-          disabled={false}
+          onDaySelect={handleDaySelect}
+          mode={selectedProvider === null ? 'single' : 'multiple'}
+          minDate={new Date().toISOString().split('T')[0]} // Only allow dates from today onwards
           className="h-120"
         />
-        
+        {/* Shift type selector for ON preferences (required) */}
+        {selectedProvider !== null && (
+          <div className="mt-3">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Shift types to apply (required)</label>
+            <div className="flex flex-wrap gap-2">
+              {shiftTypeOptions.map((st) => {
+                if (!st) return null; // Skip undefined values
+                const active = selectedOnShiftTypes.includes(st);
+                const label = shiftTypeNameMap[st] || st;
+                return (
+                  <button
+                    key={st}
+                    onClick={() => {
+                      setSelectedOnShiftTypes(prev => prev.includes(st) ? prev.filter(s => s !== st) : [...prev, st]);
+                    }}
+                    className={`px-3 py-1.5 text-sm rounded-md font-medium transition-colors ${active ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200'}`}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+            <p className="text-xs text-red-600 mt-2">Please select one or more shift types before applying FIXED ON / PREFER ON.</p>
+          </div>
+        )}
         {/* Action buttons - only show when provider is selected */}
         {selectedProvider !== null && (
           <div className="mt-4 space-y-2">
@@ -634,7 +696,7 @@ export default function ProvidersTab() {
             <>
               <button
                 onClick={applyFixedOnDays}
-                disabled={selectedProvider === null || (selectedOnDays.length === 0 && selectedOffDays.length === 0)}
+                disabled={selectedProvider === null || (selectedOnDays.length === 0 && selectedOffDays.length === 0) || selectedOnShiftTypes.length === 0}
                 className="w-full relative px-4 py-2.5 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 font-semibold flex items-center justify-center space-x-2 transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105 border border-green-500/20 overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 text-sm"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-green-400 to-emerald-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
@@ -643,7 +705,7 @@ export default function ProvidersTab() {
               </button>
               <button
                 onClick={applyPreferOnDays}
-                disabled={selectedProvider === null || (selectedOnDays.length === 0 && selectedOffDays.length === 0)}
+                disabled={selectedProvider === null || (selectedOnDays.length === 0 && selectedOffDays.length === 0) || selectedOnShiftTypes.length === 0}
                 className="w-full relative px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 font-semibold flex items-center justify-center space-x-2 transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105 border border-blue-500/20 overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 text-sm"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-indigo-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>

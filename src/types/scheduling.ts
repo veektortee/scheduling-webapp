@@ -72,6 +72,8 @@ export interface SchedulingCase {
   calendar: Calendar;
   shifts: Shift[];
   providers: Provider[];
+  // List of available provider types that can be assigned to providers and used by shifts
+  provider_types?: string[];
 }
 
 export interface ShiftType {

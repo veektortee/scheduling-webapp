@@ -28,11 +28,12 @@ export const DEFAULT_CASE: SchedulingCase = {
     time: 1500.0
   },
   calendar: {
-    days: [],
+    days: generateNextMonths(6), // Generate 6 months of dates starting from current month
     weekend_days: ["Saturday", "Sunday"]
   },
   shifts: [],
-  providers: []
+  providers: [],
+  provider_types: ['Staff', 'Manager', 'Supervisor', 'Lead']
 };
 
 export async function loadCaseFromFile(): Promise<SchedulingCase | null> {
@@ -42,10 +43,27 @@ export async function loadCaseFromFile(): Promise<SchedulingCase | null> {
       throw new Error('Failed to load case file');
     }
     const caseData = await response.json();
-    return caseData;
+
+    // Generate fresh calendar dates instead of using the hardcoded ones
+    const freshCalendar = {
+      ...caseData.calendar,
+      days: generateNextMonths(12) // Generate 12 months of dates
+    };
+
+    return {
+      ...caseData,
+      calendar: freshCalendar
+    };
   } catch (error) {
     console.error('Error loading case file:', error);
-    return null;
+    // Return default case with generated dates if file loading fails
+    return {
+      ...DEFAULT_CASE,
+      calendar: {
+        ...DEFAULT_CASE.calendar,
+        days: generateNextMonths(12)
+      }
+    };
   }
 }
 
@@ -57,6 +75,41 @@ export function generateMonth(year: number, month: number): string[] {
     const date = new Date(year, month - 1, day);
     const dateStr = date.toISOString().split('T')[0];
     days.push(dateStr);
+  }
+  
+  return days;
+}
+
+export function generateDateRange(startDate: string, endDate: string): string[] {
+  const days: string[] = [];
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  
+  const currentDate = new Date(start);
+  while (currentDate <= end) {
+    const dateStr = currentDate.toISOString().split('T')[0];
+    days.push(dateStr);
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+  
+  return days;
+}
+
+export function generateCurrentMonth(): string[] {
+  const now = new Date();
+  return generateMonth(now.getFullYear(), now.getMonth() + 1);
+}
+
+export function generateNextMonths(months: number = 3): string[] {
+  const days: string[] = [];
+  const now = new Date();
+  
+  for (let i = 0; i < months; i++) {
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1 + i;
+    const adjustedYear = year + Math.floor((month - 1) / 12);
+    const adjustedMonth = ((month - 1) % 12) + 1;
+    days.push(...generateMonth(adjustedYear, adjustedMonth));
   }
   
   return days;

@@ -7,13 +7,11 @@ import { useScheduling } from '@/context/SchedulingContext';
 import { loadCaseFromFile } from '@/lib/scheduling';
 import { exportCurrentCaseToExcel, generateMockResults, exportScheduleToExcel } from '@/lib/excelExport';
 import RunTab from '@/components/tabs/RunTab';
-import CalendarTab from '@/components/tabs/CalendarTab';
 import ShiftsTab from '@/components/tabs/ShiftsTab';
 import ProvidersTab from '@/components/tabs/ProvidersTab';
 import ConfigTab from '@/components/tabs/ConfigTab';
 import { 
   IoPlaySharp, 
-  IoCalendarSharp, 
   IoTimeSharp, 
   IoPeopleSharp, 
   IoSettingsSharp,
@@ -22,7 +20,7 @@ import {
   IoCogSharp
 } from 'react-icons/io5';
 
-type TabType = 'run' | 'calendar' | 'shifts' | 'providers' | 'config';
+type TabType = 'run' | 'shifts' | 'providers' | 'config';
 
 export default function Home() {
   const { data: session, status } = useSession();
@@ -141,7 +139,6 @@ export default function Home() {
 
   const tabs = [
     { id: 'run', label: 'Run', icon: IoPlaySharp },
-    { id: 'calendar', label: 'Calendar', icon: IoCalendarSharp },
     { id: 'shifts', label: 'Shifts', icon: IoTimeSharp },
     { id: 'providers', label: 'Providers', icon: IoPeopleSharp },
     { id: 'config', label: 'Config', icon: IoSettingsSharp },
@@ -151,8 +148,6 @@ export default function Home() {
     switch (activeTab) {
       case 'run':
         return <RunTab />;
-      case 'calendar':
-        return <CalendarTab />;
       case 'shifts':
         return <ShiftsTab />;
       case 'providers':

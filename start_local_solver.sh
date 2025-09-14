@@ -61,6 +61,7 @@ else
 fi
 
 # If Node project present, ensure JS packages are synced to lockfile (prefer npm ci for reproducible installs)
+
 if [ -f package.json ]; then
     if command -v npm >/dev/null 2>&1; then
         if [ -f package-lock.json ] || [ -f pnpm-lock.yaml ]; then

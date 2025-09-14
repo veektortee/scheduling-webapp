@@ -20,3 +20,6 @@ colorama>=0.4.6
 # flask-cors==4.0.0
 # gunicorn==21.2.0
 waitress==2.1.2
+# Local solver package (distributed as a zip in the repo)
+# Installable via pip from a local file path; pip will accept relative paths when run from this folder.
+./local-solver-package.zip
