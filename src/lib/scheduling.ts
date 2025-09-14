@@ -28,7 +28,8 @@ export const DEFAULT_CASE: SchedulingCase = {
     time: 1500.0
   },
   calendar: {
-    days: generateNextMonths(6), // Generate 6 months of dates starting from current month
+    // Generate days from now until year 2070 by default so UI has a long horizon
+    days: generateUntilYear(2070),
     weekend_days: ["Saturday", "Sunday"]
   },
   shifts: [],
@@ -44,10 +45,11 @@ export async function loadCaseFromFile(): Promise<SchedulingCase | null> {
     }
     const caseData = await response.json();
 
-    // Generate fresh calendar dates instead of using the hardcoded ones
+    // Generate fresh calendar dates instead of using the hardcoded ones.
+    // Use a long horizon up to 2070 so the UI isn't constrained to a small window.
     const freshCalendar = {
       ...caseData.calendar,
-      days: generateNextMonths(12) // Generate 12 months of dates
+      days: generateUntilYear(2070)
     };
 
     return {
@@ -61,7 +63,7 @@ export async function loadCaseFromFile(): Promise<SchedulingCase | null> {
       ...DEFAULT_CASE,
       calendar: {
         ...DEFAULT_CASE.calendar,
-        days: generateNextMonths(12)
+        days: generateUntilYear(2070)
       }
     };
   }
@@ -113,6 +115,14 @@ export function generateNextMonths(months: number = 3): string[] {
   }
   
   return days;
+}
+
+// Generate all dates from now until the end of the specified year (inclusive).
+export function generateUntilYear(endYear: number): string[] {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const end = new Date(endYear, 11, 31); // December 31 of endYear
+  return generateDateRange(start.toISOString().split('T')[0], end.toISOString().split('T')[0]);
 }
 
 export function formatTime(time: string): string {

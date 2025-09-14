@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useScheduling } from '@/context/SchedulingContext';
-import { loadCaseFromFile } from '@/lib/scheduling';
+import { loadCaseFromFile, generateUntilYear } from '@/lib/scheduling';
 import { exportCurrentCaseToExcel, generateMockResults, exportScheduleToExcel } from '@/lib/excelExport';
 import RunTab from '@/components/tabs/RunTab';
 import ShiftsTab from '@/components/tabs/ShiftsTab';
@@ -58,6 +58,9 @@ export default function Home() {
         const caseData = await loadCaseFromFile();
         if (caseData) {
           dispatch({ type: 'LOAD_CASE', payload: caseData });
+          // Ensure calendar contains a navigable range of future months (defensive)
+          const generated = generateUntilYear(2070);
+          dispatch({ type: 'GENERATE_DAYS', payload: generated });
         }
       } catch {
         dispatch({ type: 'SET_ERROR', payload: 'Failed to load case data' });
@@ -215,7 +218,7 @@ export default function Home() {
         {/* Header */}
         <header className="header-gradient shadow-lg border-b border-gray-200 dark:border-gray-700 relative">
           <div className="absolute inset-0 header-overlay"></div>
-          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="relative max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center py-4 lg:py-8 space-y-4 lg:space-y-0">
               <div className="flex flex-col space-y-2">
                 <div>
@@ -231,8 +234,8 @@ export default function Home() {
                   Advanced scheduling and optimization for staff
                 </p>
               </div>
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-3 sm:space-y-0 sm:space-x-3 lg:space-x-4">
-                <div className="flex items-center justify-center sm:justify-start space-x-3 sm:space-x-4">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 lg:space-x-6">
+                <div className="flex items-center justify-center sm:justify-start space-x-4 sm:space-x-6">
                   {/* Export Config Button */}
                   <div className="relative group">
                     <button
@@ -318,31 +321,34 @@ export default function Home() {
 
       {/* Tab Navigation */}
       <nav className="bg-white dark:bg-gray-800 shadow-lg border-b-2 border-gray-200 dark:border-gray-600">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-wrap sm:flex-nowrap overflow-x-auto space-x-1">
-            {tabs.map((tab) => {
-              const IconComponent = tab.icon;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id as TabType)}
-                  className={`py-3 lg:py-4 px-3 sm:px-4 lg:px-6 font-semibold text-sm lg:text-base flex items-center space-x-2 lg:space-x-3 transition-all duration-200 min-w-[100px] sm:min-w-[120px] lg:min-w-[140px] justify-center border-b-3 whitespace-nowrap ${
-                    activeTab === tab.id
-                      ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border-blue-600 dark:border-blue-400'
-                      : 'text-gray-700 dark:text-gray-300 border-transparent hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-700'
-                  }`}
-                >
-                  <IconComponent className="w-4 h-4 lg:w-5 lg:h-5" />
-                  <span className="hidden sm:inline">{tab.label}</span>
-                </button>
-              );
-            })}
+        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="w-full flex justify-center">
+            <div className="inline-flex w-full lg:max-w-4xl items-center bg-white/90 dark:bg-gray-800/90 rounded-3xl shadow-inner ring-1 ring-gray-100 dark:ring-gray-700 px-2 py-2 gap-1 overflow-x-auto">
+              {tabs.map((tab) => {
+                const IconComponent = tab.icon;
+                const active = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id as TabType)}
+                    className={`py-2 lg:py-3 px-3 sm:px-4 lg:px-5 font-semibold text-sm lg:text-base flex-1 flex items-center gap-x-2 transition-all duration-200 min-w-[80px] sm:min-w-[88px] justify-center rounded-xl ${
+                      active
+                        ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 shadow-sm'
+                        : 'text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-700'
+                    }`}
+                  >
+                    <IconComponent className="w-5 h-5 lg:w-6 lg:h-6" />
+                    <span className="hidden sm:inline">{tab.label}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
       </nav>
 
           {/* Tab Content */}
-          <main className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 lg:py-8">
+          <main className="relative max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-4 lg:py-8">
             <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 dark:border-gray-700/50 p-4 lg:p-6 overflow-hidden">
               {renderActiveTab()}
             </div>

@@ -31,6 +31,7 @@ from typing import Dict, Any, List, Optional
 import traceback
 from concurrent.futures import ThreadPoolExecutor
 import threading
+import shutil
 
 try:
     from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, BackgroundTasks
@@ -129,8 +130,12 @@ thread_pool = ThreadPoolExecutor(max_workers=4)
 
 class AdvancedSchedulingSolver:
     def __init__(self):
-        self.output_dir = Path("solver_output")
-        self.output_dir.mkdir(exist_ok=True)
+        # Prefer the workspace-level solver_output (one level above scheduling-webapp)
+        # so FastAPI shares the same Result_N folders produced by serverless and conversions.
+        repo_root = Path(__file__).resolve().parent.parent
+        self.output_dir = repo_root / "solver_output"
+        self.output_dir.mkdir(parents=True, exist_ok=True)
+        logger.info(f"Using solver output directory: {self.output_dir}")
         
     async def solve_async(self, case_data: Dict[str, Any], run_id: str) -> Dict[str, Any]:
         """
@@ -191,8 +196,17 @@ class AdvancedSchedulingSolver:
             except Exception as e:
                 logger.warning(f"Failed to generate Excel outputs: {e}")
             
+            # Attempt to gather any auxiliary outputs that the testcase_gui
+            # or other parts of the pipeline may have written to the base
+            # solver_output directory. This consolidates artifacts such as
+            # calendar.xlsx, constants_effective.json, scheduler logs, etc.
+            try:
+                self._gather_additional_outputs(run_output_dir, run_id)
+            except Exception as e:
+                logger.debug(f"Could not gather additional outputs for {run_id}: {e}")
+
             self._update_progress(run_id, 100, "Optimization completed successfully!")
-            
+
             return {
                 "status": "success",
                 "run_id": run_id,
@@ -219,6 +233,10 @@ class AdvancedSchedulingSolver:
         Core optimization path. If testcase_gui.py is available locally,
         delegate solving to it; otherwise use the built-in simplified model.
         """
+        # Ensure there is a per-run output directory available for testcase_gui
+        run_output_dir = self.output_dir / run_id
+        run_output_dir.mkdir(parents=True, exist_ok=True)
+
         # If the external real solver is available, try to use it first
         if 'HAVE_TESTCASE_GUI' in globals() and HAVE_TESTCASE_GUI and _tcg is not None:
             try:
@@ -242,19 +260,30 @@ class AdvancedSchedulingSolver:
                         with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False, encoding='utf-8') as temp_file:
                             json.dump(case, temp_file, indent=2)
                             temp_path = temp_file.name
-                        
+
                         logger.info(f"Wrote case data to temporary file: {temp_path}")
-                        
-                        # Call Solve_test_case with the file path
-                        logger.info(f"Calling testcase_gui.Solve_test_case({temp_path})")
-                        tcg_out = _tcg.Solve_test_case(temp_path)
-                        logger.info(f"testcase_gui.Solve_test_case returned: {type(tcg_out)}")
-                        
+
+                        # Call Solve_test_case with the file path. To make sure
+                        # any relative output paths written by testcase_gui go into
+                        # the run folder, temporarily switch CWD to run_output_dir.
+                        original_cwd = os.getcwd()
+                        try:
+                            os.chdir(str(run_output_dir))
+                            logger.info(f"Changed CWD to {run_output_dir} before invoking testcase_gui")
+                            logger.info(f"Calling testcase_gui.Solve_test_case({temp_path})")
+                            tcg_out = _tcg.Solve_test_case(temp_path)
+                            logger.info(f"testcase_gui.Solve_test_case returned: {type(tcg_out)}")
+                        finally:
+                            try:
+                                os.chdir(original_cwd)
+                                logger.info(f"Restored CWD to {original_cwd}")
+                            except Exception:
+                                pass
+
                         # Clean up temporary file
-                        import os
                         try:
                             os.unlink(temp_path)
-                        except:
+                        except Exception:
                             pass  # Don't fail if cleanup fails
                             
                         # We don't rely on exact shape; adapt best-effort
@@ -389,7 +418,7 @@ class AdvancedSchedulingSolver:
             # Create a variable for total workload and average
             total_workload = model.NewIntVar(0, len(shifts) * len(providers), 'total_workload')
             model.Add(total_workload == sum(provider_workloads))
-
+            
             # For small numbers of providers, we'll use a simpler approach
             # Instead of calculating exact average, we'll just minimize max-min difference
             if len(provider_workloads) > 1:
@@ -417,12 +446,13 @@ class AdvancedSchedulingSolver:
         # Collect multiple solutions if requested
         if k_solutions > 1:
             solution_collector = SolutionCollector(shift_assignments, shifts, providers, k_solutions)
-            status = solver.solve_with_solution_callback(model, solution_collector)
+            # Use the proper OR-Tools API name (SolveWithSolutionCallback)
+            status = solver.SolveWithSolutionCallback(model, solution_collector)
             solutions = solution_collector.get_solutions()
         else:
             status = solver.Solve(model)
             solutions = []
-            
+
             if status == cp_model.OPTIMAL or status == cp_model.FEASIBLE:
                 # Extract single solution
                 assignments = []
@@ -439,7 +469,7 @@ class AdvancedSchedulingSolver:
                                 "start_time": shift.get('start', ''),
                                 "end_time": shift.get('end', '')
                             })
-                
+
                 solutions.append({
                     "assignments": assignments,
                     "objective_value": solver.ObjectiveValue() if solver.ObjectiveValue() else 0
@@ -493,6 +523,50 @@ class AdvancedSchedulingSolver:
             pass
         
         return result
+
+    def _gather_additional_outputs(self, run_output_dir: Path, run_id: str):
+        """Copy known auxiliary output files from the base output folder into
+        the specific run folder so that zips include the complete artifact set.
+        This is a heuristic to handle testcase_gui writing files at base level
+        instead of inside the run subfolder.
+        """
+        base = self.output_dir
+        # Known patterns to look for (exact names or prefixes)
+        known_files = [
+            'calendar.xlsx',
+            'constants_effective.json',
+            'constants_effective.log',
+            'eligibility_capacity.json',
+            'hospital_schedule.xlsx',
+            'scheduler_run.log',
+            'schedules.xlsx',
+            'scheduler_log_'  # prefix for JSON logs like scheduler_log_YYYYMMDD_HHMMSS.json
+        ]
+
+        for entry in base.iterdir():
+            try:
+                if entry.is_file():
+                    name = entry.name
+                    for pattern in known_files:
+                        if (pattern.endswith('_') and name.startswith(pattern)) or name == pattern:
+                            dst = run_output_dir / name
+                            if not dst.exists():
+                                shutil.copy2(entry, dst)
+                                logger.info(f"Copied auxiliary output {name} -> {dst}")
+                elif entry.is_dir() and entry.name != run_id:
+                    # Also search recursively inside other run-like directories for known files
+                    for sub in entry.rglob('*'):
+                        if sub.is_file():
+                            name = sub.name
+                            for pattern in known_files:
+                                if (pattern.endswith('_') and name.startswith(pattern)) or name == pattern:
+                                    dst = run_output_dir / name
+                                    if not dst.exists():
+                                        # Ensure parent exists (dst parent is run_output_dir)
+                                        shutil.copy2(sub, dst)
+                                        logger.info(f"Copied auxiliary output {name} from {entry.name} (nested) -> {dst}")
+            except Exception:
+                continue
 
     def _to_webapp_response(self, model_result: Dict[str, Any], run_id: str) -> Dict[str, Any]:
         """Normalize model_result into response expected by existing local solver clients."""
@@ -840,6 +914,54 @@ async def get_output_files(run_id: str):
         ]
     }
 
+
+@app.get("/results/folders")
+async def list_result_folders():
+    """List Result_N folders available in the solver output directory"""
+    base = solver.output_dir
+    if not base.exists():
+        return {"folders": []}
+
+    folders = []
+    seen = set()
+    for entry in base.iterdir():
+        try:
+            # Top-level Result_N folders
+            if entry.is_dir() and entry.name.lower().startswith('result_'):
+                if entry.name not in seen:
+                    files = [p for p in entry.iterdir() if p.is_file()]
+                    stat = entry.stat()
+                    folders.append({
+                        "name": entry.name,
+                        "path": str(entry),
+                        "created": stat.st_ctime,
+                        "fileCount": len(files)
+                    })
+                    seen.add(entry.name)
+
+            # Also inspect run-specific directories (UUIDs) for nested Result_N folders
+            elif entry.is_dir():
+                try:
+                    for sub in entry.iterdir():
+                        if sub.is_dir() and sub.name.lower().startswith('result_'):
+                            if sub.name not in seen:
+                                files = [p for p in sub.rglob('*') if p.is_file()]
+                                stat = sub.stat()
+                                folders.append({
+                                    "name": sub.name,
+                                    "path": str(sub),
+                                    "created": stat.st_ctime,
+                                    "fileCount": len(files)
+                                })
+                                seen.add(sub.name)
+                except Exception:
+                    # don't fail if a run folder can't be scanned
+                    continue
+        except Exception:
+            continue
+
+    return {"folders": folders}
+
 @app.get("/download/{run_id}/{filename}")
 async def download_file(run_id: str, filename: str):
     """Download a specific output file"""
@@ -851,6 +973,56 @@ async def download_file(run_id: str, filename: str):
         raise HTTPException(status_code=404, detail="File not found")
     
     return FileResponse(path=file_path, filename=filename)
+
+
+@app.get("/download/folder/{folder_name}")
+async def download_folder(folder_name: str):
+    """Create a ZIP of a result folder and return it"""
+    # Look for the folder directly under the solver output directory
+    candidates = []
+    try:
+        direct = solver.output_dir / folder_name
+        if direct.exists() and direct.is_dir():
+            candidates.append(direct)
+    except Exception:
+        pass
+
+    # Also search nested run folders for a folder with the requested name
+    try:
+        for entry in solver.output_dir.iterdir():
+            try:
+                if entry.is_dir():
+                    nested = entry / folder_name
+                    if nested.exists() and nested.is_dir():
+                        candidates.append(nested)
+            except Exception:
+                continue
+    except Exception:
+        pass
+
+    if not candidates:
+        raise HTTPException(status_code=404, detail="Run not found")
+
+    run_dir = candidates[0]
+
+    # Create a temporary zip in the OS temp directory to avoid locking issues
+    import zipfile, tempfile
+    tmp = Path(tempfile.gettempdir()) / f"{folder_name}-{uuid.uuid4().hex}.zip"
+    try:
+        with zipfile.ZipFile(tmp, 'w', zipfile.ZIP_DEFLATED) as zipf:
+            for f in run_dir.rglob('*'):
+                if f.is_file():
+                    # Preserve relative paths inside the zip
+                    zipf.write(f, arcname=f.relative_to(run_dir))
+
+        return FileResponse(path=str(tmp), filename=f"{folder_name}.zip")
+    finally:
+        # Delay cleanup a little to ensure the response can be sent; attempt remove
+        try:
+            if tmp.exists():
+                tmp.unlink()
+        except Exception:
+            pass
 
 @app.get("/health")
 async def health_check():

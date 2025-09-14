@@ -10,12 +10,23 @@ import { join } from 'path';
  */
 export async function GET() {
   try {
-    // Path to the ZIP package in public directory
-    const zipPath = join(process.cwd(), 'public', 'local-solver-package.zip');
+    // Path to the ZIP package in public directory. Prefer a source-build zip if present.
+    const publicDir = join(process.cwd(), 'public');
+    const preferredNames = ['local-solver-package-src.zip', 'local-solver-package.zip'];
+    let zipPath: string | null = null;
+    let filename = 'local-solver-package.zip';
+    for (const name of preferredNames) {
+      const p = join(publicDir, name);
+      if (existsSync(p)) {
+        zipPath = p;
+        filename = name;
+        break;
+      }
+    }
     
     // Check if ZIP package exists
-    if (!existsSync(zipPath)) {
-      console.error('Local solver package not found at:', zipPath);
+    if (!zipPath) {
+      console.error('Local solver package not found in public directory. Checked:', preferredNames.join(', '));
       return NextResponse.json(
         { 
           error: 'Local solver package not available',
@@ -40,7 +51,8 @@ export async function GET() {
       status: 200,
       headers: {
         'Content-Type': 'application/zip',
-        'Content-Disposition': 'attachment; filename="local-solver-package.zip"',
+        // Use the actual filename we found
+        'Content-Disposition': `attachment; filename="${filename}"`,
         'Content-Length': fileSize.toString(),
         'Cache-Control': 'no-cache, no-store, must-revalidate',
         'Pragma': 'no-cache',
@@ -67,9 +79,14 @@ export async function GET() {
  */
 export async function HEAD() {
   try {
-    const zipPath = join(process.cwd(), 'public', 'local-solver-package.zip');
-    
-    if (!existsSync(zipPath)) {
+    const publicDir = join(process.cwd(), 'public');
+    const preferredNames = ['local-solver-package-src.zip', 'local-solver-package.zip'];
+    let zipPath: string | null = null;
+    for (const name of preferredNames) {
+      const p = join(publicDir, name);
+      if (existsSync(p)) { zipPath = p; break; }
+    }
+    if (!zipPath) {
       return new NextResponse(null, { status: 404 });
     }
 

@@ -143,7 +143,7 @@ export default function SchedulingCalendar({
               {mode === 'multiple' && selectedCount > 0 && ` (${selectedCount})`}
             </h3>
             <p className="text-xs text-gray-600 dark:text-gray-400">
-              {availableCount} available days
+            
             </p>
           </div>
         </div>

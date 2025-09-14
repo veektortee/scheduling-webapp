@@ -34,6 +34,8 @@ export default function ShiftsTab() {
     setShiftForm(prev => ({ ...prev, date }));
   };
 
+  const todayIso = new Date().toISOString().split('T')[0];
+
   const handleShiftSelect = (index: number, shift: Shift) => {
     setSelectedShiftIndex(index);
     setShiftForm({
@@ -176,6 +178,7 @@ export default function ShiftsTab() {
             onDaySelect={handleDateSelect}
             mode="single"
             className="h-120"
+            minDate={todayIso}
           />
         </div>
 

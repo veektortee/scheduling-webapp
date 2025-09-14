@@ -431,7 +431,7 @@ export default function ProvidersTab() {
                           }}
                           title="Remove type"
                           aria-label={`Remove provider type ${type}`}
-                          className="ml-1 w-3 h-3 flex items-center justify-center bg-red-600 hover:bg-red-700 text-white rounded-full text-[9px] shrink-0"
+                          className="ml-1 w-3 h-3 flex items-center justify-center  hover:bg-red-700 text-white rounded-full text-[9px] shrink-0"
                         >
                           ✕
                         </button>
@@ -564,7 +564,7 @@ export default function ProvidersTab() {
               Editing: <span className="font-bold text-blue-600 dark:text-blue-400">{schedulingCase.providers[selectedProvider]?.name}</span>
             </p>
             <p className="text-xs text-gray-600 dark:text-gray-400">
-              Available days: {schedulingCase.calendar.days.length} • Mode: <span className={calendarMode === 'off' ? 'text-red-600 dark:text-red-400' : 'text-blue-600 dark:text-blue-400'}>{calendarMode === 'off' ? 'Days OFF' : 'Days ON'}</span>
+              • Mode: <span className={calendarMode === 'off' ? 'text-red-600 dark:text-red-400' : 'text-blue-600 dark:text-blue-400'}>{calendarMode === 'off' ? 'Days OFF' : 'Days ON'}</span>
             </p>
           </div>
         ) : (

@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useReducer, ReactNode } from 'react';
 import { SchedulingCase, Shift, Provider } from '@/types/scheduling';
-import { DEFAULT_CASE } from '@/lib/scheduling';
+import { DEFAULT_CASE, generateUntilYear } from '@/lib/scheduling';
 
 const LAST_RESULTS_STORAGE_KEY = 'scheduling-last-results-v1';
 const SCHEDULING_STATE_STORAGE_KEY = 'scheduling-state-v1';
@@ -94,6 +94,29 @@ function getInitialState(): SchedulingState {
           selectedDate: parsedState.selectedDate || loadedState.selectedDate,
           selectedProvider: parsedState.selectedProvider !== undefined ? parsedState.selectedProvider : loadedState.selectedProvider,
         };
+        // If the loaded calendar looks constrained to a single month (e.g. only October),
+        // merge in generated future months so the UI has a full navigable range.
+        try {
+          const loadedDays = Array.isArray(loadedState.case.calendar?.days) ? (loadedState.case.calendar.days as string[]) : [];
+          const uniqueMonths = new Set(loadedDays
+            .map(d => {
+              const dt = new Date(d);
+              return isNaN(dt.getTime()) ? null : dt.getMonth() + 1;
+            })
+            .filter(Boolean)
+          );
+
+          // If all dates belong to a single month (likely imported/hardcoded), expand
+          if (uniqueMonths.size <= 1) {
+            // Expand persisted single-month calendars up to year 2070
+            const generated = generateUntilYear(2070);
+            const merged = Array.from(new Set([...(loadedDays || []), ...generated])).filter(Boolean).sort();
+            loadedState.case.calendar.days = merged as string[];
+          }
+        } catch (err) {
+          // Fail safe: if anything goes wrong, leave loadedDays as-is
+          console.warn('Failed to expand persisted calendar days:', err);
+        }
         hasLoadedSchedulingData = true;
       } else {
         // Clear old scheduling data

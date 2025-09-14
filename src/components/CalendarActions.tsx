@@ -12,6 +12,8 @@ import {
   ClockIcon,
 } from '@heroicons/react/24/outline';
 import { useCalendar } from '@/context/CalendarContext';
+import { useScheduling } from '@/context/SchedulingContext';
+import { generateUntilYear } from '@/lib/scheduling';
 import { format } from 'date-fns';
 
 interface CalendarActionsProps {
@@ -77,6 +79,15 @@ export default function CalendarActions({ isOpen, onClose }: CalendarActionsProp
       const today = new Date();
       return format(event.start, 'yyyy-MM-dd') === format(today, 'yyyy-MM-dd');
     }).length,
+  };
+
+  const { dispatch: schedulingDispatch } = useScheduling();
+
+  const handleRegenerateCalendar = () => {
+    const generated = generateUntilYear(2070);
+    schedulingDispatch({ type: 'GENERATE_DAYS', payload: generated });
+    alert('Calendar regenerated for the next 12 months');
+    onClose();
   };
 
   return (
@@ -180,6 +191,15 @@ export default function CalendarActions({ isOpen, onClose }: CalendarActionsProp
                         <DocumentArrowDownIcon className="w-5 h-5" />
                         <span>Export Calendar</span>
                       </button>
+                      <div className="mt-3">
+                        <button
+                          onClick={handleRegenerateCalendar}
+                          className="w-full flex items-center justify-center space-x-2 px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors"
+                        >
+                          <CalendarDaysIcon className="w-5 h-5" />
+                          <span>Regenerate Calendar (to 2070)</span>
+                        </button>
+                      </div>
                     </motion.div>
                   )}
 

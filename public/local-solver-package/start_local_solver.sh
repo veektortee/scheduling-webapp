@@ -38,6 +38,7 @@ if [ -z "$VIRTUAL_ENV" ]; then
         echo "[INFO] Creating virtual environment in ./ .venv"
         $PYTHON_CMD -m venv .venv || echo "[WARN] Could not create virtualenv"
     fi
+    # shellcheck disable=SC1091
     if [ -f ".venv/bin/activate" ]; then
         echo "[INFO] Activating virtual environment"
         . .venv/bin/activate
@@ -75,7 +76,7 @@ if [ -f package.json ]; then
 fi
 
 echo ""
-echo "[START] Starting Local Scheduler Optimizer..."
+echo "[START] Starting Local Scheduler Optimizer (FastAPI preferred)..."
 echo ""
 echo "================================================================"
 echo " INSTRUCTIONS FOR YOUR WEBAPP:"
@@ -89,34 +90,16 @@ echo ""
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$SCRIPT_DIR"
 
+# Prefer FastAPI service which integrates testcase_gui.py if available
 if [ -f fastapi_solver_service.py ]; then
-    echo "[INFO] ✅ Found FastAPI solver service - launching ADVANCED scheduler"
-    echo "[INFO] 🔍 This will automatically detect and use testcase_gui.py if available"
-    echo "[INFO] 🚀 Starting high-performance medical scheduling optimizer..."
+    echo "[INFO] Launching FastAPI solver service on http://localhost:8000"
+    echo "[INFO] This service will try to use testcase_gui.py if found."
     $PYTHON_CMD fastapi_solver_service.py
 elif [ -f local_solver.py ]; then
-    echo "[WARN] ⚠️  fastapi_solver_service.py not found, using basic solver"
-    echo "[INFO] ⚡ OR-Tools detected - using high-performance solver"
-    echo "[INFO] 💡 For BEST performance, download fastapi_solver_service.py too"
+    echo "[WARN] fastapi_solver_service.py not found, falling back to basic local_solver.py"
     $PYTHON_CMD local_solver.py
 else
-    echo ""
-    echo "================================================================"
-    echo " ❌ MISSING REQUIRED FILES"
-    echo "================================================================"
-    echo "You need to download these files to the SAME folder as this script:"
-    echo ""
-    echo " 📁 REQUIRED FILES:"
-    echo "   • fastapi_solver_service.py  (RECOMMENDED - Advanced solver)"
-    echo "   • local_solver.py           (Fallback - Basic solver)"
-    echo "   • scheduler_sat_core.py     (Core optimization engine)"
-    echo ""
-    echo " 📂 Download all files from your scheduling webapp:"
-    echo "   /api/download/local-solver-package"
-    echo ""
-    echo "================================================================"
-    read -p "Press Enter to exit..."
-    exit 1
+    echo "[ERROR] No solver entrypoint found (fastapi_solver_service.py or local_solver.py)"
 fi
 
 echo ""
