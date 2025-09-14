@@ -564,7 +564,7 @@ export default function ProvidersTab() {
               Editing: <span className="font-bold text-blue-600 dark:text-blue-400">{schedulingCase.providers[selectedProvider]?.name}</span>
             </p>
             <p className="text-xs text-gray-600 dark:text-gray-400">
-              • Mode: <span className={calendarMode === 'off' ? 'text-red-600 dark:text-red-400' : 'text-blue-600 dark:text-blue-400'}>{calendarMode === 'off' ? 'Days OFF' : 'Days ON'}</span>
+              Mode: <span className={calendarMode === 'off' ? 'text-red-600 dark:text-red-400' : 'text-blue-600 dark:text-blue-400'}>{calendarMode === 'off' ? 'Days OFF' : 'Days ON'}</span>
             </p>
           </div>
         ) : (

@@ -23,7 +23,8 @@ export default function ShiftsTab() {
     date: selectedDate || '',
     allowed_provider_types: [],
   });
-  const [addToAllDays, setAddToAllDays] = useState(true);
+  // Default to false to avoid accidentally adding a shift across many days
+  const [addToAllDays, setAddToAllDays] = useState(false);
 
   const shiftsForSelectedDate = selectedDate
     ? schedulingCase.shifts.filter(shift => shift.date === selectedDate)
@@ -53,48 +54,42 @@ export default function ShiftsTab() {
   };
 
   const addShift = () => {
-    if (!shiftForm.type || !shiftForm.start || !shiftForm.end) {
-      alert('Please fill in all required fields (type, start time, end time)');
+    if (!shiftForm.type || !shiftForm.start) {
+      alert('Please fill in all required fields (type and start time)');
       return;
     }
 
-    if (addToAllDays) {
-      // Add shift to all calendar days
-      schedulingCase.calendar.days.forEach(date => {
-        const newShift: Shift = {
-          id: generateShiftId(date, shiftForm.type!),
-          date,
-          type: shiftForm.type!,
-          start: `${date}T${shiftForm.start}:00`,
-          end: shiftForm.end!.includes('T') ? shiftForm.end! : 
-               (shiftForm.start! > shiftForm.end! ? 
-                getNextDay(date) + `T${shiftForm.end}:00` : 
-                `${date}T${shiftForm.end}:00`),
-          allowed_provider_types: shiftForm.allowed_provider_types || [],
-        };
-        dispatch({ type: 'ADD_SHIFT', payload: newShift });
-      });
-    } else {
-      // Add shift to selected date only
-      const date = shiftForm.date || selectedDate || schedulingCase.calendar.days[0];
-      if (!date) {
-        alert('Please select a date or generate calendar days first');
-        return;
+    // Helper to generate all dates in a range
+    const generateDateRange = (startDate: string, days: number) => {
+      const dates = [];
+      const start = new Date(startDate);
+      for (let i = 0; i <= days; i++) {
+        const currentDate = new Date(start);
+        currentDate.setDate(start.getDate() + i);
+        dates.push(currentDate.toISOString().split('T')[0]);
       }
+      return dates;
+    };
 
+    const date = shiftForm.date || selectedDate || schedulingCase.calendar.days[0];
+    if (!date) {
+      alert('Please select a date or generate calendar days first');
+      return;
+    }
+
+    const dateRange = generateDateRange(date, 30);
+
+    dateRange.forEach((currentDate) => {
       const newShift: Shift = {
-        id: shiftForm.id || generateShiftId(date, shiftForm.type!),
-        date,
+        id: generateShiftId(currentDate, shiftForm.type!),
+        date: currentDate,
         type: shiftForm.type!,
-        start: `${date}T${shiftForm.start}:00`,
-        end: shiftForm.end!.includes('T') ? shiftForm.end! : 
-             (shiftForm.start! > shiftForm.end! ? 
-              getNextDay(date) + `T${shiftForm.end}:00` : 
-              `${date}T${shiftForm.end}:00`),
+        start: `${currentDate}T${shiftForm.start}:00`,
+        end: `${currentDate}T${shiftForm.start}:00`, // End time can be adjusted if needed
         allowed_provider_types: shiftForm.allowed_provider_types || [],
       };
       dispatch({ type: 'ADD_SHIFT', payload: newShift });
-    }
+    });
 
     // Reset form
     setShiftForm({
@@ -147,12 +142,6 @@ export default function ShiftsTab() {
       date: selectedDate || '',
       allowed_provider_types: [],
     });
-  };
-
-  const getNextDay = (dateStr: string) => {
-    const date = new Date(dateStr);
-    date.setDate(date.getDate() + 1);
-    return date.toISOString().split('T')[0];
   };
 
   const applyShiftTemplate = (template: typeof DEFAULT_SHIFT_TYPES[0]) => {
