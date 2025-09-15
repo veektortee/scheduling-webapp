@@ -582,7 +582,7 @@ export function CalendarProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const exportCalendar = async (_options?: Record<string, unknown>): Promise<string> => {
+  const exportCalendar = async (): Promise<string> => {
     // Implementation for exporting calendar data
     return JSON.stringify({
       events: getFilteredEvents(),

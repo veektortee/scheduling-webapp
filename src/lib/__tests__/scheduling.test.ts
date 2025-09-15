@@ -22,7 +22,6 @@ describe('generateMonth', () => {
   });
 
   test('invalid month throws', () => {
-    // @ts-ignore intentionally passing invalid month
     expect(() => generateMonth(2025, 13)).toThrow(RangeError);
   });
 });

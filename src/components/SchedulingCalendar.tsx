@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ChevronLeftIcon,
@@ -17,9 +17,7 @@ import {
   subMonths,
   startOfWeek,
   endOfWeek,
-  isToday,
-  isSameDay,
-  parseISO
+  isToday
 } from 'date-fns';
 
 export interface SchedulingCalendarProps {
@@ -127,7 +125,6 @@ export default function SchedulingCalendar({
 
   const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const selectedCount = selectedDays.length;
-  const availableCount = availableDays.length;
 
   return (
     <div className={`bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200/50 dark:border-gray-700/50 p-3 sm:p-4 flex flex-col ${className}`}>

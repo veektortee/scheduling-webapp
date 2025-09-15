@@ -18,7 +18,7 @@ import {
 import { CheckCircleIcon as CheckCircleSolidIcon } from '@heroicons/react/24/solid';
 import { useCalendar } from '@/context/CalendarContext';
 import { Task, TaskStatus, EventPriority } from '@/types/calendar';
-import { format, isToday, isPast, isFuture } from 'date-fns';
+import { format, isToday, isPast } from 'date-fns';
 
 export default function TaskManager() {
   const { state, createTask, toggleTaskCompletion, dispatch } = useCalendar();
@@ -100,12 +100,7 @@ export default function TaskManager() {
     completed: filteredTasks.filter(task => task.status === 'completed'),
   };
 
-  const upcomingTasks = filteredTasks.filter(task => 
-    task.dueDate && isFuture(task.dueDate) && task.status !== 'completed'
-  ).sort((a, b) => {
-    if (!a.dueDate || !b.dueDate) return 0;
-    return a.dueDate.getTime() - b.dueDate.getTime();
-  });
+  // upcomingTasks intentionally removed to avoid unused variable warning
 
   const overdueTasks = filteredTasks.filter(task =>
     task.dueDate && isPast(task.dueDate) && task.status !== 'completed'

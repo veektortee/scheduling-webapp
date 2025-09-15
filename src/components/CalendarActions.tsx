@@ -54,6 +54,7 @@ export default function CalendarActions({ isOpen, onClose }: CalendarActionsProp
         alert(`Import failed: ${result.error}`);
       }
     } catch (error) {
+      console.error(error);
       alert('Import failed: Invalid data format');
     }
   };
