@@ -1,0 +1,14 @@
+[
+  {
+    "provider": "name",
+    "eligible_days_upper_bound": 29,
+    "min_total": 8,
+    "max_total": 10
+  },
+  {
+    "provider": "bs",
+    "eligible_days_upper_bound": 31,
+    "min_total": 0,
+    "max_total": null
+  }
+]

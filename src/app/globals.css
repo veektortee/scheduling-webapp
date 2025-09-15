@@ -471,3 +471,9 @@ select:focus-visible {
     print-color-adjust: exact;
   }
 }
+
+/* Calendar wrapper utility: allow horizontal scroll on narrow screens */
+.calendar-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}

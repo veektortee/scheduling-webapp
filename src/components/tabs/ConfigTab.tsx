@@ -116,7 +116,7 @@ export default function ConfigTab() {
             Solver Configuration
           </h2>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+  <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <div>
             <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
               <IoTimerSharp className="w-4 h-4" />
@@ -241,7 +241,7 @@ export default function ConfigTab() {
       {/* Advanced Configuration */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Advanced Configuration (JSON)</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+  <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Weights Configuration
@@ -250,7 +250,7 @@ export default function ConfigTab() {
               value={weightsJson}
               onChange={(e) => setWeightsJson(e.target.value)}
               rows={12}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 dark:bg-gray-800 dark:text-white dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 dark:bg-gray-800 dark:text-white dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm max-h-64 overflow-auto"
               placeholder="Enter weights JSON configuration..."
             />
           </div>
@@ -263,23 +263,23 @@ export default function ConfigTab() {
               value={objectiveJson}
               onChange={(e) => setObjectiveJson(e.target.value)}
               rows={12}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 dark:bg-gray-800 dark:text-white dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 dark:bg-gray-800 dark:text-white dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm max-h-64 overflow-auto"
               placeholder="Enter objective JSON configuration..."
             />
           </div>
         </div>
 
-        <div className="flex space-x-4 mt-6">
+        <div className="flex flex-col sm:flex-row sm:space-x-4 space-y-3 sm:space-y-0 mt-6">
           <button
             onClick={applyAdvancedConfig}
-            className="px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transform hover:scale-[1.02] transition-all duration-200 font-medium shadow-lg"
+            className="w-full sm:w-auto px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transform hover:scale-[1.02] transition-all duration-200 font-medium shadow-lg text-center"
           >
             Apply Configuration
           </button>
           
           <button
             onClick={resetToDefaults}
-            className="px-6 py-2 bg-gradient-to-r from-gray-500 to-slate-600 text-white rounded-lg hover:from-gray-600 hover:to-slate-700 transform hover:scale-[1.02] transition-all duration-200 font-medium shadow-lg"
+            className="w-full sm:w-auto px-6 py-2 bg-gradient-to-r from-gray-500 to-slate-600 text-white rounded-lg hover:from-gray-600 hover:to-slate-700 transform hover:scale-[1.02] transition-all duration-200 font-medium shadow-lg text-center"
           >
             Reset to Defaults
           </button>

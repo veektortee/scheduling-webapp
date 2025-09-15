@@ -116,7 +116,7 @@ export default function CalendarActions({ isOpen, onClose }: CalendarActionsProp
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-2xl bg-white dark:bg-gray-800 shadow-2xl transition-all">
+              <Dialog.Panel className="w-full max-w-2xl sm:max-w-2xl transform overflow-hidden bg-white dark:bg-gray-800 shadow-2xl transition-all sm:rounded-2xl rounded-t-2xl h-full sm:h-auto sm:my-12">
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
                   <Dialog.Title as="h3" className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -133,7 +133,7 @@ export default function CalendarActions({ isOpen, onClose }: CalendarActionsProp
 
                 {/* Tabs */}
                 <div className="border-b border-gray-200 dark:border-gray-700">
-                  <nav className="flex space-x-8 px-6">
+                  <nav className="flex sm:flex-row flex-row sm:space-x-8 space-x-4 px-4 sm:px-6 overflow-x-auto">
                     {[
                       { key: 'export', label: 'Export', icon: DocumentArrowDownIcon },
                       { key: 'import', label: 'Import', icon: DocumentArrowUpIcon },
@@ -142,7 +142,7 @@ export default function CalendarActions({ isOpen, onClose }: CalendarActionsProp
                       <button
                         key={key}
                         onClick={() => setActiveTab(key as 'export' | 'import' | 'stats')}
-                        className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${
+                        className={`py-3 sm:py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${
                           activeTab === key
                             ? 'border-blue-500 text-blue-600 dark:text-blue-400'
                             : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
@@ -156,7 +156,7 @@ export default function CalendarActions({ isOpen, onClose }: CalendarActionsProp
                 </div>
 
                 {/* Content */}
-                <div className="p-6">
+                <div className="p-4 sm:p-6">
                   {activeTab === 'export' && (
                     <motion.div
                       initial={{ opacity: 0, y: 20 }}
@@ -186,7 +186,8 @@ export default function CalendarActions({ isOpen, onClose }: CalendarActionsProp
 
                       <button
                         onClick={handleExport}
-                        className="w-full flex items-center justify-center space-x-2 px-6 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors"
+                        className="w-full flex items-center justify-center space-x-2 px-6 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors btn-mobile"
+                        aria-label="Export Calendar"
                       >
                         <DocumentArrowDownIcon className="w-5 h-5" />
                         <span>Export Calendar</span>
@@ -227,13 +228,8 @@ export default function CalendarActions({ isOpen, onClose }: CalendarActionsProp
                             type="file"
                             accept=".json"
                             onChange={handleFileImport}
-                            className="block w-full text-sm text-gray-500 dark:text-gray-400
-                              file:mr-4 file:py-2 file:px-4
-                              file:rounded-xl file:border-0
-                              file:text-sm file:font-medium
-                              file:bg-blue-50 file:text-blue-700
-                              dark:file:bg-blue-900/20 dark:file:text-blue-400
-                              hover:file:bg-blue-100 dark:hover:file:bg-blue-900/30"
+                            className="block w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 dark:file:bg-blue-900/20 dark:file:text-blue-400 hover:file:bg-blue-100 dark:hover:file:bg-blue-900/30"
+                            aria-label="Select calendar JSON file to import"
                           />
                         </div>
 
@@ -244,7 +240,7 @@ export default function CalendarActions({ isOpen, onClose }: CalendarActionsProp
                           <textarea
                             value={importData}
                             onChange={(e) => setImportData(e.target.value)}
-                            rows={8}
+                            rows={6}
                             placeholder="Paste your exported JSON data here..."
                             className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"
                           />
@@ -253,7 +249,8 @@ export default function CalendarActions({ isOpen, onClose }: CalendarActionsProp
                         <button
                           onClick={handleImport}
                           disabled={!importData.trim()}
-                          className="w-full flex items-center justify-center space-x-2 px-6 py-3 bg-green-500 text-white rounded-xl hover:bg-green-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                          className="w-full flex items-center justify-center space-x-2 px-6 py-3 bg-green-500 text-white rounded-xl hover:bg-green-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors btn-mobile"
+                          aria-label="Import Calendar"
                         >
                           <DocumentArrowUpIcon className="w-5 h-5" />
                           <span>Import Calendar</span>
@@ -277,7 +274,7 @@ export default function CalendarActions({ isOpen, onClose }: CalendarActionsProp
                         </p>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-6">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-6 text-center">
                           <CalendarDaysIcon className="w-8 h-8 text-blue-500 mx-auto mb-2" />
                           <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
@@ -317,7 +314,7 @@ export default function CalendarActions({ isOpen, onClose }: CalendarActionsProp
                         </div>
                       </div>
 
-                      <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-4">
+                        <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-4">
                         <h5 className="font-medium text-gray-900 dark:text-white mb-3">
                           Task Completion Rate
                         </h5>
@@ -339,7 +336,7 @@ export default function CalendarActions({ isOpen, onClose }: CalendarActionsProp
                         </p>
                       </div>
 
-                      <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-4">
+                        <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-4">
                         <h5 className="font-medium text-gray-900 dark:text-white mb-3">
                           Categories
                         </h5>

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { Calendar, momentLocalizer, View } from 'react-big-calendar';
 import moment from 'moment';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -97,7 +97,9 @@ export default function ModernCalendar() {
     hasResults 
   } = useSchedulingResults();
 
-  const [showMiniCalendar, setShowMiniCalendar] = useState(true);
+  // Show mini calendar only on non-mobile by default; this will be adjusted
+  // after mount based on actual viewport size to avoid SSR mismatch.
+  const [showMiniCalendar, setShowMiniCalendar] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [showEventModal, setShowEventModal] = useState(false);
@@ -105,6 +107,20 @@ export default function ModernCalendar() {
   const [eventModalInitialDate, setEventModalInitialDate] = useState<Date | undefined>(undefined);
   const [sidebarTab, setSidebarTab] = useState<'calendar' | 'tasks' | 'categories'>('calendar');
   const [showCalendarActions, setShowCalendarActions] = useState(false);
+
+  const [isSmallScreen, setIsSmallScreen] = useState(true);
+
+  useEffect(() => {
+    const onResize = () => setIsSmallScreen(window.innerWidth < 640);
+    onResize();
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  // Toggle mini calendar visibility based on screen size
+  useEffect(() => {
+    setShowMiniCalendar(!isSmallScreen);
+  }, [isSmallScreen]);
 
   // Convert calendar events to React Big Calendar format with filtering
   const calendarEvents = useMemo(() => {
@@ -370,7 +386,7 @@ export default function ModernCalendar() {
           </div>
 
           {/* Right side - View controls and actions */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-4 flex-wrap">
             {/* Search */}
             <div className="relative">
               <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -379,30 +395,45 @@ export default function ModernCalendar() {
                 placeholder="Search events..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-4 py-2 bg-gray-100 dark:bg-gray-700 border-0 rounded-xl text-sm focus:ring-2 focus:ring-blue-500"
+                className="pl-10 pr-4 py-2 bg-gray-100 dark:bg-gray-700 border-0 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 w-48 sm:w-64 md:w-96"
               />
             </div>
 
             {/* View buttons */}
             <div className="flex items-center space-x-2">
-              <ViewButton 
-                view="month" 
-                icon={CalendarDaysIcon} 
-                label="Month" 
-                isActive={state.currentView === 'month'} 
-              />
-              <ViewButton 
-                view="week" 
-                icon={ViewColumnsIcon} 
-                label="Week" 
-                isActive={state.currentView === 'week'} 
-              />
-              <ViewButton 
+              {/* On small screens collapse view controls into a select */}
+              {isSmallScreen ? (
+                <select
+                  value={state.currentView}
+                  onChange={(e) => dispatch({ type: 'SET_VIEW', payload: e.target.value as CalendarView })}
+                  className="px-3 py-2 rounded-xl bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-sm"
+                >
+                  <option value="month">Month</option>
+                  <option value="week">Week</option>
+                  <option value="day">Day</option>
+                </select>
+              ) : (
+                <>
+                  <ViewButton 
+                    view="month" 
+                    icon={CalendarDaysIcon} 
+                    label="Month" 
+                    isActive={state.currentView === 'month'} 
+                  />
+                  <ViewButton 
+                    view="week" 
+                    icon={ViewColumnsIcon} 
+                    label="Week" 
+                    isActive={state.currentView === 'week'} 
+                  />
+                  <ViewButton 
                 view="day" 
                 icon={Square3Stack3DIcon} 
                 label="Day" 
                 isActive={state.currentView === 'day'} 
               />
+                </>
+              )}
               <ViewButton 
                 view="agenda" 
                 icon={ClockIcon} 

@@ -166,7 +166,7 @@ export default function ShiftsTab() {
             onDayToggle={() => {}} // Not used in single mode
             onDaySelect={handleDateSelect}
             mode="single"
-            className="h-120"
+            className="h-auto lg:h-120"
             minDate={todayIso}
           />
         </div>

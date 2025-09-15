@@ -387,7 +387,7 @@ export default function ProvidersTab() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Providers List */}
         <div className="lg:col-span-1">
-          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 dark:border-gray-700/50 p-8 hover-glow">
+          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 dark:border-gray-700/50 p-4 sm:p-6 lg:p-8 hover-glow">
             <div className="flex items-center space-x-3 mb-6">
               <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
                 <IoPeopleSharp className="w-4 h-4 text-white" />
@@ -399,7 +399,7 @@ export default function ProvidersTab() {
             {/* Provider types management */}
             <div className="mb-4 w-full">
               <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">Provider Types</label>
-              <div className="flex items-center gap-2 mb-2 w-full">
+              <div className="flex flex-col sm:flex-row items-center gap-2 mb-2 w-full">
                 <input
                   type="text"
                   value={newProviderType}
@@ -415,7 +415,7 @@ export default function ProvidersTab() {
                     dispatch({ type: 'UPDATE_CASE', payload: { provider_types: types } });
                     setNewProviderType('');
                   }}
-                  className="px-3 py-1.5 flex-shrink-0 bg-green-600 text-white rounded-md text-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400"
+                  className="w-full sm:w-auto px-3 py-1.5 flex-shrink-0 bg-green-600 text-white rounded-md text-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400 text-center"
                 >Add type</button>
               </div>
               <div className="flex flex-wrap gap-2 max-w-full">
@@ -864,7 +864,7 @@ export default function ProvidersTab() {
       </div>
 
       {/* Provider Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+  <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
         <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl shadow-lg border border-blue-200/50 dark:border-blue-800/50 p-6 hover-glow hover:scale-105 transition-all duration-300">
           <div className="flex items-center space-x-3">
             <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center">

@@ -324,7 +324,7 @@ export default function EventModal({ isOpen, onClose, event, initialDate }: Even
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-4xl transform overflow-hidden rounded-2xl bg-white dark:bg-gray-800 shadow-2xl transition-all">
+              <Dialog.Panel className="w-full max-w-4xl sm:max-w-4xl transform overflow-hidden bg-white dark:bg-gray-800 shadow-2xl transition-all sm:rounded-2xl rounded-t-2xl h-full sm:h-auto sm:my-12">
                 <form onSubmit={handleSubmit} className="max-h-[90vh] overflow-y-auto">
                   {/* Header */}
                   <div className="sticky top-0 z-10 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4">

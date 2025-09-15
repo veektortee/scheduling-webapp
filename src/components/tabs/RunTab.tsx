@@ -1498,7 +1498,7 @@ export default function RunTab() {
         </div>
         
         {solverInfo && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
             <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
               <div className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Capabilities</div>
               <div className="space-y-1">
@@ -1742,7 +1742,7 @@ export default function RunTab() {
             Run Settings
           </h2>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
           <div>
             <label className="block text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
               Output Folder Name
@@ -1819,7 +1819,7 @@ export default function RunTab() {
           </h2>
         </div>
         {/* Enhanced Solver Mode Selection */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+  <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 mb-6">
           {/* Smart Run Button (Auto-detect) */}
           <div className="flex flex-col">
             <button
@@ -2036,7 +2036,7 @@ export default function RunTab() {
             System Log
           </h3>
         </div>
-        <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-green-400 p-3 lg:p-6 rounded-xl font-mono text-xs lg:text-sm h-64 lg:h-80 overflow-y-auto shadow-inner border border-gray-700">
+  <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-green-400 p-3 lg:p-6 rounded-xl font-mono text-xs lg:text-sm h-[40vh] sm:h-64 lg:h-80 overflow-y-auto shadow-inner border border-gray-700">
           {logs.length === 0 ? (
             <div className="text-gray-500 italic flex flex-col lg:flex-row items-center justify-center space-y-2 lg:space-y-0 lg:space-x-2 py-8 text-center">
               <IoTerminalSharp className="w-5 h-5 lg:w-6 lg:h-6" />
@@ -2133,7 +2133,7 @@ export default function RunTab() {
             </div>
 
             {/* Files List */}
-            <div className="p-6 max-h-96 overflow-y-auto">
+            <div className="p-6 max-h-[60vh] sm:max-h-96 overflow-y-auto">
               {loadingFiles ? (
                 <div className="flex items-center justify-center py-8">
                   <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mr-3"></div>

@@ -342,8 +342,8 @@ export default function TaskManager() {
         </div>
       </div>
 
-      {/* Task stats */}
-      <div className="grid grid-cols-3 gap-4">
+  {/* Task stats */}
+  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-red-50 dark:bg-red-900/20 rounded-xl p-4 text-center">
           <div className="text-2xl font-bold text-red-600 dark:text-red-400">
             {overdueTasks.length}
