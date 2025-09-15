@@ -42,7 +42,7 @@ try:
     from fastapi.responses import JSONResponse, FileResponse
     from pydantic import BaseModel
     import uvicorn
-    import scheduler_sat_core as solver_engine
+    import testcase_gui as original_solver 
 except ImportError:
     print("Please install required packages:")
     print("pip install fastapi uvicorn websockets python-multipart")
@@ -50,13 +50,12 @@ except ImportError:
 
 # Import the solver logic from your existing code
 try:
-    # Change 'testcase_gui' to 'scheduler_sat_core'
-    import scheduler_sat_core as original_solver
+    import testcase_gui as original_solver
     HAVE_ORIGINAL_SOLVER = True
-    print("✅ Successfully imported scheduler_sat_core.py as the solver engine.")
+    print("✅ Successfully imported testcase_gui.py as the solver engine.")
 except ImportError:
     HAVE_ORIGINAL_SOLVER = False
-    print("❌ WARNING: scheduler_sat_core.py not found. Local solver will not work.")
+    print("❌ WARNING: testcase_gui.py not found. Local solver will not work.")
 
 
 # Configure logging
@@ -251,17 +250,13 @@ class AdvancedSchedulingSolver:
         try:
             self._update_progress(run_id, 30, "Calling testcase_gui.Solve_test_case...")
             
-            # Execute the solver and capture its raw result
             solver_result = original_solver.Solve_test_case(tmp_path)
             
-            # +++ NEW: Check if the solver returned an error dictionary +++
             if isinstance(solver_result, dict) and 'error' in solver_result:
                 error_message = solver_result.get('error', 'Unknown solver script error')
                 logger.error(f"testcase_gui.py returned an error: {error_message}")
-                # Re-raise the error to be caught by the main handler
                 raise RuntimeError(f"Solver script failed: {error_message}")
 
-            # If no error, unpack the result as a tuple of (solutions, metadata)
             tables, meta = solver_result
 
             solutions = []
@@ -271,30 +266,19 @@ class AdvancedSchedulingSolver:
                     shift = table_data['shifts'][s_idx]
                     provider = table_data['providers'][p_idx]
                     assignments.append({
-                        "shift_id": shift['id'],
-                        "provider_name": provider['name'],
-                        "date": shift['date'],
-                        "shift_type": shift.get('type', ''),
-                        "start_time": shift.get('start', ''),
-                        "end_time": shift.get('end', '')
+                        "shift_id": shift['id'], "provider_name": provider['name'],
+                        "date": shift['date'], "shift_type": shift.get('type', ''),
+                        "start_time": shift.get('start', ''), "end_time": shift.get('end', '')
                     })
                 
                 objective = (meta.get('per_table', [])[i].get('objective') 
-                             if i < len(meta.get('per_table', [])) 
-                             else 0)
+                             if i < len(meta.get('per_table', [])) else 0)
 
-                solutions.append({
-                    "assignments": assignments,
-                    "objective_value": objective
-                })
+                solutions.append({ "assignments": assignments, "objective_value": objective })
 
             logger.info(f"✅ testcase_gui.py finished, found {len(solutions)} diverse solutions.")
 
-            return {
-                'status': 'completed',
-                'solutions': solutions,
-                'solver_stats': meta.get('phase2', {})
-            }
+            return { 'status': 'completed', 'solutions': solutions, 'solver_stats': meta.get('phase2', {}) }
         finally:
             os.remove(tmp_path)
     def _sanitize_calendar(self, calendar_obj: Dict[str, Any]) -> Dict[str, Any]:

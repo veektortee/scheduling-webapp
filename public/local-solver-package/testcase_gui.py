@@ -750,38 +750,8 @@ def _mk_logger(out_dir:str, ts:str) -> Logger:
 # --------------------------------------------------------------------------
 
 def day_name(iso_date: str) -> str:
-    try:
-        y, m, d = map(int, iso_date.split('-'))
-        return dt.date(y, m, d).strftime('%A')
-    except Exception:
-        # Malformed or out-of-range dates may appear in some inputs
-        # (e.g. empty strings or bad test data). Don't crash the solver;
-        # return an empty name so downstream weekend checks simply skip it.
-        logging.getLogger('scheduler').warning('Invalid ISO date string in calendar: %r', iso_date)
-        return ''
-
-
-def _parse_shift_datetime(value: str, shift_date: str):
-    """Parse a shift datetime/string robustly.
-    Accepts full ISO datetime strings or time-only values like '08:00'.
-    If value is time-only and shift_date is provided, combine them.
-    Returns a datetime or None on failure.
-    """
-    if not value:
-        return None
-    try:
-        return dt.datetime.fromisoformat(value)
-    except Exception:
-        # Try combining time-only with shift_date
-        try:
-            if isinstance(value, str) and ':' in value and shift_date:
-                # use 'YYYY-MM-DD HH:MM' form which fromisoformat accepts
-                combined = f"{shift_date} {value}"
-                return dt.datetime.fromisoformat(combined)
-        except Exception:
-            pass
-    logging.getLogger('scheduler').warning('Invalid shift datetime value: %r (date=%r)', value, shift_date)
-    return None
+    y,m,d = map(int, iso_date.split('-'))
+    return dt.date(y,m,d).strftime('%A')
 
 def parse_iso_minutes(ts: str) -> int:
     return int(dt.datetime.fromisoformat(ts).timestamp() // 60)
@@ -1106,19 +1076,16 @@ def build_model(consts: Dict[str,Any], case: Dict[str,Any]) -> Dict[str,Any]:
         if max_consec[i] > 0:
             diff = model.NewIntVar(-N, N, f"cluster_overrun_{i}")
             model.Add(diff == max_clusters[i] - max_consec[i])
-            
-            # This line correctly defines the slack variable. It is all that's needed.
             model.AddMaxEquality(slack_consec[i], [diff, _zero])
-            
-            # The line below was the original source of the INFEASIBLE error.
-            # Ensure it is DELETED or COMMENTED OUT.
-            # model.Add(max_consec[i] - max_clusters[i] + slack_consec[i] >= 0)
+            model.Add(max_consec[i] - max_clusters[i] + slack_consec[i] >= 0)
         else:
             model.Add(slack_consec[i] == 0)
+
     # ----- NEW: Cubic penalty of cluster lengths per provider (soft) -------------
     # Detect cluster ends: end_d = 1 iff y[i,d]==1 and (d==N-1 or y[i,d+1]==0)
     # Cluster length is runs[i][d_end]; we gate it into L_d and build L^3.
     cluster_cubesums = [model.NewIntVar(0, N**3, f"cluster_cubesum_{i}") for i in P]
+
     for i in P:
         cube_terms = []
         for d in D:
@@ -1154,39 +1121,25 @@ def build_model(consts: Dict[str,Any], case: Dict[str,Any]) -> Dict[str,Any]:
     # 12 hrs apart
     for iter1 in S:
         for iter2 in S:
-            if shifts[iter1]["id"] == shifts[iter2]["id"]:
-                continue
-            s1 = _parse_shift_datetime(shifts[iter1].get("start"), shifts[iter1].get("date"))
-            s2 = _parse_shift_datetime(shifts[iter2].get("start"), shifts[iter2].get("date"))
-            e1 = _parse_shift_datetime(shifts[iter1].get("end"), shifts[iter1].get("date"))
-            e2 = _parse_shift_datetime(shifts[iter2].get("end"), shifts[iter2].get("date"))
-
-            # If we couldn't parse datetimes, skip this constraint (don't crash)
-            if s1 is None or s2 is None or e1 is None or e2 is None:
-                logging.getLogger('scheduler').debug('Skipping 12-hr check for shifts %s/%s due to parse error', iter1, iter2)
-                continue
-
-            if s1 > s2:
-                continue
+            if(shifts[iter1]["id"] == shifts[iter2]["id"]): continue
+            s1 = dt.datetime.fromisoformat(shifts[iter1]["start"])
+            s2 = dt.datetime.fromisoformat(shifts[iter2]["start"])
+            e1 = dt.datetime.fromisoformat(shifts[iter1]["end"])
+            e2 = dt.datetime.fromisoformat(shifts[iter1]["end"])
+            
+            if(s1 > s2): continue
             bad = 0
-            if s2 <= e1:
-                bad = 1
+            if(s2 <= e1): bad = 1
 
-            diff = abs(s2 - e1)
-            if bad or diff.total_seconds() < 12 * 60 * 60:
+            diff = abs(dt.datetime.fromisoformat(shifts[iter2]["start"]) - dt.datetime.fromisoformat(shifts[iter1]["end"]))
+            if(bad or diff.total_seconds() < 12 * 60 * 60): 
                 for j in P:
                     model.AddAtMostOne([x[iter1, j], x[iter2, j]])
     
     # cant because type
     for s in S:
-        allowed = shifts[s].get("allowed_provider_types") if isinstance(shifts[s], dict) else None
-        # If the shift doesn't specify allowed types, infer from its 'type'
-        # or assume all provider types are allowed.
-        if allowed is None:
-            allowed = []
         for p in P:
-            prov_type = providers[p].get('type')
-            if allowed and prov_type not in allowed:
+            if providers[p].get('type') not in shifts[s]["allowed_provider_types"]:
                 model.Add(x[s, p] == 0)
 
     # provider hard limits, we are trying to minimize slacks
@@ -1198,20 +1151,8 @@ def build_model(consts: Dict[str,Any], case: Dict[str,Any]) -> Dict[str,Any]:
     for j in P:
         print(j)
         lim = providers[j].get('limits', {}) or {}
-        # Defensive integer parsing: avoid int(None) when limits may be null
-        def _safe_int(v, default):
-            try:
-                if v is None or (isinstance(v, str) and str(v).strip() == ""):
-                    return int(default)
-                return int(v)
-            except Exception:
-                try:
-                    return int(default)
-                except Exception:
-                    return 0
-
-        min_total = _safe_int(lim.get('min_total', 0), 0)
-        max_total = _safe_int(lim.get('max_total', len(S)), len(S))
+        min_total = int(lim.get('min_total', 0))
+        max_total = int(lim.get('max_total', len(S)))
         model.Add(sum(x[i, j] for i in S) + slack_shift_less[j] >= min_total)
         model.Add(sum(x[i, j] for i in S) - slack_shift_more[j] <= max_total)
 
@@ -1403,12 +1344,8 @@ def build_model(consts: Dict[str,Any], case: Dict[str,Any]) -> Dict[str,Any]:
 
     D = range(len(days))
     def _wd(d):  # weekday: Mon=0..Sun=6
-        try:
-            y, m, dd = map(int, days[d].split('-'))
-            return _dt.date(y, m, dd).weekday()
-        except Exception:
-            logging.getLogger('scheduler').warning('Invalid calendar date at index %s: %r', d, days[d])
-            return -1
+        y, m, dd = map(int, days[d].split('-'))
+        return _dt.date(y, m, dd).weekday()
 
     weekend_pairs = [(d, d+1) for d in range(len(days)-1) if _wd(d) == 5 and _wd(d+1) == 6]
 
@@ -1972,101 +1909,72 @@ def Solve_test_case(case):
     logger.info("===== SCHEDULER RUN %s =====", ts)
     logger.info("Args.case=%s", case)
 
-    try:
-        # Load merged inputs
-        consts, case = load_inputs_from_case(case)
-        logger.info("Loaded case with %d days, %d shifts, %d providers",
-                    len(case.get('calendar',{}).get('days',[])),
-                    len(case.get('shifts',[])),
-                    len(case.get('providers',[])))
+    # Load merged inputs
+    consts, case = load_inputs_from_case(case)
+    logger.info("Loaded case with %d days, %d shifts, %d providers",
+                len(case.get('calendar',{}).get('days',[])),
+                len(case.get('shifts',[])),
+                len(case.get('providers',[])))
 
-        # Pull run config from the case
-        run_cfg = case.get("run", {}) or {}
-        out_dir = run_cfg.get("out", "out")
+    # Pull run config from the case
+    run_cfg = case.get("run", {}) or {}
+    out_dir = run_cfg.get("out", "out")
+    K = int(run_cfg.get("k", 5) or 5)
+    seed = run_cfg.get("seed", None)
+    time_override = run_cfg.get("time", None)  # total time in seconds (overrides constants)
+    L_cfg = int(run_cfg.get("L", 0) or 0)
+    logger.info("Run config: out=%s k=%s seed=%s time=%s L=%s",
+                out_dir, K, seed, time_override, L_cfg)
 
-        # Defensive integer parsing: some callers may include None or empty
-        # strings for run config fields. Avoid int(None) raising TypeError.
-        def _safe_int(val, default):
-            try:
-                if val is None or (isinstance(val, str) and val.strip() == ""):
-                    return default
-                return int(val)
-            except Exception:
-                return default
+    # Ensure output dir exists
+    os.makedirs(out_dir, exist_ok=True)
 
-        K = _safe_int(run_cfg.get("k", 5), 5)
-        seed = run_cfg.get("seed", None)
-        time_override = run_cfg.get("time", None)  # total time in seconds (overrides constants)
-        L_cfg = _safe_int(run_cfg.get("L", 0), 0)
-        logger.info("Run config: out=%s k=%s seed=%s time=%s L=%s",
-                    out_dir, K, seed, time_override, L_cfg)
+    # Effective-constants report (note reflects run-config override)
+    _write_constants_log(consts, out_dir, cli_time_override=time_override)
 
-        # Ensure output dir exists
-        os.makedirs(out_dir, exist_ok=True)
+    # Apply time override into constants if provided
+    if time_override is not None:
+        consts.setdefault('solver', {})['max_time_in_seconds'] = float(time_override)
 
-        # Effective-constants report (note reflects run-config override)
-        _write_constants_log(consts, out_dir, cli_time_override=time_override)
+    # Diagnostics snapshot (capacity bound)
+    caps = compute_capacity_diag(case)
+    caps_path = os.path.join(out_dir, 'eligibility_capacity.json')
+    with open(caps_path, 'w', encoding='utf-8') as f:
+        json.dump(caps, f, indent=2)
+    logger.info("Wrote capacity snapshot: %s", caps_path)
 
-        # Apply time override into constants if provided
-        if time_override is not None:
-            consts.setdefault('solver', {})['max_time_in_seconds'] = float(time_override)
+    # Build & solve
+    ctx = build_model(consts, case)
+    logger.info("Model built: |S|=%d |P|=%d |D|=%d", len(ctx['S']), len(ctx['P']), len(ctx['D']))
+    tables, meta = solve_two_phase(consts, case, ctx, K, seed=seed if seed is None else int(seed))
 
-        # Diagnostics snapshot (capacity bound)
-        caps = compute_capacity_diag(case)
-        caps_path = os.path.join(out_dir, 'eligibility_capacity.json')
-        with open(caps_path, 'w', encoding='utf-8') as f:
-            json.dump(caps, f, indent=2)
-        logger.info("Wrote capacity snapshot: %s", caps_path)
+    # Outputs
+    grid_path=os.path.join(out_dir, f'schedules.xlsx')
+    hosp_path=os.path.join(out_dir, f'hospital_schedule.xlsx')
+    cal_path=os.path.join(out_dir, f'calendar.xlsx')
+    write_excel_grid_multi(grid_path, tables)
+    write_excel_hospital_multi(hosp_path, tables)
+    write_excel_calendar_multi(cal_path, tables)
 
-        # Build & solve
-        ctx = build_model(consts, case)
-        logger.info("Model built: |S|=%d |P|=%d |D|=%d", len(ctx['S']), len(ctx['P']), len(ctx['D']))
-        try:
-            seed_arg = None if seed is None or (isinstance(seed, str) and seed.strip() == "") else int(seed)
-        except Exception:
-            seed_arg = None
-        tables, meta = solve_two_phase(consts, case, ctx, K, seed=seed_arg)
+    meta['run'] = {"timestamp": ts, "seed": seed, "out_dir": out_dir,
+                   "files": {"grid": grid_path, "hospital": hosp_path, "calendar": cal_path,
+                             "capacity": caps_path}}
+    meta_path = os.path.join(out_dir, f'scheduler_log_{ts}.json')
+    with open(meta_path,'w', encoding='utf-8') as f:
+        json.dump(meta, f, indent=2)
 
-        # Outputs
-        grid_path=os.path.join(out_dir, f'schedules.xlsx')
-        hosp_path=os.path.join(out_dir, f'hospital_schedule.xlsx')
-        cal_path=os.path.join(out_dir, f'calendar.xlsx')
-        write_excel_grid_multi(grid_path, tables)
-        write_excel_hospital_multi(hosp_path, tables)
-        write_excel_calendar_multi(cal_path, tables)
+    # Console echoes kept (now flow into unified log as well)
+    print("Wrote:", grid_path)
+    print("Wrote:", hosp_path)
+    print("Wrote:", cal_path)
+    print("Wrote:", os.path.join(out_dir,'eligibility_capacity.json'))
 
-        meta['run'] = {"timestamp": ts, "seed": seed, "out_dir": out_dir,
-                       "files": {"grid": grid_path, "hospital": hosp_path, "calendar": cal_path,
-                                 "capacity": caps_path}}
-        meta_path = os.path.join(out_dir, f'scheduler_log_{ts}.json')
-        with open(meta_path,'w', encoding='utf-8') as f:
-            json.dump(meta, f, indent=2)
-
-        # Console echoes kept (now flow into unified log as well)
-        print("Wrote:", grid_path)
-        print("Wrote:", hosp_path)
-        print("Wrote:", cal_path)
-        print("Wrote:", os.path.join(out_dir,'eligibility_capacity.json'))
-
-        # Additional logging
-        logger.info("Wrote grid: %s", grid_path)
-        logger.info("Wrote hospital: %s", hosp_path)
-        logger.info("Wrote calendar: %s", cal_path)
-        logger.info("Wrote run meta: %s", meta_path)
-        logger.info("===== SCHEDULER RUN COMPLETE %s =====", ts)
-
-        # Return results for programmatic callers
-        return tables, meta
-    except Exception as e:
-        # Ensure exception details are logged and returned to the caller
-        try:
-            logger.error("Solve_test_case exception: %s", e)
-            logger.error(traceback.format_exc())
-        except Exception:
-            print("Solve_test_case exception:", e)
-            import traceback as _tb
-            print(_tb.format_exc())
-        return {"error": str(e), "traceback": traceback.format_exc()}
+    # Additional logging
+    logger.info("Wrote grid: %s", grid_path)
+    logger.info("Wrote hospital: %s", hosp_path)
+    logger.info("Wrote calendar: %s", cal_path)
+    logger.info("Wrote run meta: %s", meta_path)
+    logger.info("===== SCHEDULER RUN COMPLETE %s =====", ts)
 
 
 # ---------- Defaults ----------
