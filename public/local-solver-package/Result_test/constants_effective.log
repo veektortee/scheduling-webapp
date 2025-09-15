@@ -1,0 +1,60 @@
+Effective constants (after null/default handling)
+(time overridden by case.run.time to 60 sec)
+- weights.hard.uncovered_shift: used=0.0 raw=None default=0.0 *DEFAULTED* 
+- weights.hard.slack_unfilled: used=0.0 raw=None default=0.0 *DEFAULTED* 
+- weights.hard.slack_shift_less: used=0.0 raw=None default=0.0 *DEFAULTED* 
+- weights.hard.slack_shift_more: used=0.0 raw=None default=0.0 *DEFAULTED* 
+- weights.hard.slack_cant_work: used=0.0 raw=None default=0.0 *DEFAULTED* 
+- weights.hard.slack_consec: used=0.0 raw=None default=0.0 *DEFAULTED* 
+- weights.hard.rest_12h: used=0.0 raw=None default=0.0 *DEFAULTED* 
+- weights.hard.type_range: used=0.0 raw=None default=0.0 *DEFAULTED* 
+- weights.hard.weekend_range: used=0.0 raw=None default=0.0 *DEFAULTED* 
+- weights.hard.total_limit: used=0.0 raw=None default=0.0 *DEFAULTED* 
+- weights.hard.consecutive: used=0.0 raw=None default=0.0 *DEFAULTED* 
+- weights.soft.weekday_pref: used=1.0 raw=None default=1.0 *DEFAULTED* 
+- weights.soft.type_pref: used=1.0 raw=None default=1.0 *DEFAULTED* 
+- weights.soft.cluster_size: used=15.0 raw=None default=15.0 *DEFAULTED* 
+- weights.soft.requested_off: used=3.0 raw=None default=3.0 *DEFAULTED* 
+- weights.soft.days_wanted_not_met: used=0.0 raw=None default=0.0 *DEFAULTED* 
+- weights.soft.cluster_any_start: used=0.0 raw=None default=0.0 *DEFAULTED* 
+- weights.soft.cluster_weekend_start: used=0.0 raw=None default=0.0 *DEFAULTED* 
+- weights.soft.transitions_any: used=0.0 raw=None default=0.0 *DEFAULTED* 
+- weights.soft.transitions_night: used=0.0 raw=None default=0.0 *DEFAULTED* 
+- objective.hard: used=1.0 raw=None default=1.0 *DEFAULTED* 
+- objective.soft: used=1.0 raw=None default=1.0 *DEFAULTED* 
+- objective.fair: used=0.0 raw=None default=0.0 *DEFAULTED* 
+- solver.max_time_in_seconds: used=60.0 raw=1000 default=120.0 [overridden_by_run_config]
+- solver.phase1_fraction: used=0.4 raw=None default=0.4 *DEFAULTED* 
+- solver.relative_gap: used=0.01 raw=None default=0.01 *DEFAULTED* 
+- solver.num_threads: used=8.0 raw=None default=8 *DEFAULTED* 
+
+Flags:
+- solver.min_total_is_hard: False
+
+WARNING: The following paths were null/invalid and defaulted:
+  - weights.hard.uncovered_shift
+  - weights.hard.slack_unfilled
+  - weights.hard.slack_shift_less
+  - weights.hard.slack_shift_more
+  - weights.hard.slack_cant_work
+  - weights.hard.slack_consec
+  - weights.hard.rest_12h
+  - weights.hard.type_range
+  - weights.hard.weekend_range
+  - weights.hard.total_limit
+  - weights.hard.consecutive
+  - weights.soft.weekday_pref
+  - weights.soft.type_pref
+  - weights.soft.cluster_size
+  - weights.soft.requested_off
+  - weights.soft.days_wanted_not_met
+  - weights.soft.cluster_any_start
+  - weights.soft.cluster_weekend_start
+  - weights.soft.transitions_any
+  - weights.soft.transitions_night
+  - objective.hard
+  - objective.soft
+  - objective.fair
+  - solver.phase1_fraction
+  - solver.relative_gap
+  - solver.num_threads

@@ -4,6 +4,21 @@ import { createContext, useContext, useReducer, ReactNode } from 'react';
 import { SchedulingCase, Shift, Provider } from '@/types/scheduling';
 import { DEFAULT_CASE, generateUntilYear } from '@/lib/scheduling';
 
+/*
+  Note: The Run UI component (`RunTab`) can apply a "Month for Script" selection which
+  generates a month-limited calendar (array of ISO date strings yyyy-mm-dd). When the
+  month selection is applied, the Run logic builds a month-limited payload that:
+    - replaces `case.calendar.days` with only the month days
+    - filters `case.shifts` to only shifts whose `date` falls inside that month
+    - trims provider date-based fields (forbidden/preferred days) to dates inside that month
+
+  Assumptions:
+    - Dates are ISO 'YYYY-MM-DD' strings and are compared lexicographically for range checks
+    - Timezone handling is intentionally minimal: dates are treated as plain calendar days
+      (no timezone conversions) to avoid surprises across client locales. If you need
+      timezone-aware behavior, adjust payload creation in `RunTab` accordingly.
+*/
+
 const LAST_RESULTS_STORAGE_KEY = 'scheduling-last-results-v1';
 const SCHEDULING_STATE_STORAGE_KEY = 'scheduling-state-v1';
 
@@ -21,6 +36,7 @@ interface SolverResults {
 interface SchedulingState {
   case: SchedulingCase;
   selectedDate: string | null;
+  acceptedDate?: string | null;
   selectedProvider: number | null;
   isLoading: boolean;
   error: string | null;
@@ -32,6 +48,7 @@ type SchedulingAction =
   | { type: 'LOAD_CASE'; payload: SchedulingCase }
   | { type: 'UPDATE_CASE'; payload: Partial<SchedulingCase> }
   | { type: 'SELECT_DATE'; payload: string | null }
+  | { type: 'ACCEPT_DATE'; payload: string | null }
   | { type: 'SELECT_PROVIDER'; payload: number | null }
   | { type: 'ADD_SHIFT'; payload: Shift }
   | { type: 'UPDATE_SHIFT'; payload: { index: number; shift: Shift } }
@@ -47,6 +64,7 @@ type SchedulingAction =
 const initialState: SchedulingState = {
   case: DEFAULT_CASE,
   selectedDate: null,
+  acceptedDate: null,
   selectedProvider: null,
   isLoading: false,
   error: null,
@@ -62,6 +80,7 @@ function saveSchedulingState(state: SchedulingState): void {
     const stateToSave = {
       case: state.case,
       selectedDate: state.selectedDate,
+      acceptedDate: state.acceptedDate ?? null,
       selectedProvider: state.selectedProvider,
       timestamp: new Date().toISOString(),
     };
@@ -90,8 +109,16 @@ function getInitialState(): SchedulingState {
       if (age < 7 * 24 * 60 * 60 * 1000) {
         loadedState = {
           ...loadedState,
-          case: parsedState.case || loadedState.case,
+          case: {
+            ...loadedState.case, // Start with defaults
+            ...parsedState.case, // Override with stored data
+            // Ensure provider_types are properly merged
+            provider_types: (parsedState.case?.provider_types && parsedState.case.provider_types.length > 0) 
+              ? parsedState.case.provider_types 
+              : loadedState.case.provider_types,
+          },
           selectedDate: parsedState.selectedDate || loadedState.selectedDate,
+          acceptedDate: parsedState.acceptedDate || loadedState.acceptedDate,
           selectedProvider: parsedState.selectedProvider !== undefined ? parsedState.selectedProvider : loadedState.selectedProvider,
         };
         // If the loaded calendar looks constrained to a single month (e.g. only October),
@@ -177,6 +204,14 @@ function schedulingReducer(state: SchedulingState, action: SchedulingAction): Sc
       newState = {
         ...state,
         selectedDate: action.payload,
+        // Clear prior acceptance when user changes selection
+        acceptedDate: null,
+      };
+      break;
+    case 'ACCEPT_DATE':
+      newState = {
+        ...state,
+        acceptedDate: action.payload,
       };
       break;
     case 'SELECT_PROVIDER':

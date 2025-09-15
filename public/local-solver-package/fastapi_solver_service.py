@@ -31,6 +31,8 @@ from typing import Dict, Any, List, Optional
 import traceback
 from concurrent.futures import ThreadPoolExecutor
 import threading
+import calendar as pycalendar
+import shutil
 
 try:
     from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, BackgroundTasks
@@ -167,9 +169,33 @@ class AdvancedSchedulingSolver:
             # Extract case components
             constants = case_data.get('constants', {})
             calendar_data = case_data.get('calendar', {})
+            # Sanitize calendar days to avoid invalid dates arriving at the solver
+            try:
+                calendar_data = self._sanitize_calendar(calendar_data)
+                # propagate back to case_data so saved input_case.json matches what solver sees
+                case_data['calendar'] = calendar_data
+            except Exception as e:
+                logger.warning(f"Calendar sanitization failed: {e}")
             shifts = case_data.get('shifts', [])
             providers = case_data.get('providers', [])
             run_config = case_data.get('run', {})
+
+            # Ensure that shift dates are present in the calendar. Some payloads
+            # contain shifts referencing dates not included in calendar.days
+            # (causes KeyError in testcase_gui). Add any missing shift dates and
+            # persist the corrected case file so the solver receives the same view.
+            try:
+                calendar_data = self._ensure_shifts_in_calendar(calendar_data, shifts)
+                case_data['calendar'] = calendar_data
+                # Re-write saved input_case.json to reflect corrections
+                try:
+                    with open(case_file, 'w', encoding='utf-8') as f:
+                        json.dump(case_data, f, indent=2)
+                    logger.info(f"Rewrote input_case.json with calendar corrections: {case_file}")
+                except Exception as _e:
+                    logger.info(f"Failed to rewrite input_case.json after calendar corrections: {_e}")
+            except Exception as e:
+                logger.warning(f"Failed to ensure shifts in calendar: {e}")
             
             self._update_progress(run_id, 20, "Building optimization model...")
             
@@ -187,12 +213,25 @@ class AdvancedSchedulingSolver:
             
             # Generate Excel outputs (optional)
             try:
+                # Coerce falsy/non-dict results to empty dict to avoid downstream errors
+                if not isinstance(model_result, dict):
+                    logger.warning(f"Model result is not a dict (type={type(model_result)}). Coercing to dict for output generation.")
+                    model_result = model_result or {}
+
                 self._generate_excel_outputs(model_result, run_output_dir)
             except Exception as e:
                 logger.warning(f"Failed to generate Excel outputs: {e}")
             
             self._update_progress(run_id, 100, "Optimization completed successfully!")
-            
+            # Defensive: ensure model_result is a dict before manipulating debug_info
+            if not isinstance(model_result, dict):
+                logger.warning(f"Model result is not a dict (type={type(model_result)}). Coercing to dict.")
+                # If model_result is falsy (None), replace with empty dict; if it's another type, coerce to dict wrapper
+                model_result = model_result or {}
+            # Ensure debug_info exists to signal which path was used
+            model_result.setdefault('debug_info', {})
+            model_result['debug_info'].setdefault('used_testcase_gui', False)
+
             return {
                 "status": "success",
                 "run_id": run_id,
@@ -219,6 +258,12 @@ class AdvancedSchedulingSolver:
         Core optimization path. If testcase_gui.py is available locally,
         delegate solving to it; otherwise use the built-in simplified model.
         """
+        # First, sanitize calendar days to ensure downstream code receives valid dates
+        try:
+            calendar = self._sanitize_calendar(calendar or {})
+        except Exception as e:
+            logger.warning(f"Failed to sanitize calendar in _build_and_solve_model: {e}")
+
         # If the external real solver is available, try to use it first
         if 'HAVE_TESTCASE_GUI' in globals() and HAVE_TESTCASE_GUI and _tcg is not None:
             try:
@@ -244,18 +289,30 @@ class AdvancedSchedulingSolver:
                             temp_path = temp_file.name
                         
                         logger.info(f"Wrote case data to temporary file: {temp_path}")
+                        # For debugging: keep a copy of the temporary case JSON in run_tmp
+                        try:
+                            debug_dir = Path('run_tmp')
+                            debug_dir.mkdir(exist_ok=True)
+                            shutil.copy(temp_path, debug_dir / Path(temp_path).name)
+                            logger.info(f"Saved temp case copy to {debug_dir / Path(temp_path).name}")
+                        except Exception as _e:
+                            logger.info(f"Failed to save temp case copy for debugging: {_e}")
                         
                         # Call Solve_test_case with the file path
                         logger.info(f"Calling testcase_gui.Solve_test_case({temp_path})")
+                        # For debugging: persist the exact case payload to run_tmp/pre_solve_case.json
+                        try:
+                            # Write the pre-solve case into the run output directory where CWD is changed
+                            run_output_debug = Path('solver_output') / 'test-run'
+                            run_output_debug.mkdir(parents=True, exist_ok=True)
+                            pre_solve_path = run_output_debug / 'pre_solve_case.json'
+                            with open(pre_solve_path, 'w', encoding='utf-8') as pf:
+                                json.dump(case, pf, indent=2)
+                            logger.info(f"Saved pre-solve case to {pre_solve_path}")
+                        except Exception as _e:
+                            logger.info(f"Failed to save pre-solve case for debugging: {_e}")
                         tcg_out = _tcg.Solve_test_case(temp_path)
                         logger.info(f"testcase_gui.Solve_test_case returned: {type(tcg_out)}")
-                        
-                        # Clean up temporary file
-                        import os
-                        try:
-                            os.unlink(temp_path)
-                        except:
-                            pass  # Don't fail if cleanup fails
                             
                         # We don't rely on exact shape; adapt best-effort
                         result_payload = self._coerce_tcg_result(tcg_out)
@@ -298,6 +355,97 @@ class AdvancedSchedulingSolver:
                 logger.info("⚠️  Using built-in solver fallback")
             except Exception as e:
                 logger.warning(f"Failed to use testcase_gui.py, using built-in model. Reason: {e}")
+
+    def _sanitize_calendar(self, calendar_obj: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Validate and sanitize calendar object. Ensures `days` is a list of ISO date
+        strings and clamps day values that are out-of-range for their month to the
+        month's last day. Returns a normalized calendar dict.
+
+        Behavior:
+        - If days is missing or not a list, returns calendar_obj unchanged.
+        - For each day string, attempts to parse YYYY-MM-DD. If parsing fails,
+          tries to recover by clamping numeric day to the month's max day.
+        - Logs any corrections made and returns the cleaned calendar.
+        """
+        if not calendar_obj:
+            return calendar_obj
+
+        days = calendar_obj.get('days')
+        if not isinstance(days, list):
+            return calendar_obj
+
+        cleaned: List[str] = []
+        for idx, d in enumerate(days):
+            if not isinstance(d, str):
+                logger.warning(f"Non-string calendar entry at index {idx}: {d} - skipping")
+                continue
+            parts = d.split('-')
+            if len(parts) != 3:
+                logger.warning(f"Invalid ISO date format in calendar at index {idx}: {d} - skipping")
+                continue
+            try:
+                y = int(parts[0])
+                m = int(parts[1])
+                dd = int(parts[2])
+            except Exception:
+                logger.warning(f"Non-numeric ISO parts in calendar at index {idx}: {d} - skipping")
+                continue
+
+            # Clamp month to 1..12
+            if m < 1 or m > 12:
+                logger.warning(f"Month out of range in calendar at index {idx}: {d} - skipping")
+                continue
+
+            # Determine last valid day for that month/year
+            last_day = pycalendar.monthrange(y, m)[1]
+            if dd < 1:
+                logger.warning(f"Day out of range (<1) in calendar at index {idx}: {d} - skipping")
+                continue
+            if dd > last_day:
+                corrected = f"{y:04d}-{m:02d}-{last_day:02d}"
+                logger.warning(f"Correcting out-of-range calendar date at index {idx}: {d} -> {corrected}")
+                cleaned.append(corrected)
+            else:
+                cleaned.append(f"{y:04d}-{m:02d}-{dd:02d}")
+
+        # Return new calendar object with cleaned days and preserve other keys
+        new_cal = dict(calendar_obj)
+        new_cal['days'] = cleaned
+        return new_cal
+
+    def _ensure_shifts_in_calendar(self, calendar_obj: Dict[str, Any], shifts: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """
+        Ensure that every shift.date appears in calendar_obj['days']. If some
+        shift dates are missing, log a warning and add them to the calendar days
+        list. Returns the updated calendar object.
+        """
+        if not calendar_obj:
+            calendar_obj = { 'days': [] }
+
+        days = calendar_obj.get('days') or []
+        if not isinstance(days, list):
+            days = []
+
+        existing = set(days)
+        missing = set()
+        for s in (shifts or []):
+            d = s.get('date') if isinstance(s, dict) else None
+            if isinstance(d, str) and d not in existing:
+                missing.add(d)
+
+        if not missing:
+            return calendar_obj
+
+        # Log and add missing dates
+        missing_list = sorted(missing)
+        logger.warning(f"Missing shift dates not present in calendar.days: {missing_list} - adding to calendar")
+
+        # Merge and sort ISO date strings lexicographically (ISO order == chronological)
+        merged = sorted(set(days) | missing)
+        new_cal = dict(calendar_obj)
+        new_cal['days'] = merged
+        return new_cal
 
         # ---------- Built-in simplified OR-Tools model (fallback) ----------
         logger.info(f"Building CP-SAT model for run {run_id} (built-in)")
@@ -422,7 +570,7 @@ class AdvancedSchedulingSolver:
         # Collect multiple solutions if requested
         if k_solutions > 1:
             solution_collector = SolutionCollector(shift_assignments, shifts, providers, k_solutions)
-            status = solver.solve_with_solution_callback(model, solution_collector)
+            status = solver.SolveWithSolutionCallback(model, solution_collector)
             solutions = solution_collector.get_solutions()
         else:
             status = solver.Solve(model)
@@ -606,16 +754,19 @@ class AdvancedSchedulingSolver:
             # Headers
             ws.append(["Date", "Shift Type", "Provider", "Start Time", "End Time"])
             
-            # Add assignments from first solution
-            if result['solutions']:
-                assignments = result['solutions'][0].get('assignments', [])
+            # Add assignments from first solution (if available)
+            sols = result.get('solutions') if isinstance(result, dict) else None
+            if not sols:
+                logger.info("No solutions present in result; skipping Excel row population.")
+            else:
+                assignments = sols[0].get('assignments', []) if isinstance(sols, list) and sols else []
                 for assignment in assignments:
                     ws.append([
-                        assignment['date'],
-                        assignment['shift_type'],
-                        assignment['provider_name'],
-                        assignment['start_time'],
-                        assignment['end_time']
+                        assignment.get('date', ''),
+                        assignment.get('shift_type', ''),
+                        assignment.get('provider_name', ''),
+                        assignment.get('start_time', ''),
+                        assignment.get('end_time', '')
                     ])
             
             excel_file = output_dir / "schedule.xlsx"

@@ -1,0 +1,36 @@
+{
+  "shifts": [
+    {
+      "date": "2025-09-31",
+      "end_time": "16:00",
+      "id": "s1",
+      "start_time": "08:00"
+    }
+  ],
+  "providers": [
+    {
+      "name": "p1",
+      "id": "p1",
+      "type": "Staff"
+    }
+  ],
+  "calendar": {
+    "days": [
+      "2025-09-29",
+      "2025-09-30",
+      "2025-09-30",
+      "2025-10-01"
+    ]
+  },
+  "run": {
+    "time": 60,
+    "out": "Result_test",
+    "seed": 1,
+    "k": 1
+  },
+  "constants": {
+    "solver": {
+      "max_time_in_seconds": 1000
+    }
+  }
+}

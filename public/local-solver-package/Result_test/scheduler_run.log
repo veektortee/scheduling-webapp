@@ -1,0 +1,17 @@
+2025-09-15 09:55:10,754 | INFO | Logging to Result_test\scheduler_run.log
+2025-09-15 09:55:10,756 | INFO | ===== SCHEDULER RUN 20250915_095510 =====
+2025-09-15 09:55:10,759 | INFO | Args.case=C:\Users\sapper\AppData\Local\Temp\tmp9eowshee.json
+2025-09-15 09:55:10,763 | INFO | Loaded case with 4 days, 1 shifts, 1 providers
+2025-09-15 09:55:10,763 | INFO | Run config: out=Result_test k=1 seed=1 time=60 L=0
+2025-09-15 09:55:10,771 | INFO | Wrote: Result_test\constants_effective.log
+2025-09-15 09:55:10,776 | INFO | Wrote capacity snapshot: Result_test\eligibility_capacity.json
+2025-09-15 09:55:10,778 | ERROR | Solve_test_case exception: '2025-09-31'
+2025-09-15 09:55:10,784 | ERROR | Traceback (most recent call last):
+  File "C:\Werk\Webapp\Webapp7aramoy\scheduling-webapp\public\local-solver-package\testcase_gui.py", line 2018, in Solve_test_case
+    ctx = build_model(consts, case)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Werk\Webapp\Webapp7aramoy\scheduling-webapp\public\local-solver-package\testcase_gui.py", line 1035, in build_model
+    shift_day = [date_to_idx[shifts[s]['date']] for s in S]
+                 ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+KeyError: '2025-09-31'
+

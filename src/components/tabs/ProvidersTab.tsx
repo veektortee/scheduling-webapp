@@ -69,6 +69,7 @@ export default function ProvidersTab() {
     const provider = schedulingCase.providers[index];
     setProviderForm({
       ...provider,
+      type: provider.type || 'Staff', // Ensure type is set
       limits: provider.limits || { min_total: 0, max_total: null },
       forbidden_days_soft: provider.forbidden_days_soft || [],
       forbidden_days_hard: provider.forbidden_days_hard || [],
@@ -102,18 +103,18 @@ export default function ProvidersTab() {
       },
     }));
   };
-
   const addProvider = () => {
-    if (!providerForm.name) {
-      alert('Please enter a provider name');
+    // Validate required fields
+    if (!providerForm.name || providerForm.name.trim() === '') {
+      alert('Provider name is required');
       return;
     }
 
     const newProvider: Provider = {
-      id: providerForm.id || `provider_${Date.now()}`,
-      name: providerForm.name,
-      type: providerForm.type || 'Staff',
-      max_consecutive_days: providerForm.max_consecutive_days,
+      id: (providerForm.id as string) || `p_${Date.now()}`,
+      name: providerForm.name?.trim(),
+      type: (providerForm.type as string) || 'Staff',
+      max_consecutive_days: providerForm.max_consecutive_days ?? null,
       limits: providerForm.limits || { min_total: 0, max_total: null },
       forbidden_days_soft: providerForm.forbidden_days_soft || [],
       forbidden_days_hard: providerForm.forbidden_days_hard || [],
@@ -122,26 +123,43 @@ export default function ProvidersTab() {
     };
 
     dispatch({ type: 'ADD_PROVIDER', payload: newProvider });
+    // Reset UI form and selection
     resetForm();
   };
 
   const updateProvider = () => {
     if (selectedProvider === null) return;
 
+    // Merge with existing provider to avoid losing fields not present in the form
+    const existing = schedulingCase.providers[selectedProvider] || {};
     const updatedProvider: Provider = {
-      ...providerForm as Provider,
+      ...existing,
+      ...(providerForm as Provider),
+      type: (providerForm.type as string) || existing.type || 'Staff',
     };
+
+    // Debug: log the provider being sent to the reducer
+    console.log('Updating provider:', updatedProvider);
 
     dispatch({
       type: 'UPDATE_PROVIDER',
       payload: { index: selectedProvider, provider: updatedProvider },
     });
-    resetForm();
+
+    // Keep provider selected and refresh local form to reflect saved values
+    setProviderForm({
+      ...updatedProvider,
+      limits: updatedProvider.limits || { min_total: 0, max_total: null },
+      forbidden_days_soft: updatedProvider.forbidden_days_soft || [],
+      forbidden_days_hard: updatedProvider.forbidden_days_hard || [],
+      preferred_days_hard: updatedProvider.preferred_days_hard || {},
+      preferred_days_soft: updatedProvider.preferred_days_soft || {},
+    });
+    dispatch({ type: 'SELECT_PROVIDER', payload: selectedProvider });
   };
 
   const deleteProvider = () => {
     if (selectedProvider === null) return;
-    
     dispatch({ type: 'DELETE_PROVIDER', payload: selectedProvider });
     resetForm();
   };
@@ -161,12 +179,9 @@ export default function ProvidersTab() {
       preferred_days_soft: {},
     });
     dispatch({ type: 'SELECT_PROVIDER', payload: null });
-    // Clear selected days when resetting form
     setSelectedOffDays([]);
     setSelectedOnDays([]);
-    // Clear selected date for shifts when resetting
     setSelectedDateForShifts(null);
-    // Clear selected shift types when resetting
     setSelectedOnShiftTypes([]);
   };
 
@@ -454,7 +469,7 @@ export default function ProvidersTab() {
                 <div className="font-medium text-gray-900 dark:text-gray-100">
                   {provider.name || provider.id || `Provider ${index + 1}`}
                 </div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">{provider.type}</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">{provider.type || 'Staff'}</div>
                 <div className="text-xs text-gray-500 dark:text-gray-500">
                   Off days: {(provider.forbidden_days_soft || []).length + (provider.forbidden_days_hard || []).length}
                 </div>
@@ -479,7 +494,22 @@ export default function ProvidersTab() {
               />
             </div>
 
-            {/* Provider type is managed at the top 'Provider Types' list; removed duplicate editor here. */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Type
+              </label>
+              <select
+                value={providerForm.type || 'Staff'}
+                onChange={(e) => handleProviderFormChange('type', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 dark:bg-gray-800 dark:text-white dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                {(schedulingCase.provider_types || ['Staff']).map((type) => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
+                ))}
+              </select>
+            </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">

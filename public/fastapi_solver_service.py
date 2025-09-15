@@ -114,6 +114,7 @@ class SchedulingCase(BaseModel):
     shifts: List[Dict[str, Any]]
     providers: List[Dict[str, Any]]
     run: Optional[Dict[str, Any]] = None
+    provider_types: Optional[List[str]] = None
 
 class SolverStatus(BaseModel):
     status: str

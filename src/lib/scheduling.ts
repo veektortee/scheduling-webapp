@@ -53,8 +53,13 @@ export async function loadCaseFromFile(): Promise<SchedulingCase | null> {
     };
 
     return {
-      ...caseData,
-      calendar: freshCalendar
+      ...DEFAULT_CASE, // Start with defaults
+      ...caseData, // Override with loaded data
+      calendar: freshCalendar,
+      // Ensure provider_types are properly merged
+      provider_types: (caseData.provider_types && caseData.provider_types.length > 0) 
+        ? caseData.provider_types 
+        : DEFAULT_CASE.provider_types,
     };
   } catch (error) {
     console.error('Error loading case file:', error);
@@ -70,17 +75,36 @@ export async function loadCaseFromFile(): Promise<SchedulingCase | null> {
 }
 
 export function generateMonth(year: number, month: number): string[] {
+  if (!Number.isInteger(month) || month < 1 || month > 12) {
+    throw new RangeError(`generateMonth: month must be an integer between 1 and 12. Received: ${month}`);
+  }
+
   const days: string[] = [];
+  // new Date(year, month, 0) returns the last day of the requested month when month is 1-based
   const daysInMonth = new Date(year, month, 0).getDate();
-  
+
   for (let day = 1; day <= daysInMonth; day++) {
     const date = new Date(year, month - 1, day);
     // Use local date formatting instead of UTC to avoid timezone shifts
     const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
     days.push(dateStr);
   }
-  
+
   return days;
+}
+
+/**
+ * Return a month range object containing the ISO start date, end date and array
+ * of days for the provided year and 1-based month. This centralises month logic
+ * and makes callers' intent explicit.
+ */
+export function getMonthRange(year: number, month: number): { start: string; end: string; days: string[] } {
+  const days = generateMonth(year, month);
+  return {
+    start: days[0],
+    end: days[days.length - 1],
+    days,
+  };
 }
 
 export function generateDateRange(startDate: string, endDate: string): string[] {

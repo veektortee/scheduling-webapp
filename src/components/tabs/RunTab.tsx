@@ -28,7 +28,8 @@ import {
 } from 'react-icons/si';
 import LocalSolverGuideModal from '@/components/LocalSolverGuideModal';
 import DataManagementModal from '@/components/DataManagementModal';
-import { generateMonth } from '@/lib/scheduling';
+import { generateMonth, getMonthRange } from '@/lib/scheduling';
+import { Provider, SchedulingCase } from '@/types/scheduling';
 
 interface SolverResult {
   status: string;
@@ -546,6 +547,12 @@ export default function RunTab() {
       return;
     }
 
+    // Require that user has applied the month selection (use Run Settings -> Apply)
+    if (!isMonthSelectionLocked) {
+      addLog('[ERROR] Please select the Month for Script and click "Apply" before running optimization', 'error');
+      return;
+    }
+
     setIsRunning(true);
     setProgress(0);
     setSolverState('connecting');
@@ -584,7 +591,64 @@ export default function RunTab() {
         break;
     }
 
-  addLog(`[INFO] Processing ${schedulingCase.shifts.length} shifts and ${schedulingCase.providers.length} providers`);
+  // Build payload that will be sent to the solver. If the user applied a Month selection,
+  // restrict calendar.days and shifts to that month and trim any provider date-based fields
+  const buildCasePayload = (): SchedulingCase => {
+    try {
+      if (isMonthSelectionLocked && appliedMonth !== null && appliedYear !== null) {
+        // Validate month/year and compute clear start/end/days
+        const { start, end, days } = getMonthRange(appliedYear, appliedMonth);
+        const inMonth = (d: string) => typeof d === 'string' && d >= start && d <= end;
+
+        const filteredShifts = (schedulingCase.shifts || []).filter(s => typeof s.date === 'string' && inMonth(s.date));
+
+        const trimmedProviders = (schedulingCase.providers || []).map((p) => {
+          const np: Provider = { ...p } as Provider;
+
+          if (Array.isArray(p.forbidden_days_hard)) np.forbidden_days_hard = p.forbidden_days_hard.filter(d => typeof d === 'string' && inMonth(d));
+          if (Array.isArray(p.forbidden_days_soft)) np.forbidden_days_soft = p.forbidden_days_soft.filter(d => typeof d === 'string' && inMonth(d));
+
+          if (p.preferred_days_hard && typeof p.preferred_days_hard === 'object') {
+            const map: Record<string, string[]> = {};
+            Object.entries(p.preferred_days_hard).forEach(([k, v]) => {
+              if (Array.isArray(v)) {
+                const filtered = v.filter((d) => typeof d === 'string' && inMonth(d));
+                if (filtered.length) map[k] = filtered;
+              }
+            });
+            np.preferred_days_hard = map;
+          }
+
+          if (p.preferred_days_soft && typeof p.preferred_days_soft === 'object') {
+            const map: Record<string, string[]> = {};
+            Object.entries(p.preferred_days_soft).forEach(([k, v]) => {
+              if (Array.isArray(v)) {
+                const filtered = v.filter((d) => typeof d === 'string' && inMonth(d));
+                if (filtered.length) map[k] = filtered;
+              }
+            });
+            np.preferred_days_soft = map;
+          }
+
+          return np;
+        });
+
+        return {
+          ...schedulingCase,
+          calendar: { ...schedulingCase.calendar, days },
+          shifts: filteredShifts,
+          providers: trimmedProviders,
+        };
+      }
+    } catch (err) {
+      // If anything goes wrong, fall back to full case
+      console.warn('Failed to build month-limited payload, falling back to full case:', err);
+    }
+    return schedulingCase;
+  };
+
+  const payload = buildCasePayload();
+  addLog(`[INFO] Processing ${payload.shifts.length} shifts and ${payload.providers.length} providers (dataset sent to solver)`, 'info');
 
     try {
       const startTime = Date.now();
@@ -597,10 +661,10 @@ export default function RunTab() {
             addLog('[INFO] Complex optimizations may take several hours - please be patient...', 'info');
         
         try {
-          const localResponse = await fetch('http://localhost:8000/solve', {
+                const localResponse = await fetch('http://localhost:8000/solve', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(schedulingCase),
+                  body: JSON.stringify(payload),
             signal: AbortSignal.timeout(20000000), // 4 hour timeout for complex optimizations
           });
           
@@ -630,7 +694,7 @@ export default function RunTab() {
                 const retryResponse = await fetch('http://localhost:8000/solve', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify(schedulingCase),
+                  body: JSON.stringify(payload),
                   signal: AbortSignal.timeout(20000000), // 4 hour timeout for retry
                 });
                 
@@ -663,7 +727,7 @@ export default function RunTab() {
         const serverlessResponse = await fetch('/api/solve?mode=serverless', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(schedulingCase),
+          body: JSON.stringify(payload),
         });
 
         if (!serverlessResponse.ok) {
@@ -1926,7 +1990,7 @@ export default function RunTab() {
           <div className="flex flex-col">
             <button
               onClick={() => handleRunSolver('auto')}
-              disabled={isRunning}
+              disabled={isRunning || !isMonthSelectionLocked}
               className={`relative px-6 py-4 rounded-2xl font-bold text-base flex flex-col items-center justify-center space-y-2 transition-all duration-300 shadow-lg hover:shadow-2xl overflow-hidden group min-h-[120px] ${
                 isRunning
                   ? 'bg-gray-400 text-white cursor-not-allowed'
@@ -1974,7 +2038,7 @@ export default function RunTab() {
           <div className="flex flex-col">
             <button
               onClick={() => handleRunSolver('local')}
-              disabled={isRunning || !localSolverAvailable}
+              disabled={isRunning || !localSolverAvailable || !isMonthSelectionLocked}
               className={`relative px-6 py-4 rounded-2xl font-bold text-base flex flex-col items-center justify-center space-y-2 transition-all duration-300 shadow-lg hover:shadow-2xl overflow-hidden group min-h-[120px] ${
                 isRunning
                   ? 'bg-gray-400 text-white cursor-not-allowed'
@@ -2025,7 +2089,7 @@ export default function RunTab() {
           <div className="flex flex-col">
             <button
               onClick={() => handleRunSolver('serverless')}
-              disabled={isRunning}
+              disabled={isRunning || !isMonthSelectionLocked}
               className={`relative px-6 py-4 rounded-2xl font-bold text-base flex flex-col items-center justify-center space-y-2 transition-all duration-300 shadow-lg hover:shadow-2xl overflow-hidden group min-h-[120px] ${
                 isRunning
                   ? 'bg-gray-400 text-white cursor-not-allowed'
@@ -2060,6 +2124,15 @@ export default function RunTab() {
 
         {/* Action Buttons Row */}
         <div className="flex flex-wrap gap-3 mb-6">
+          {/* Applied Month status (constrainer) */}
+          <div className="flex items-center space-x-3 w-full lg:w-auto">
+            <div className="text-sm text-gray-700 dark:text-gray-300">
+              Applied Month: <span className="font-semibold">{appliedMonth ? `${new Date(appliedYear || 0, (appliedMonth || 1) - 1).toLocaleString(undefined, { month: 'long' })} ${appliedYear}` : 'None'}</span>
+            </div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">
+              {isMonthSelectionLocked ? 'The month has been selected.' : 'Select Month for Script and click Apply to enable runs.'}
+            </div>
+          </div>
           {/* Stop Button - only show when running */}
           {isRunning && (
             <button

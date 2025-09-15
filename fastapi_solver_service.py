@@ -50,31 +50,50 @@ try:
     from ortools.sat.python import cp_model
     import collections
     
-    # Try to import testcase_gui from a few likely locations
+    # Try to import testcase_gui. Prefer the workspace-local copy under
+    # public/local-solver-package so we can control fixes and avoid loading
+    # an out-of-workspace copy (e.g. c:\Werk\Webapp\testcase_gui.py).
     HAVE_TESTCASE_GUI = False
     _tcg = None
-    try:
-        import testcase_gui as _tcg  # If placed next to this service or on PYTHONPATH
-        HAVE_TESTCASE_GUI = True
-    except Exception:
-        # Add parent directories to sys.path to reach c:\Werk\Webapp\testcase_gui.py
+
+    # Prefer workspace-local package copy
+    local_pkg = Path(__file__).resolve().parent / "public" / "local-solver-package"
+    local_tcg = local_pkg / "testcase_gui.py"
+    if local_tcg.exists():
+        # Prepend to sys.path so this copy is imported first
+        if str(local_pkg) not in sys.path:
+            sys.path.insert(0, str(local_pkg))
         try:
-            base_try = Path(__file__).resolve().parents[2]  # likely c:\Werk\Webapp
-            tcg_path = base_try / "testcase_gui.py"
-            if tcg_path.exists():
-                sys.path.insert(0, str(base_try))
-                import testcase_gui as _tcg
-                HAVE_TESTCASE_GUI = True
-            else:
-                # Try specific known path c:\Werk\Webapp\testcase_gui.py
-                direct_path = Path("c:/Werk/Webapp")
-                tcg_direct = direct_path / "testcase_gui.py"
-                if tcg_direct.exists():
-                    sys.path.insert(0, str(direct_path))
+            import testcase_gui as _tcg
+            HAVE_TESTCASE_GUI = True
+        except Exception:
+            # If that import fails, continue to try other locations below
+            _tcg = None
+
+    # Fallback: try importing from usual locations or parent workspace
+    if not HAVE_TESTCASE_GUI:
+        try:
+            import testcase_gui as _tcg  # If placed next to this service or on PYTHONPATH
+            HAVE_TESTCASE_GUI = True
+        except Exception:
+            # Add parent directories to sys.path to reach c:\Werk\Webapp\testcase_gui.py
+            try:
+                base_try = Path(__file__).resolve().parents[2]  # likely c:\Werk\Webapp
+                tcg_path = base_try / "testcase_gui.py"
+                if tcg_path.exists():
+                    sys.path.insert(0, str(base_try))
                     import testcase_gui as _tcg
                     HAVE_TESTCASE_GUI = True
-        except Exception:
-            HAVE_TESTCASE_GUI = False
+                else:
+                    # Try specific known path c:\Werk\Webapp\testcase_gui.py
+                    direct_path = Path("c:/Werk/Webapp")
+                    tcg_direct = direct_path / "testcase_gui.py"
+                    if tcg_direct.exists():
+                        sys.path.insert(0, str(direct_path))
+                        import testcase_gui as _tcg
+                        HAVE_TESTCASE_GUI = True
+            except Exception:
+                HAVE_TESTCASE_GUI = False
 
     if HAVE_TESTCASE_GUI:
         print("✅ Found testcase_gui.py — local runs will use the real solver")
@@ -115,6 +134,7 @@ class SchedulingCase(BaseModel):
     shifts: List[Dict[str, Any]]
     providers: List[Dict[str, Any]]
     run: Optional[Dict[str, Any]] = None
+    provider_types: Optional[List[str]] = None
 
 class SolverStatus(BaseModel):
     status: str
@@ -206,6 +226,11 @@ class AdvancedSchedulingSolver:
                 logger.debug(f"Could not gather additional outputs for {run_id}: {e}")
 
             self._update_progress(run_id, 100, "Optimization completed successfully!")
+            # Ensure debug_info exists so API clients can see whether
+            # the external testcase_gui bridge was used or if we fell
+            # back to the built-in solver.
+            model_result.setdefault('debug_info', {})
+            model_result['debug_info'].setdefault('used_testcase_gui', False)
 
             return {
                 "status": "success",
@@ -241,12 +266,17 @@ class AdvancedSchedulingSolver:
         if 'HAVE_TESTCASE_GUI' in globals() and HAVE_TESTCASE_GUI and _tcg is not None:
             try:
                 logger.info("Using external testcase_gui.py for solving…")
+                # Build a merged case dict for the external solver. Compute
+                # provider types locally instead of referencing a non-existent
+                # `case_data` variable (which caused a NameError in logs).
+                provider_types_local = sorted(set([p.get('type', 'MD') for p in (providers or [])]))
                 case = {
                     "constants": constants or {},
                     "calendar": calendar or {},
                     "shifts": shifts or [],
                     "providers": providers or [],
-                    "run": run_config or {}
+                    "run": run_config or {},
+                    "provider_types": provider_types_local,
                 }
 
                 # Try the most direct entrypoint first if available
@@ -257,8 +287,39 @@ class AdvancedSchedulingSolver:
                         # testcase_gui.Solve_test_case expects a file path, not a dict
                         # Write case to temporary JSON file
                         import tempfile
+                        # Sanitize the run config before handing it to
+                        # external testcase_gui to avoid int(None) crashes
+                        # in older copies of testcase_gui that do naive
+                        # int() conversions.
+                        sanitized_case = dict(case)
+                        run_block = dict(sanitized_case.get('run', {}) or {})
+                        # Remove keys that are explicitly None and coerce
+                        # numeric-like fields to safe ints when possible.
+                        def _coerce_optional_int(v, default=None):
+                            if v is None:
+                                return default
+                            try:
+                                return int(v)
+                            except Exception:
+                                return default
+
+                        for k in list(run_block.keys()):
+                            if run_block[k] is None:
+                                del run_block[k]
+
+                        # Common numeric keys
+                        if 'k' in run_block:
+                            run_block['k'] = _coerce_optional_int(run_block.get('k'), 5)
+                        if 'L' in run_block:
+                            run_block['L'] = _coerce_optional_int(run_block.get('L'), 0)
+                        if 'seed' in run_block:
+                            seed_val = run_block.get('seed')
+                            run_block['seed'] = _coerce_optional_int(seed_val, None)
+
+                        sanitized_case['run'] = run_block
+
                         with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False, encoding='utf-8') as temp_file:
-                            json.dump(case, temp_file, indent=2)
+                            json.dump(sanitized_case, temp_file, indent=2)
                             temp_path = temp_file.name
 
                         logger.info(f"Wrote case data to temporary file: {temp_path}")
@@ -305,13 +366,36 @@ class AdvancedSchedulingSolver:
                     solve_two_phase = getattr(_tcg, 'solve_two_phase', None)
                     if callable(build_model) and callable(solve_two_phase):
                         ctx = build_model(constants or {}, case)
-                        K = int(run_config.get('k', 5) or 5)
-                        seed = run_config.get('seed')
+
+                        # Defensive parsing: testcase_gui may return run_config
+                        # with missing or None values for 'k'/'seed'. Avoid
+                        # int(None) TypeError by using a small helper.
+                        def _safe_int(val, default=5):
+                            try:
+                                if val is None:
+                                    return default
+                                # Allow strings and numeric types
+                                return int(val)
+                            except Exception:
+                                logger.debug(f"Could not parse int from run_config value: {val!r}; using default {default}")
+                                return default
+
+                        K = _safe_int(run_config.get('k', 5), 5)
+                        seed_val = run_config.get('seed')
+                        seed = None
+                        if seed_val is not None:
+                            try:
+                                seed = int(seed_val)
+                            except Exception:
+                                # Non-fatal: log and continue without seed
+                                logger.debug(f"Invalid seed value in run_config: {seed_val!r}; ignoring seed")
+
                         try:
                             tcg_out = solve_two_phase(constants or {}, case, ctx, K, seed=seed)
                             result_payload = self._coerce_tcg_result(tcg_out)
                         except Exception as e:
                             logger.warning(f"testcase_gui solve_two_phase failed: {e}")
+                            logger.debug(traceback.format_exc())
 
                 if result_payload is not None:
                     # Annotate solver info and return

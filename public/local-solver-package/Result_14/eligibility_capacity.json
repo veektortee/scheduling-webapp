@@ -1,0 +1,26 @@
+[
+  {
+    "provider": "names",
+    "eligible_days_upper_bound": 0,
+    "min_total": 8,
+    "max_total": 10
+  },
+  {
+    "provider": "bs",
+    "eligible_days_upper_bound": 0,
+    "min_total": 0,
+    "max_total": null
+  },
+  {
+    "provider": "tsj",
+    "eligible_days_upper_bound": 0,
+    "min_total": 0,
+    "max_total": null
+  },
+  {
+    "provider": "fsst",
+    "eligible_days_upper_bound": 0,
+    "min_total": 0,
+    "max_total": null
+  }
+]
