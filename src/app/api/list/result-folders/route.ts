@@ -7,7 +7,9 @@ export async function GET() {
     // Check both the app's solver_output and the workspace-level solver_output
     const bases = [
       path.join(process.cwd(), 'solver_output'),
-      path.join(process.cwd(), '..', 'solver_output')
+      path.join(process.cwd(), '..', 'solver_output'),
+      // also include public/solver_output where some runs are written in dev/demo setups
+      path.join(process.cwd(), 'public', 'solver_output')
     ];
 
     const entriesCollections: string[] = [];

@@ -16,7 +16,9 @@ export async function GET(request: Request) {
   // nested run folders for directories named exactly as `name`.
   const candidates = [
     path.join(process.cwd(), 'solver_output'),
-    path.join(process.cwd(), '..', 'solver_output')
+    path.join(process.cwd(), '..', 'solver_output'),
+    // include public/solver_output for dev/demo layouts where outputs land under public
+    path.join(process.cwd(), 'public', 'solver_output')
   ];
 
   let foundFolder: string | null = null;
