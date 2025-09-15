@@ -3,9 +3,9 @@
 import { useState, useEffect } from 'react';
 import { useScheduling } from '@/context/SchedulingContext';
 import { Provider, DEFAULT_SHIFT_TYPES } from '@/types/scheduling';
-import { 
-  IoPeopleSharp, 
-  IoPersonSharp, 
+import {
+  IoPeopleSharp,
+  IoPersonSharp,
   IoMedkitSharp,
   IoHeartSharp,
   IoCloseCircleSharp,
@@ -38,24 +38,39 @@ export default function ProvidersTab() {
   const [selectedOnDays, setSelectedOnDays] = useState<string[]>([]);
   const [calendarMode, setCalendarMode] = useState<'off' | 'on'>('on');
   const [selectedDateForShifts, setSelectedDateForShifts] = useState<string | null>(null);
-  // Selected shift types to apply when setting FIXED ON / PREFER ON
   const [selectedOnShiftTypes, setSelectedOnShiftTypes] = useState<string[]>([]);
 
   // Derive shift type options from multiple sources (case shifts, providers' preferences, defaults)
-  const shiftTypesFromShifts = Array.from(new Set((schedulingCase.shifts || []).map(s => s.type))).filter((type): type is string => Boolean(type));
-  const shiftTypesFromProviders = Array.from(new Set(
-    (schedulingCase.providers || []).flatMap(p => [
-      ...Object.values(p.preferred_days_hard || {}).flat(),
-      ...Object.values(p.preferred_days_soft || {}).flat()
-    ])
-  )).filter((type): type is string => Boolean(type));
-  const defaultShiftIds = DEFAULT_SHIFT_TYPES.map(s => s.id);
-  const providerTypes = Array.from(new Set((schedulingCase.providers || []).map(p => p.type).filter((type): type is string => Boolean(type))));
+  // const shiftTypesFromShifts = Array.from(new Set((schedulingCase.shifts || []).map(s => s.type))).filter((type): type is string => Boolean(type));
+  // const shiftTypesFromProviders = Array.from(new Set(
+  //   (schedulingCase.providers || []).flatMap(p => [
+  //     ...Object.values(p.preferred_days_hard || {}).flat(),
+  //     ...Object.values(p.preferred_days_soft || {}).flat()
+  //   ])
+  // )).filter((type): type is string => Boolean(type));
+  // const defaultShiftIds = DEFAULT_SHIFT_TYPES.map(s => s.id);
+  // const providerTypes = Array.from(new Set(
+  //   (schedulingCase.providers || []).map(p => p.type).filter(Boolean)
+  // ));
+  // if (providerTypes.length === 0) providerTypes.push('Staff');
   // Merge: shift ids, provider-referenced shift types, defaults, then provider types
-  const shiftTypeOptions = Array.from(new Set([...shiftTypesFromShifts, ...shiftTypesFromProviders, ...defaultShiftIds, ...providerTypes]));
+
+  // Get unique provider types directly from the providers list.
+  const providerTypes = Array.from(new Set(
+      (schedulingCase.providers || []).map(p => p.type).filter(Boolean)
+  ));
+  if (providerTypes.length === 0) providerTypes.push('Staff');
+  
+  // Get unique shift types ONLY from the shifts you have actually defined.
+  const shiftTypeOptions = Array.from(new Set(
+    (schedulingCase.shifts || []).map(s => s.type).filter(Boolean)
+  ));
+  
+  // A helper to show pretty names for default shifts (e.g., "Day Shift" instead of "MD_D")
   const shiftTypeNameMap: Record<string, string> = Object.fromEntries(
     DEFAULT_SHIFT_TYPES.map(st => [st.id, st.name])
   );
+
 
   const handleProviderSelect = (index: number) => {
     // If the same provider is clicked again, deselect it
@@ -493,11 +508,11 @@ export default function ProvidersTab() {
                 Type
               </label>
               <select
-                value={providerForm.type || 'Staff'}
-                onChange={(e) => handleProviderFormChange('type', e.target.value)}
+                    value={providerForm.type || 'Staff'}
+                    onChange={(e) => handleProviderFormChange('type', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 dark:bg-gray-800 dark:text-white dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
-                {(schedulingCase.provider_types || ['Staff']).map((type) => (
+                {providerTypes.map((type) => (
                   <option key={type} value={type}>
                     {type}
                   </option>

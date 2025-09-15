@@ -9,11 +9,13 @@ import {
   IoTimeSharp,
   IoStatsChartSharp
 } from 'react-icons/io5';
+import SchedulingCalendar from '@/components/SchedulingCalendar';
 
 export default function ShiftsTab() {
   const { state, dispatch } = useScheduling();
   const { case: schedulingCase, selectedDate } = state;
-  const [selectedShiftIndex, setSelectedShiftIndex] = useState<number | null>(null);
+  const [selectedShiftId, setSelectedShiftId] = useState<string | null>(null);
+  // const [selectedShiftIndex, setSelectedShiftIndex] = useState<number | null>(null);
   const [shiftForm, setShiftForm] = useState<Partial<Shift>>({
     id: '',
     type: '',
@@ -22,7 +24,8 @@ export default function ShiftsTab() {
     date: selectedDate || '',
     allowed_provider_types: [],
   });
-  const [addToAllDays, setAddToAllDays] = useState(true);
+  // Default to false to avoid accidentally adding a shift across many days
+  const [addToAllDays, setAddToAllDays] = useState(false);
 
   const shiftsForSelectedDate = selectedDate
     ? schedulingCase.shifts.filter(shift => shift.date === selectedDate)
@@ -33,10 +36,14 @@ export default function ShiftsTab() {
     setShiftForm(prev => ({ ...prev, date }));
   };
 
-  const handleShiftSelect = (index: number, shift: Shift) => {
-    setSelectedShiftIndex(index);
+  const todayIso = new Date().toISOString().split('T')[0];
+
+  const handleShiftSelect = (shift: Shift) => {
+    setSelectedShiftId(shift.id!); // Store the unique ID
     setShiftForm({
       ...shift,
+      start: formatTime(shift.start),
+      end: formatTime(shift.end),
       allowed_provider_types: shift.allowed_provider_types || [],
     });
   };
@@ -50,48 +57,36 @@ export default function ShiftsTab() {
   };
 
   const addShift = () => {
-    if (!shiftForm.type || !shiftForm.start || !shiftForm.end) {
-      alert('Please fill in all required fields (type, start time, end time)');
+    if (!shiftForm.type || !shiftForm.start) {
+      alert('Please fill in all required fields (type and start time)');
       return;
     }
-
-    if (addToAllDays) {
-      // Add shift to all calendar days
-      schedulingCase.calendar.days.forEach(date => {
-        const newShift: Shift = {
-          id: generateShiftId(date, shiftForm.type!),
-          date,
-          type: shiftForm.type!,
-          start: `${date}T${shiftForm.start}:00`,
-          end: shiftForm.end!.includes('T') ? shiftForm.end! : 
-               (shiftForm.start! > shiftForm.end! ? 
-                getNextDay(date) + `T${shiftForm.end}:00` : 
-                `${date}T${shiftForm.end}:00`),
-          allowed_provider_types: shiftForm.allowed_provider_types || [],
-        };
-        dispatch({ type: 'ADD_SHIFT', payload: newShift });
-      });
-    } else {
-      // Add shift to selected date only
-      const date = shiftForm.date || selectedDate || schedulingCase.calendar.days[0];
-      if (!date) {
-        alert('Please select a date or generate calendar days first');
-        return;
-      }
-
-      const newShift: Shift = {
-        id: shiftForm.id || generateShiftId(date, shiftForm.type!),
-        date,
-        type: shiftForm.type!,
-        start: `${date}T${shiftForm.start}:00`,
-        end: shiftForm.end!.includes('T') ? shiftForm.end! : 
-             (shiftForm.start! > shiftForm.end! ? 
-              getNextDay(date) + `T${shiftForm.end}:00` : 
-              `${date}T${shiftForm.end}:00`),
-        allowed_provider_types: shiftForm.allowed_provider_types || [],
-      };
-      dispatch({ type: 'ADD_SHIFT', payload: newShift });
+    
+   
+    const date = shiftForm.date || selectedDate || schedulingCase.calendar.days[0];
+    if (!date) {
+      alert('Please select a date or generate calendar days first');
+      return;
     }
+    
+    const dateRange = addToAllDays 
+  ? schedulingCase.calendar.days 
+  : [date];
+  dateRange.forEach((currentDate) => {
+  const newShift: Shift = {
+    id: generateShiftId(currentDate, shiftForm.type!),
+    date: currentDate,
+    type: shiftForm.type!,
+    start: `${currentDate}T${shiftForm.start}:00`,
+    // The end time should also be correctly formatted
+    end: `${currentDate}T${shiftForm.end || shiftForm.start}:00`, 
+    allowed_provider_types: shiftForm.allowed_provider_types || [],
+  };
+  dispatch({ type: 'ADD_SHIFT', payload: newShift });
+});
+
+    
+    
 
     // Reset form
     setShiftForm({
@@ -105,22 +100,21 @@ export default function ShiftsTab() {
   };
 
   const updateShift = () => {
-    if (selectedShiftIndex === null) return;
+    if (!selectedShiftId) return; // Check for ID
 
     const updatedShift: Shift = {
-      id: shiftForm.id!,
+      id: selectedShiftId, // Keep original ID
       date: shiftForm.date!,
       type: shiftForm.type!,
-      start: shiftForm.start!,
-      end: shiftForm.end!,
+      start: `${shiftForm.date}T${shiftForm.start}:00`,
+      end: `${shiftForm.date}T${shiftForm.end}:00`,
       allowed_provider_types: shiftForm.allowed_provider_types || [],
     };
-
-    dispatch({ 
-      type: 'UPDATE_SHIFT', 
-      payload: { index: selectedShiftIndex, shift: updatedShift } 
+    dispatch({
+      type: 'UPDATE_SHIFT',
+      payload: { id: selectedShiftId, shift: updatedShift } // Send ID
     });
-    setSelectedShiftIndex(null);
+    setSelectedShiftId(null);
     setShiftForm({
       id: '',
       type: '',
@@ -131,26 +125,15 @@ export default function ShiftsTab() {
     });
   };
 
-  const deleteShift = () => {
-    if (selectedShiftIndex === null) return;
+ const deleteShift = () => {
+    if (!selectedShiftId) return; // Check for ID
     
-    dispatch({ type: 'DELETE_SHIFT', payload: selectedShiftIndex });
-    setSelectedShiftIndex(null);
-    setShiftForm({
-      id: '',
-      type: '',
-      start: '',
-      end: '',
-      date: selectedDate || '',
-      allowed_provider_types: [],
-    });
+    dispatch({ type: 'DELETE_SHIFT', payload: selectedShiftId }); // Send ID
+
+    setSelectedShiftId(null);
+    setShiftForm({ /* ... reset form ... */ });
   };
 
-  const getNextDay = (dateStr: string) => {
-    const date = new Date(dateStr);
-    date.setDate(date.getDate() + 1);
-    return date.toISOString().split('T')[0];
-  };
 
   const applyShiftTemplate = (template: typeof DEFAULT_SHIFT_TYPES[0]) => {
     setShiftForm(prev => ({
@@ -162,49 +145,21 @@ export default function ShiftsTab() {
     }));
   };
 
+
   return (
-    <div className="space-y-8 animate-fade-in-up">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div className="space-y-4 lg:space-y-8 animate-fade-in-up">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-8">
         {/* Date Selection */}
         <div className="lg:col-span-1">
-          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 dark:border-gray-700/50 p-8 hover-glow">
-            <div className="flex items-center space-x-3 mb-6">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
-                <IoCalendarSharp className="w-4 h-4 text-white" />
-              </div>
-              <h3 className="text-2xl font-bold text-gradient">
-                Calendar Dates
-              </h3>
-            </div>
-            <div className="max-h-96 overflow-y-auto space-y-2">
-              {schedulingCase.calendar.days.map((date) => (
-                <button
-                  key={date}
-                  onClick={() => handleDateSelect(date)}
-                  className={`w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
-                    selectedDate === date
-                      ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg scale-105'
-                      : 'bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 hover:scale-102'
-                  }`}
-                >
-                  {formatDate(date)}
-                </button>
-              ))}
-              {schedulingCase.calendar.days.length === 0 && (
-                <div className="text-center py-8">
-                  <div className="text-gray-400 text-4xl mb-2 flex justify-center">
-                    <IoCalendarSharp className="w-10 h-10" />
-                  </div>
-                  <div className="text-gray-500 text-sm font-medium">
-                    No calendar days available
-                  </div>
-                  <div className="text-gray-400 text-xs mt-1">
-                    Generate them in the Calendar tab
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
+          <SchedulingCalendar
+            availableDays={schedulingCase.calendar.days}
+            selectedDays={selectedDate ? [selectedDate] : []}
+            onDayToggle={() => {}} // Not used in single mode
+            onDaySelect={handleDateSelect}
+            mode="single"
+            className="h-auto lg:h-120"
+            minDate={todayIso}
+          />
         </div>
 
         {/* Shifts List */}
@@ -219,12 +174,12 @@ export default function ShiftsTab() {
               </h3>
             </div>
             <div className="max-h-96 overflow-y-auto space-y-2">
-              {shiftsForSelectedDate.map((shift, index) => (
+              {shiftsForSelectedDate.map((shift) => (
                 <div
-                  key={`${shift.id}-${index}`}
-                  onClick={() => handleShiftSelect(index, shift)}
+                  key={shift.id}
+                  onClick={() => handleShiftSelect(shift)}
                   className={`p-4 rounded-xl cursor-pointer transition-all duration-200 ${
-                    selectedShiftIndex === index
+                    selectedShiftId === shift.id 
                       ? 'bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-2 border-blue-300 dark:border-blue-600 shadow-lg scale-105'
                       : 'bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600 hover:shadow-md hover:scale-102'
                   }`}
@@ -368,7 +323,7 @@ export default function ShiftsTab() {
                 >
                   Add
                 </button>
-                {selectedShiftIndex !== null && (
+                {selectedShiftId !== null && (
                   <>
                     <button
                       onClick={updateShift}
@@ -385,6 +340,8 @@ export default function ShiftsTab() {
                   </>
                 )}
               </div>
+
+              {/* Removed test-only button */}
             </div>
           </div>
         </div>
@@ -440,7 +397,7 @@ export default function ShiftsTab() {
             <div>
               <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Selected</p>
               <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">
-                {selectedShiftIndex !== null ? 1 : 0}
+                {selectedShiftId !== null ? 1 : 0}
               </p>
             </div>
           </div>

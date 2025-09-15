@@ -51,8 +51,8 @@ type SchedulingAction =
   | { type: 'ACCEPT_DATE'; payload: string | null }
   | { type: 'SELECT_PROVIDER'; payload: number | null }
   | { type: 'ADD_SHIFT'; payload: Shift }
-  | { type: 'UPDATE_SHIFT'; payload: { index: number; shift: Shift } }
-  | { type: 'DELETE_SHIFT'; payload: number }
+  | { type: 'UPDATE_SHIFT'; payload: { id: string; shift: Shift } }
+  | { type: 'DELETE_SHIFT'; payload: string }
   | { type: 'ADD_PROVIDER'; payload: Provider }
   | { type: 'UPDATE_PROVIDER'; payload: { index: number; provider: Provider } }
   | { type: 'DELETE_PROVIDER'; payload: number }
@@ -234,8 +234,10 @@ function schedulingReducer(state: SchedulingState, action: SchedulingAction): Sc
         ...state,
         case: {
           ...state.case,
-          shifts: state.case.shifts.map((shift, index) =>
-            index === action.payload.index ? action.payload.shift : shift
+          // --- CHANGE THIS LOGIC ---
+          // Find the shift by its ID and replace it
+          shifts: state.case.shifts.map((shift) =>
+            shift.id === action.payload.id ? action.payload.shift : shift
           ),
         },
       };
@@ -245,7 +247,9 @@ function schedulingReducer(state: SchedulingState, action: SchedulingAction): Sc
         ...state,
         case: {
           ...state.case,
-          shifts: state.case.shifts.filter((_, index) => index !== action.payload),
+          // --- CHANGE THIS LOGIC ---
+          // Filter out the shift with the matching ID
+          shifts: state.case.shifts.filter((shift) => shift.id !== action.payload),
         },
       };
       break;

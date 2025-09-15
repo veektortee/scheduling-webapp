@@ -14,7 +14,8 @@ import SchedulingCalendar from '@/components/SchedulingCalendar';
 export default function ShiftsTab() {
   const { state, dispatch } = useScheduling();
   const { case: schedulingCase, selectedDate } = state;
-  const [selectedShiftIndex, setSelectedShiftIndex] = useState<number | null>(null);
+  const [selectedShiftId, setSelectedShiftId] = useState<string | null>(null);
+  // const [selectedShiftIndex, setSelectedShiftIndex] = useState<number | null>(null);
   const [shiftForm, setShiftForm] = useState<Partial<Shift>>({
     id: '',
     type: '',
@@ -37,10 +38,12 @@ export default function ShiftsTab() {
 
   const todayIso = new Date().toISOString().split('T')[0];
 
-  const handleShiftSelect = (index: number, shift: Shift) => {
-    setSelectedShiftIndex(index);
+  const handleShiftSelect = (shift: Shift) => {
+    setSelectedShiftId(shift.id!); // Store the unique ID
     setShiftForm({
       ...shift,
+      start: formatTime(shift.start),
+      end: formatTime(shift.end),
       allowed_provider_types: shift.allowed_provider_types || [],
     });
   };
@@ -97,22 +100,21 @@ export default function ShiftsTab() {
   };
 
   const updateShift = () => {
-    if (selectedShiftIndex === null) return;
+    if (!selectedShiftId) return; // Check for ID
 
     const updatedShift: Shift = {
-      id: shiftForm.id!,
+      id: selectedShiftId, // Keep original ID
       date: shiftForm.date!,
       type: shiftForm.type!,
-      start: shiftForm.start!,
-      end: shiftForm.end!,
+      start: `${shiftForm.date}T${shiftForm.start}:00`,
+      end: `${shiftForm.date}T${shiftForm.end}:00`,
       allowed_provider_types: shiftForm.allowed_provider_types || [],
     };
-
-    dispatch({ 
-      type: 'UPDATE_SHIFT', 
-      payload: { index: selectedShiftIndex, shift: updatedShift } 
+    dispatch({
+      type: 'UPDATE_SHIFT',
+      payload: { id: selectedShiftId, shift: updatedShift } // Send ID
     });
-    setSelectedShiftIndex(null);
+    setSelectedShiftId(null);
     setShiftForm({
       id: '',
       type: '',
@@ -123,20 +125,15 @@ export default function ShiftsTab() {
     });
   };
 
-  const deleteShift = () => {
-    if (selectedShiftIndex === null) return;
+ const deleteShift = () => {
+    if (!selectedShiftId) return; // Check for ID
     
-    dispatch({ type: 'DELETE_SHIFT', payload: selectedShiftIndex });
-    setSelectedShiftIndex(null);
-    setShiftForm({
-      id: '',
-      type: '',
-      start: '',
-      end: '',
-      date: selectedDate || '',
-      allowed_provider_types: [],
-    });
+    dispatch({ type: 'DELETE_SHIFT', payload: selectedShiftId }); // Send ID
+
+    setSelectedShiftId(null);
+    setShiftForm({ /* ... reset form ... */ });
   };
+
 
   const applyShiftTemplate = (template: typeof DEFAULT_SHIFT_TYPES[0]) => {
     setShiftForm(prev => ({
@@ -177,12 +174,12 @@ export default function ShiftsTab() {
               </h3>
             </div>
             <div className="max-h-96 overflow-y-auto space-y-2">
-              {shiftsForSelectedDate.map((shift, index) => (
+              {shiftsForSelectedDate.map((shift) => (
                 <div
-                  key={`${shift.id}-${index}`}
-                  onClick={() => handleShiftSelect(index, shift)}
+                  key={shift.id}
+                  onClick={() => handleShiftSelect(shift)}
                   className={`p-4 rounded-xl cursor-pointer transition-all duration-200 ${
-                    selectedShiftIndex === index
+                    selectedShiftId === shift.id 
                       ? 'bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-2 border-blue-300 dark:border-blue-600 shadow-lg scale-105'
                       : 'bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600 hover:shadow-md hover:scale-102'
                   }`}
@@ -326,7 +323,7 @@ export default function ShiftsTab() {
                 >
                   Add
                 </button>
-                {selectedShiftIndex !== null && (
+                {selectedShiftId !== null && (
                   <>
                     <button
                       onClick={updateShift}
@@ -400,7 +397,7 @@ export default function ShiftsTab() {
             <div>
               <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Selected</p>
               <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">
-                {selectedShiftIndex !== null ? 1 : 0}
+                {selectedShiftId !== null ? 1 : 0}
               </p>
             </div>
           </div>
