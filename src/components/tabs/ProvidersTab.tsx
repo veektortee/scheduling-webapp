@@ -187,17 +187,14 @@ export default function ProvidersTab() {
 
   const applyFixedOffDays = () => {
     if (selectedProvider === null) return;
-    
-    // Use the currently selected days based on the calendar mode
     const daysToApply = calendarMode === 'off' ? selectedOffDays : selectedOnDays;
     if (daysToApply.length === 0) return;
-    
     const provider = schedulingCase.providers[selectedProvider];
     
     // Clear any existing preferences for these days first (override functionality)
     const updatedProvider: Provider = {
       ...provider,
-      forbidden_days_hard: [...(provider.forbidden_days_hard || []), ...daysToApply],
+      forbidden_days_hard: [...new Set([...(provider.forbidden_days_hard || []), ...daysToApply])],
       forbidden_days_soft: (provider.forbidden_days_soft || []).filter(day => !daysToApply.includes(day)),
       preferred_days_hard: Object.fromEntries(
         Object.entries(provider.preferred_days_hard || {}).filter(([day]) => !daysToApply.includes(day))
@@ -227,18 +224,15 @@ export default function ProvidersTab() {
 
   const applyPreferOffDays = () => {
     if (selectedProvider === null) return;
-    
-    // Use the currently selected days based on the calendar mode
     const daysToApply = calendarMode === 'off' ? selectedOffDays : selectedOnDays;
     if (daysToApply.length === 0) return;
-    
     const provider = schedulingCase.providers[selectedProvider];
     
     // Clear any existing preferences for these days first (override functionality)
     const updatedProvider: Provider = {
       ...provider,
       forbidden_days_hard: (provider.forbidden_days_hard || []).filter(day => !daysToApply.includes(day)),
-      forbidden_days_soft: [...(provider.forbidden_days_soft || []), ...daysToApply],
+      forbidden_days_soft: [...new Set([...(provider.forbidden_days_soft || []), ...daysToApply])],
       preferred_days_hard: Object.fromEntries(
         Object.entries(provider.preferred_days_hard || {}).filter(([day]) => !daysToApply.includes(day))
       ),

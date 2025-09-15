@@ -33,6 +33,8 @@ from concurrent.futures import ThreadPoolExecutor
 import threading
 import calendar as pycalendar
 import shutil
+from ortools.sat.python import cp_model
+import tempfile
 
 try:
     from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, BackgroundTasks
@@ -40,6 +42,7 @@ try:
     from fastapi.responses import JSONResponse, FileResponse
     from pydantic import BaseModel
     import uvicorn
+    import scheduler_sat_core as solver_engine
 except ImportError:
     print("Please install required packages:")
     print("pip install fastapi uvicorn websockets python-multipart")
@@ -47,45 +50,14 @@ except ImportError:
 
 # Import the solver logic from your existing code
 try:
-    # Import the core solver functions from testcase_gui.py when available
-    from ortools.sat.python import cp_model
-    import collections
-    
-    # Try to import testcase_gui from a few likely locations
-    HAVE_TESTCASE_GUI = False
-    _tcg = None
-    try:
-        import testcase_gui as _tcg  # If placed next to this service or on PYTHONPATH
-        HAVE_TESTCASE_GUI = True
-    except Exception:
-        # Add parent directories to sys.path to reach c:\Werk\Webapp\testcase_gui.py
-        try:
-            base_try = Path(__file__).resolve().parents[2]  # likely c:\Werk\Webapp
-            tcg_path = base_try / "testcase_gui.py"
-            if tcg_path.exists():
-                sys.path.insert(0, str(base_try))
-                import testcase_gui as _tcg
-                HAVE_TESTCASE_GUI = True
-            else:
-                # Try specific known path c:\Werk\Webapp\testcase_gui.py
-                direct_path = Path("c:/Werk/Webapp")
-                tcg_direct = direct_path / "testcase_gui.py"
-                if tcg_direct.exists():
-                    sys.path.insert(0, str(direct_path))
-                    import testcase_gui as _tcg
-                    HAVE_TESTCASE_GUI = True
-        except Exception:
-            HAVE_TESTCASE_GUI = False
+    # Change 'testcase_gui' to 'scheduler_sat_core'
+    import scheduler_sat_core as original_solver
+    HAVE_ORIGINAL_SOLVER = True
+    print("✅ Successfully imported scheduler_sat_core.py as the solver engine.")
+except ImportError:
+    HAVE_ORIGINAL_SOLVER = False
+    print("❌ WARNING: scheduler_sat_core.py not found. Local solver will not work.")
 
-    if HAVE_TESTCASE_GUI:
-        print("✅ Found testcase_gui.py — local runs will use the real solver")
-    else:
-        print("ℹ️ testcase_gui.py not found — using built-in simplified solver")
-    
-    print("✅ OR-Tools imported successfully")
-except ImportError as e:
-    print(f"❌ Failed to import OR-Tools: {e}")
-    print("Please install: pip install ortools")
 
 # Configure logging
 logging.basicConfig(
@@ -255,107 +227,76 @@ class AdvancedSchedulingSolver:
     def _build_and_solve_model(self, constants: Dict, calendar: Dict, 
                              shifts: List, providers: List, run_config: Dict, run_id: str) -> Dict[str, Any]:
         """
-        Core optimization path. If testcase_gui.py is available locally,
-        delegate solving to it; otherwise use the built-in simplified model.
+        Core optimization path. Delegates solving to the original testcase_gui.py script
+        and correctly handles both successful and error responses.
         """
-        # First, sanitize calendar days to ensure downstream code receives valid dates
+        if not HAVE_ORIGINAL_SOLVER:
+            raise RuntimeError("testcase_gui.py is not available. Cannot solve.")
+
+        logger.info("Using original testcase_gui.py for solving...")
+        
+        run_config['out'] = run_config.get('out') or f"run_{run_id[:8]}"
+        case = {
+            "constants": constants or {},
+            "calendar": calendar or {},
+            "shifts": shifts or [],
+            "providers": providers or [],
+            "run": run_config or {}
+        }
+        
+        with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.json', encoding='utf-8') as tmp:
+            json.dump(case, tmp)
+            tmp_path = tmp.name
+        
         try:
-            calendar = self._sanitize_calendar(calendar or {})
-        except Exception as e:
-            logger.warning(f"Failed to sanitize calendar in _build_and_solve_model: {e}")
+            self._update_progress(run_id, 30, "Calling testcase_gui.Solve_test_case...")
+            
+            # Execute the solver and capture its raw result
+            solver_result = original_solver.Solve_test_case(tmp_path)
+            
+            # +++ NEW: Check if the solver returned an error dictionary +++
+            if isinstance(solver_result, dict) and 'error' in solver_result:
+                error_message = solver_result.get('error', 'Unknown solver script error')
+                logger.error(f"testcase_gui.py returned an error: {error_message}")
+                # Re-raise the error to be caught by the main handler
+                raise RuntimeError(f"Solver script failed: {error_message}")
 
-        # If the external real solver is available, try to use it first
-        if 'HAVE_TESTCASE_GUI' in globals() and HAVE_TESTCASE_GUI and _tcg is not None:
-            try:
-                logger.info("Using external testcase_gui.py for solving…")
-                case = {
-                    "constants": constants or {},
-                    "calendar": calendar or {},
-                    "shifts": shifts or [],
-                    "providers": providers or [],
-                    "run": run_config or {}
-                }
+            # If no error, unpack the result as a tuple of (solutions, metadata)
+            tables, meta = solver_result
 
-                # Try the most direct entrypoint first if available
-                result_payload: Dict[str, Any] | None = None
-
-                if hasattr(_tcg, 'Solve_test_case'):
-                    try:
-                        # testcase_gui.Solve_test_case expects a file path, not a dict
-                        # Write case to temporary JSON file
-                        import tempfile
-                        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False, encoding='utf-8') as temp_file:
-                            json.dump(case, temp_file, indent=2)
-                            temp_path = temp_file.name
-                        
-                        logger.info(f"Wrote case data to temporary file: {temp_path}")
-                        # For debugging: keep a copy of the temporary case JSON in run_tmp
-                        try:
-                            debug_dir = Path('run_tmp')
-                            debug_dir.mkdir(exist_ok=True)
-                            shutil.copy(temp_path, debug_dir / Path(temp_path).name)
-                            logger.info(f"Saved temp case copy to {debug_dir / Path(temp_path).name}")
-                        except Exception as _e:
-                            logger.info(f"Failed to save temp case copy for debugging: {_e}")
-                        
-                        # Call Solve_test_case with the file path
-                        logger.info(f"Calling testcase_gui.Solve_test_case({temp_path})")
-                        # For debugging: persist the exact case payload to run_tmp/pre_solve_case.json
-                        try:
-                            # Write the pre-solve case into the run output directory where CWD is changed
-                            run_output_debug = Path('solver_output') / 'test-run'
-                            run_output_debug.mkdir(parents=True, exist_ok=True)
-                            pre_solve_path = run_output_debug / 'pre_solve_case.json'
-                            with open(pre_solve_path, 'w', encoding='utf-8') as pf:
-                                json.dump(case, pf, indent=2)
-                            logger.info(f"Saved pre-solve case to {pre_solve_path}")
-                        except Exception as _e:
-                            logger.info(f"Failed to save pre-solve case for debugging: {_e}")
-                        tcg_out = _tcg.Solve_test_case(temp_path)
-                        logger.info(f"testcase_gui.Solve_test_case returned: {type(tcg_out)}")
-                            
-                        # We don't rely on exact shape; adapt best-effort
-                        result_payload = self._coerce_tcg_result(tcg_out)
-                        logger.info(f"_coerce_tcg_result returned: {result_payload is not None}")
-                        
-                        if result_payload:
-                            # Add debug info to track that testcase_gui was used
-                            result_payload.setdefault('debug_info', {})
-                            result_payload['debug_info']['used_testcase_gui'] = True
-                            result_payload['debug_info']['tcg_output_type'] = str(type(tcg_out))
-                            logger.info("✅ Successfully used testcase_gui.py!")
-                    except Exception as e:
-                        logger.warning(f"Solve_test_case failed, will try build+solve path: {e}")
-
-                if result_payload is None:
-                    # Build + solve path
-                    build_model = getattr(_tcg, 'build_model', None)
-                    solve_two_phase = getattr(_tcg, 'solve_two_phase', None)
-                    if callable(build_model) and callable(solve_two_phase):
-                        ctx = build_model(constants or {}, case)
-                        K = int(run_config.get('k', 5) or 5)
-                        seed = run_config.get('seed')
-                        try:
-                            tcg_out = solve_two_phase(constants or {}, case, ctx, K, seed=seed)
-                            result_payload = self._coerce_tcg_result(tcg_out)
-                        except Exception as e:
-                            logger.warning(f"testcase_gui solve_two_phase failed: {e}")
-
-                if result_payload is not None:
-                    # Annotate solver info and return
-                    result_payload.setdefault('solver_info', {})
-                    result_payload['solver_info'].update({
-                        'implementation': 'testcase_gui.py',
-                        'bridge': 'fastapi_solver_service',
+            solutions = []
+            for i, table_data in enumerate(tables):
+                assignments = []
+                for (s_idx, p_idx) in table_data.get('assignment', []):
+                    shift = table_data['shifts'][s_idx]
+                    provider = table_data['providers'][p_idx]
+                    assignments.append({
+                        "shift_id": shift['id'],
+                        "provider_name": provider['name'],
+                        "date": shift['date'],
+                        "shift_type": shift.get('type', ''),
+                        "start_time": shift.get('start', ''),
+                        "end_time": shift.get('end', '')
                     })
-                    return result_payload
+                
+                objective = (meta.get('per_table', [])[i].get('objective') 
+                             if i < len(meta.get('per_table', [])) 
+                             else 0)
 
-                logger.warning("testcase_gui.py available but result could not be coerced; falling back")
-                # Add debug info for fallback case  
-                logger.info("⚠️  Using built-in solver fallback")
-            except Exception as e:
-                logger.warning(f"Failed to use testcase_gui.py, using built-in model. Reason: {e}")
+                solutions.append({
+                    "assignments": assignments,
+                    "objective_value": objective
+                })
 
+            logger.info(f"✅ testcase_gui.py finished, found {len(solutions)} diverse solutions.")
+
+            return {
+                'status': 'completed',
+                'solutions': solutions,
+                'solver_stats': meta.get('phase2', {})
+            }
+        finally:
+            os.remove(tmp_path)
     def _sanitize_calendar(self, calendar_obj: Dict[str, Any]) -> Dict[str, Any]:
         """
         Validate and sanitize calendar object. Ensures `days` is a list of ISO date
@@ -750,6 +691,8 @@ class AdvancedSchedulingSolver:
             wb = Workbook()
             ws = wb.active
             ws.title = "Schedule"
+            if "Sheet" in wb.sheetnames:
+                wb.remove(wb["Sheet"])
             
             # Headers
             ws.append(["Date", "Shift Type", "Provider", "Start Time", "End Time"])
@@ -757,24 +700,36 @@ class AdvancedSchedulingSolver:
             # Add assignments from first solution (if available)
             sols = result.get('solutions') if isinstance(result, dict) else None
             if not sols:
-                logger.info("No solutions present in result; skipping Excel row population.")
+                logger.info("No solutions present in result; creating empty Excel file.")
+                ws = wb.create_sheet("No_Solution_Found")
+                ws.append(["Status", result.get('solver_stats', {}).get('final_status', 'NO_SOLUTION')])
             else:
-                assignments = sols[0].get('assignments', []) if isinstance(sols, list) and sols else []
-                for assignment in assignments:
-                    ws.append([
-                        assignment.get('date', ''),
-                        assignment.get('shift_type', ''),
-                        assignment.get('provider_name', ''),
-                        assignment.get('start_time', ''),
-                        assignment.get('end_time', '')
-                    ])
+                for idx, solution in enumerate(sols):
+                    ws = wb.create_sheet(f"Schedule_{idx + 1}")
+                    ws.append(["Date", "Shift Type", "Provider", "Start Time", "End Time", "Shift ID"])
+                    
+                    assignments = solution.get('assignments', [])
+                    # Sort assignments by date and time for readability
+                    assignments.sort(key=lambda x: (x.get('date', ''), x.get('start_time', '')))
+                    
+                    for assignment in assignments:
+                        ws.append([
+                            assignment.get('date', ''),
+                            assignment.get('shift_type', ''),
+                            assignment.get('provider_name', ''),
+                            assignment.get('start_time', '').split('T')[-1], # Show only HH:MM:SS
+                            assignment.get('end_time', '').split('T')[-1],   # Show only HH:MM:SS
+                            assignment.get('shift_id', '')
+                        ])
+            
             
             excel_file = output_dir / "schedule.xlsx"
             wb.save(excel_file)
-            logger.info(f"Generated Excel output: {excel_file}")
+            logger.info(f"Generated Excel output with {len(sols) if sols else 0} solution(s): {excel_file}")
             
         except Exception as e:
             logger.warning(f"Failed to generate Excel: {e}")
+            logger.error(traceback.format_exc())
     
     def _update_progress(self, run_id: str, progress: float, message: str):
         """Update progress and notify WebSocket clients"""
@@ -1037,6 +992,32 @@ async def root():
         },
         "documentation": "/docs"
     }
+    
+@app.get("/results/folders")
+async def list_result_folders():
+    """List all result folders in the solver_output directory."""
+    output_dir = Path("solver_output")
+    if not output_dir.exists():
+        return {"folders": []}
+    
+    folders = []
+    for d in output_dir.iterdir():
+        if d.is_dir():
+            try:
+                stat = d.stat()
+                file_count = len(list(d.glob('*')))
+                folders.append({
+                    "name": d.name,
+                    "path": str(d),
+                    "created": stat.st_ctime,
+                    "fileCount": file_count
+                })
+            except Exception as e:
+                logger.warning(f"Could not stat folder {d}: {e}")
+    
+    # Sort by creation time, newest first
+    folders.sort(key=lambda x: x["created"], reverse=True)
+    return {"folders": folders}
 
 if __name__ == "__main__":
     print("🚀 Starting Medical Staff Scheduling Solver Service (FastAPI)")

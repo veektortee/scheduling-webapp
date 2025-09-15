@@ -1106,11 +1106,15 @@ def build_model(consts: Dict[str,Any], case: Dict[str,Any]) -> Dict[str,Any]:
         if max_consec[i] > 0:
             diff = model.NewIntVar(-N, N, f"cluster_overrun_{i}")
             model.Add(diff == max_clusters[i] - max_consec[i])
+            
+            # This line correctly defines the slack variable. It is all that's needed.
             model.AddMaxEquality(slack_consec[i], [diff, _zero])
-            model.Add(max_consec[i] - max_clusters[i] + slack_consec[i] >= 0)
+            
+            # The line below was the original source of the INFEASIBLE error.
+            # Ensure it is DELETED or COMMENTED OUT.
+            # model.Add(max_consec[i] - max_clusters[i] + slack_consec[i] >= 0)
         else:
             model.Add(slack_consec[i] == 0)
-
     # ----- NEW: Cubic penalty of cluster lengths per provider (soft) -------------
     # Detect cluster ends: end_d = 1 iff y[i,d]==1 and (d==N-1 or y[i,d+1]==0)
     # Cluster length is runs[i][d_end]; we gate it into L_d and build L^3.

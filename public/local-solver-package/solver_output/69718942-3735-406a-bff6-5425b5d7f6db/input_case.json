@@ -68,12 +68,103 @@
       "Sunday"
     ]
   },
-  "shifts": [],
+  "shifts": [
+    {
+      "id": "2025-10-26_MD_S2",
+      "date": "2025-10-26",
+      "type": "MD_S2",
+      "start": "2025-10-26T12:00:00",
+      "end": "2025-10-26T12:00:00",
+      "allowed_provider_types": [
+        "MD"
+      ]
+    },
+    {
+      "id": "2025-10-27_MD_S2",
+      "date": "2025-10-27",
+      "type": "MD_S2",
+      "start": "2025-10-27T12:00:00",
+      "end": "2025-10-27T12:00:00",
+      "allowed_provider_types": [
+        "MD"
+      ]
+    },
+    {
+      "id": "2025-10-28_MD_S2",
+      "date": "2025-10-28",
+      "type": "MD_S2",
+      "start": "2025-10-28T12:00:00",
+      "end": "2025-10-28T12:00:00",
+      "allowed_provider_types": [
+        "MD"
+      ]
+    },
+    {
+      "id": "2025-10-29_MD_S2",
+      "date": "2025-10-29",
+      "type": "MD_S2",
+      "start": "2025-10-29T12:00:00",
+      "end": "2025-10-29T12:00:00",
+      "allowed_provider_types": [
+        "MD"
+      ]
+    },
+    {
+      "id": "2025-10-30_MD_S2",
+      "date": "2025-10-30",
+      "type": "MD_S2",
+      "start": "2025-10-30T12:00:00",
+      "end": "2025-10-30T12:00:00",
+      "allowed_provider_types": [
+        "MD"
+      ]
+    },
+    {
+      "id": "2025-10-31_MD_S2",
+      "date": "2025-10-31",
+      "type": "MD_S2",
+      "start": "2025-10-31T12:00:00",
+      "end": "2025-10-31T12:00:00",
+      "allowed_provider_types": [
+        "MD"
+      ]
+    },
+    {
+      "id": "2025-10-29_MD_N",
+      "date": "2025-10-29",
+      "type": "MD_N",
+      "start": "2025-10-29T20:00:00",
+      "end": "2025-10-29T20:00:00",
+      "allowed_provider_types": [
+        "MD"
+      ]
+    },
+    {
+      "id": "2025-10-30_MD_N",
+      "date": "2025-10-30",
+      "type": "MD_N",
+      "start": "2025-10-30T20:00:00",
+      "end": "2025-10-30T20:00:00",
+      "allowed_provider_types": [
+        "MD"
+      ]
+    },
+    {
+      "id": "2025-10-31_MD_N",
+      "date": "2025-10-31",
+      "type": "MD_N",
+      "start": "2025-10-31T20:00:00",
+      "end": "2025-10-31T20:00:00",
+      "allowed_provider_types": [
+        "MD"
+      ]
+    }
+  ],
   "providers": [
     {
       "id": "p_Matt_Basinger",
       "name": "names",
-      "type": "MSS",
+      "type": "MD_S2",
       "max_consecutive_days": 12,
       "limits": {
         "min_total": 8,
@@ -94,8 +185,7 @@
         "2025-10-25",
         "2025-10-26",
         "2025-10-27",
-        "2025-10-28",
-        "2025-10-29"
+        "2025-10-28"
       ],
       "preferred_days_hard": {},
       "preferred_days_soft": {}
@@ -103,7 +193,7 @@
     {
       "id": "provider_1757881993170",
       "name": "bs",
-      "type": "Staff",
+      "type": "MD_N",
       "max_consecutive_days": null,
       "limits": {
         "min_total": 0,
@@ -145,7 +235,7 @@
   ],
   "run": {
     "out": "Result_14",
-    "k": 2,
+    "k": 1,
     "L": 1,
     "seed": 1,
     "time": 1500

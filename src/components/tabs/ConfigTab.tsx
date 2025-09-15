@@ -64,44 +64,55 @@ export default function ConfigTab() {
 
       alert('Configuration applied successfully!');
     } catch { // Fixed ESLint unused error variable
-      alert('Invalid JSON format. Please check your configuration.');
+      alert('Invalid JSON format. Please check your configuration.'); 
     }
   };
 
-  const resetToDefaults = () => {
+   const resetToDefaults = () => {
+    // These are the correct defaults from scheduler_sat_core.py
+    const correctDefaults = {
+      constants: {
+        solver: {
+          max_time_in_seconds: 125999.99999999999,
+          phase1_fraction: 0.4,
+          relative_gap: 0.00001,
+          num_threads: 8,
+        },
+        weights: {
+          hard: {
+            uncovered_shift: 0.0,
+            slack_unfilled: 20,
+            slack_shift_less: 1,
+            slack_shift_more: 1,
+            slack_cant_work: 20,
+            slack_consec: 1,
+          },
+          soft: {
+            cluster: 10000,
+            cluster_size: 1,
+            requested_off: 10000000,
+            days_wanted_not_met: 10000000,
+            cluster_weekend_start: 10000000,
+            unfair_number: 5000,
+          },
+        },
+        objective: {
+          hard: 1,
+          soft: 1,
+          fair: 0,
+        },
+      },
+    };
+
     dispatch({
       type: 'UPDATE_CASE',
       payload: {
-        constants: {
-          solver: {
-            max_time_in_seconds: 125999.99999999999,
-            phase1_fraction: 0.4,
-            relative_gap: 0.00001,
-            num_threads: 16
-          },
-          weights: {
-            hard: {
-              slack_consec: 1
-            },
-            soft: {}
-          },
-          objective: {
-            hard: 1,
-            soft: 1,
-            fair: 0
-          }
-        },
+        constants: correctDefaults.constants,
       },
     });
-    setWeightsJson(JSON.stringify({
-      hard: { slack_consec: 1 },
-      soft: {}
-    }, null, 2));
-    setObjectiveJson(JSON.stringify({
-      hard: 1,
-      soft: 1,
-      fair: 0
-    }, null, 2));
+
+    setWeightsJson(JSON.stringify(correctDefaults.constants.weights, null, 2));
+    setObjectiveJson(JSON.stringify(correctDefaults.constants.objective, null, 2));
   };
 
   return (

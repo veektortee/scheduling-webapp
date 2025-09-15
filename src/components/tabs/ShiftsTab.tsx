@@ -58,49 +58,32 @@ export default function ShiftsTab() {
       alert('Please fill in all required fields (type and start time)');
       return;
     }
-
-    // Helper to calculate days remaining in current month from start date
-    const getDaysToMonthEnd = (startDate: string) => {
-      const start = new Date(startDate);
-      const year = start.getFullYear();
-      const month = start.getMonth();
-      const lastDayOfMonth = new Date(year, month + 1, 0).getDate();
-      const startDay = start.getDate();
-      return lastDayOfMonth - startDay;
-    };
-
-    // Helper to generate all dates in a range
-    const generateDateRange = (startDate: string, days: number) => {
-      const dates = [];
-      const start = new Date(startDate);
-      for (let i = 0; i <= days; i++) {
-        const currentDate = new Date(start);
-        currentDate.setDate(start.getDate() + i);
-        dates.push(currentDate.toISOString().split('T')[0]);
-      }
-      return dates;
-    };
-
+    
+   
     const date = shiftForm.date || selectedDate || schedulingCase.calendar.days[0];
     if (!date) {
       alert('Please select a date or generate calendar days first');
       return;
     }
+    
+    const dateRange = addToAllDays 
+  ? schedulingCase.calendar.days 
+  : [date];
+  dateRange.forEach((currentDate) => {
+  const newShift: Shift = {
+    id: generateShiftId(currentDate, shiftForm.type!),
+    date: currentDate,
+    type: shiftForm.type!,
+    start: `${currentDate}T${shiftForm.start}:00`,
+    // The end time should also be correctly formatted
+    end: `${currentDate}T${shiftForm.end || shiftForm.start}:00`, 
+    allowed_provider_types: shiftForm.allowed_provider_types || [],
+  };
+  dispatch({ type: 'ADD_SHIFT', payload: newShift });
+});
 
-    const daysToMonthEnd = getDaysToMonthEnd(date);
-    const dateRange = generateDateRange(date, daysToMonthEnd);
-
-    dateRange.forEach((currentDate) => {
-      const newShift: Shift = {
-        id: generateShiftId(currentDate, shiftForm.type!),
-        date: currentDate,
-        type: shiftForm.type!,
-        start: `${currentDate}T${shiftForm.start}:00`,
-        end: `${currentDate}T${shiftForm.start}:00`, // End time can be adjusted if needed
-        allowed_provider_types: shiftForm.allowed_provider_types || [],
-      };
-      dispatch({ type: 'ADD_SHIFT', payload: newShift });
-    });
+    
+    
 
     // Reset form
     setShiftForm({
