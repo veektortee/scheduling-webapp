@@ -75,7 +75,8 @@ export function generateMonth(year: number, month: number): string[] {
   
   for (let day = 1; day <= daysInMonth; day++) {
     const date = new Date(year, month - 1, day);
-    const dateStr = date.toISOString().split('T')[0];
+    // Use local date formatting instead of UTC to avoid timezone shifts
+    const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
     days.push(dateStr);
   }
   
@@ -89,7 +90,8 @@ export function generateDateRange(startDate: string, endDate: string): string[] 
   
   const currentDate = new Date(start);
   while (currentDate <= end) {
-    const dateStr = currentDate.toISOString().split('T')[0];
+    // Use local date formatting instead of UTC to avoid timezone shifts
+    const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
     days.push(dateStr);
     currentDate.setDate(currentDate.getDate() + 1);
   }
@@ -122,7 +124,10 @@ export function generateUntilYear(endYear: number): string[] {
   const now = new Date();
   const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const end = new Date(endYear, 11, 31); // December 31 of endYear
-  return generateDateRange(start.toISOString().split('T')[0], end.toISOString().split('T')[0]);
+  // Use local date formatting instead of UTC
+  const startStr = `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}-${String(start.getDate()).padStart(2, '0')}`;
+  const endStr = `${end.getFullYear()}-${String(end.getMonth() + 1).padStart(2, '0')}-${String(end.getDate()).padStart(2, '0')}`;
+  return generateDateRange(startStr, endStr);
 }
 
 export function formatTime(time: string): string {

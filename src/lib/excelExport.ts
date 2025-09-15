@@ -116,7 +116,8 @@ export function exportScheduleToExcel(
   XLSX.utils.book_append_sheet(workbook, configSheet, 'Configuration');
 
   // Generate filename with timestamp
-  const timestamp = new Date().toISOString().split('T')[0];
+  const now = new Date();
+  const timestamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   const defaultFilename = `Staff_Schedule_${timestamp}.xlsx`;
   const finalFilename = filename || defaultFilename;
 

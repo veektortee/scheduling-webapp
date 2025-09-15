@@ -385,7 +385,8 @@ function generateSolution(
     // Assign providers to shifts
     for (const shift of sortedShifts) {
       const shiftId = shift.id || `shift_${shifts.indexOf(shift)}`;
-      const shiftDate = shift.date || (days[0] || new Date().toISOString().split('T')[0]);
+      const now = new Date();
+      const shiftDate = shift.date || (days[0] || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`);
       
       // Find the best provider for this shift
       const bestProvider = findBestProvider(

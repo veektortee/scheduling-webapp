@@ -28,6 +28,7 @@ import {
 } from 'react-icons/si';
 import LocalSolverGuideModal from '@/components/LocalSolverGuideModal';
 import DataManagementModal from '@/components/DataManagementModal';
+import { generateMonth } from '@/lib/scheduling';
 
 interface SolverResult {
   status: string;
@@ -90,6 +91,12 @@ export default function RunTab() {
   const [showGuideModal, setShowGuideModal] = useState(false);
   const [showDataManagementModal, setShowDataManagementModal] = useState(false);
   const [guidePlatform, setGuidePlatform] = useState<'windows' | 'mac' | 'linux'>('windows');
+  // Month selector state (for Run Settings)
+  const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth() + 1);
+  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
+  const [isMonthSelectionLocked, setIsMonthSelectionLocked] = useState<boolean>(false);
+  const [appliedMonth, setAppliedMonth] = useState<number | null>(null);
+  const [appliedYear, setAppliedYear] = useState<number | null>(null);
   
   // Output files state
   const [availableFiles, setAvailableFiles] = useState<Array<{
@@ -1144,6 +1151,62 @@ export default function RunTab() {
     return () => { mounted = false; };
   }, [localSolverAvailable, addLog, updateRunConfig, computeNextAvailableName, schedulingCase?.run?.out]);
 
+  // Initialize month selector from current calendar when component mounts or schedulingCase changes
+  useEffect(() => {
+    try {
+      const firstDay = schedulingCase?.calendar?.days?.[0];
+      if (firstDay) {
+        // Parse date string manually to avoid timezone issues
+        const [year, month, day] = firstDay.split('-').map(Number);
+        const dt = new Date(year, month - 1, day); // month is 1-based in string, 0-based in Date
+        if (!isNaN(dt.getTime())) {
+          const calendarMonth = dt.getMonth() + 1;
+          const calendarYear = dt.getFullYear();
+          
+          setSelectedMonth(calendarMonth);
+          setSelectedYear(calendarYear);
+          
+          // Only unlock if this is an external calendar change (not matching user's applied selection)
+          if (appliedMonth !== null && appliedYear !== null) {
+            if (calendarMonth !== appliedMonth || calendarYear !== appliedYear) {
+              // Calendar changed to something different from what user applied - unlock
+              setIsMonthSelectionLocked(false);
+              setAppliedMonth(null);
+              setAppliedYear(null);
+            }
+            // If it matches what user applied, keep it locked
+          } else {
+            // No applied selection, so unlock
+            setIsMonthSelectionLocked(false);
+          }
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }, [schedulingCase?.calendar?.days, appliedMonth, appliedYear]);
+
+  const applySelectedMonth = async () => {
+    try {
+      const days = generateMonth(selectedYear, selectedMonth);
+      dispatch({ type: 'GENERATE_DAYS', payload: days });
+      setIsMonthSelectionLocked(true);
+      setAppliedMonth(selectedMonth);
+      setAppliedYear(selectedYear);
+      addLog(`[INFO] Calendar updated to ${selectedYear}-${String(selectedMonth).padStart(2, '0')}`, 'success');
+    } catch (err) {
+      console.error('Failed to generate selected month:', err);
+      addLog('[ERROR] Failed to generate selected month', 'error');
+    }
+  };
+
+  const handleCancelMonthSelection = () => {
+    setIsMonthSelectionLocked(false);
+    setAppliedMonth(null);
+    setAppliedYear(null);
+    addLog('[INFO] Month selection unlocked', 'info');
+  };
+
   // Function to get all available result folders
   const getAvailableResultFolders = async () => {
     const folders: Array<{
@@ -1743,6 +1806,7 @@ export default function RunTab() {
           </h2>
         </div>
   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+          {/* Output Folder Name */}
           <div>
             <label className="block text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
               Output Folder Name
@@ -1756,7 +1820,45 @@ export default function RunTab() {
             />
             <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">Output folder is auto-generated. It will be created as the next Result_N.</div>
           </div>
+
+          {/* Month and Year Selection */}
+          <div className="col-span-full sm:col-span-2 lg:col-span-1">
+            <label className="block text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+              Month for Script
+            </label>
+            <div className="flex space-x-2">
+              <select
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
+                disabled={isMonthSelectionLocked}
+                className={`w-full px-3 lg:px-4 py-2 lg:py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/90 dark:bg-gray-700/90 text-gray-900 dark:text-white backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 hover:shadow-md text-sm lg:text-base ${isMonthSelectionLocked ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                {Array.from({ length: 12 }, (_, i) => (
+                  <option key={i + 1} value={i + 1}>
+                    {new Date(0, i).toLocaleString('default', { month: 'long' })}
+                  </option>
+                ))}
+              </select>
+              <input
+                type="number"
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                disabled={isMonthSelectionLocked}
+                className={`w-24 px-3 lg:px-4 py-2 lg:py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/90 dark:bg-gray-700/90 text-gray-900 dark:text-white backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 hover:shadow-md text-sm lg:text-base ${isMonthSelectionLocked ? 'opacity-50 cursor-not-allowed' : ''}`}
+              />
+              <button
+                onClick={isMonthSelectionLocked ? handleCancelMonthSelection : applySelectedMonth}
+                className="px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-xl hover:from-blue-600 hover:to-cyan-600 font-semibold transition-all duration-200 shadow-md text-sm lg:text-base"
+              >
+                {isMonthSelectionLocked ? 'Cancel' : 'Apply'}
+              </button>
+            </div>
+            <div className={`mt-1 text-xs ${isMonthSelectionLocked ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'}`}>
+              {isMonthSelectionLocked ? 'The month has been selected.' : 'Select the month and year for the scheduling script.'}
+            </div>
+          </div>
           
+          {/* k (Solutions) */}
           <div>
             <label className="block text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
               k (Solutions)

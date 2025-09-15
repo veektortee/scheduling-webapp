@@ -59,6 +59,16 @@ export default function ShiftsTab() {
       return;
     }
 
+    // Helper to calculate days remaining in current month from start date
+    const getDaysToMonthEnd = (startDate: string) => {
+      const start = new Date(startDate);
+      const year = start.getFullYear();
+      const month = start.getMonth();
+      const lastDayOfMonth = new Date(year, month + 1, 0).getDate();
+      const startDay = start.getDate();
+      return lastDayOfMonth - startDay;
+    };
+
     // Helper to generate all dates in a range
     const generateDateRange = (startDate: string, days: number) => {
       const dates = [];
@@ -77,7 +87,8 @@ export default function ShiftsTab() {
       return;
     }
 
-    const dateRange = generateDateRange(date, 30);
+    const daysToMonthEnd = getDaysToMonthEnd(date);
+    const dateRange = generateDateRange(date, daysToMonthEnd);
 
     dateRange.forEach((currentDate) => {
       const newShift: Shift = {
