@@ -384,16 +384,30 @@ class AdvancedSchedulingSolver:
             )
             provider_workloads.append(workload)
         
-        # Add workload balancing terms (simplified)
+        # Add workload balancing terms (CP-SAT-safe)
         if provider_workloads:
-            avg_workload = sum(provider_workloads) // len(provider_workloads)
-            for workload in provider_workloads:
-                # Penalty for being too far from average
-                deviation = model.NewIntVar(-1000, 1000, 'deviation')
+            # Create an integer variable for the total workload and constrain it
+            # to equal the (symbolic) sum of provider workloads.
+            total_workload = model.NewIntVar(0, len(shifts) * len(providers), 'total_workload')
+            model.Add(total_workload == sum(provider_workloads))
+
+            # Represent the average as an IntVar and relate it to total_workload
+            # via multiplication by the number of providers. This avoids doing
+            # Python-side integer division on OR-Tools expressions.
+            n_providers = len(provider_workloads)
+            avg_workload = model.NewIntVar(0, len(shifts), 'avg_workload')
+            remainder = model.NewIntVar(0, max(0, n_providers - 1), 'avg_remainder')
+            model.Add(total_workload == avg_workload * n_providers + remainder)
+
+            for idx, workload in enumerate(provider_workloads):
+                # Use unique var names per provider to avoid accidental reuse
+                suffix = f"_{idx}"
+                deviation = model.NewIntVar(-len(shifts), len(shifts), f'deviation{suffix}')
                 model.Add(deviation == workload - avg_workload)
-                abs_deviation = model.NewIntVar(0, 1000, 'abs_deviation')
+                abs_deviation = model.NewIntVar(0, len(shifts), f'abs_deviation{suffix}')
                 model.AddAbsEquality(abs_deviation, deviation)
-                objective_terms.append(-abs_deviation)  # Minimize deviation
+                # Minimize absolute deviation from average
+                objective_terms.append(-abs_deviation)
         
         if objective_terms:
             model.Maximize(sum(objective_terms))

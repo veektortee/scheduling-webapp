@@ -413,25 +413,45 @@ class AdvancedSchedulingSolver:
             )
             provider_workloads.append(workload)
         
-        # Add workload balancing terms (simplified)
+        # Add workload balancing terms (CP-SAT-safe)
         if provider_workloads:
-            # Create a variable for total workload and average
+            # Create an integer variable for the total workload and constrain it
+            # to equal the (symbolic) sum of provider workloads.
             total_workload = model.NewIntVar(0, len(shifts) * len(providers), 'total_workload')
             model.Add(total_workload == sum(provider_workloads))
-            
-            # For small numbers of providers, we'll use a simpler approach
-            # Instead of calculating exact average, we'll just minimize max-min difference
-            if len(provider_workloads) > 1:
+
+            # Represent the average as an IntVar and relate it to total_workload
+            # via multiplication by the number of providers. This avoids doing
+            # Python-side integer division on OR-Tools expressions.
+            n_providers = len(provider_workloads)
+            avg_workload = model.NewIntVar(0, len(shifts), 'avg_workload')
+            # Allow a small remainder so total_workload doesn't need to be
+            # exactly divisible by number of providers (floor division semantics)
+            remainder = model.NewIntVar(0, max(0, n_providers - 1), 'avg_remainder')
+            model.Add(total_workload == avg_workload * n_providers + remainder)
+
+            if n_providers > 1:
+                # Minimize max-min difference as an additional fairness metric
                 min_workload = model.NewIntVar(0, len(shifts), 'min_workload')
                 max_workload = model.NewIntVar(0, len(shifts), 'max_workload')
-                
-                for workload in provider_workloads:
+
+                for idx, workload in enumerate(provider_workloads):
+                    # Constrain min/max relative to each provider workload
                     model.Add(min_workload <= workload)
                     model.Add(max_workload >= workload)
-                
+
                 workload_range = model.NewIntVar(0, len(shifts), 'workload_range')
                 model.Add(workload_range == max_workload - min_workload)
                 objective_terms.append(-workload_range)  # Minimize workload range
+
+            # Also add per-provider absolute deviation from average
+            for idx, workload in enumerate(provider_workloads):
+                suffix = f"_{idx}"
+                deviation = model.NewIntVar(-len(shifts), len(shifts), f'deviation{suffix}')
+                model.Add(deviation == workload - avg_workload)
+                abs_deviation = model.NewIntVar(0, len(shifts), f'abs_deviation{suffix}')
+                model.AddAbsEquality(abs_deviation, deviation)
+                objective_terms.append(-abs_deviation)
         
         if objective_terms:
             model.Maximize(sum(objective_terms))
