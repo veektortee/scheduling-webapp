@@ -129,8 +129,11 @@ export default function ProvidersTab() {
       id: (providerForm.id as string) || `p_${Date.now()}`,
       name: providerForm.name?.trim(),
       type: (providerForm.type as string) || 'Staff',
-      max_consecutive_days: providerForm.max_consecutive_days ?? null,
-      limits: providerForm.limits || { min_total: 0, max_total: null },
+      max_consecutive_days: providerForm.max_consecutive_days || 5,
+            limits: {
+        min_total: providerForm.limits?.min_total || 0,
+        max_total: providerForm.limits?.max_total || 4, // Default to 4
+      },
       forbidden_days_soft: providerForm.forbidden_days_soft || [],
       forbidden_days_hard: providerForm.forbidden_days_hard || [],
       preferred_days_hard: providerForm.preferred_days_hard || {},
@@ -147,10 +150,19 @@ export default function ProvidersTab() {
 
     // Merge with existing provider to avoid losing fields not present in the form
     const existing = schedulingCase.providers[selectedProvider] || {};
+    const newLimits = {
+      min_total: providerForm.limits?.min_total ?? existing.limits?.min_total ?? 0,
+      // --- CHANGE: Enforce mandatory default on update ---
+      max_total: providerForm.limits?.max_total ?? existing.limits?.max_total ?? 4, // Default to 4 if null/undefined
+    };
     const updatedProvider: Provider = {
       ...existing,
       ...(providerForm as Provider),
       type: (providerForm.type as string) || existing.type || 'Staff',
+      
+      // --- CHANGE: Enforce mandatory default on update ---
+      max_consecutive_days: providerForm.max_consecutive_days ?? existing.max_consecutive_days ?? 5, // Default to 5
+      limits: newLimits,
     };
 
     // Debug: log the provider being sent to the reducer
@@ -164,11 +176,6 @@ export default function ProvidersTab() {
     // Keep provider selected and refresh local form to reflect saved values
     setProviderForm({
       ...updatedProvider,
-      limits: updatedProvider.limits || { min_total: 0, max_total: null },
-      forbidden_days_soft: updatedProvider.forbidden_days_soft || [],
-      forbidden_days_hard: updatedProvider.forbidden_days_hard || [],
-      preferred_days_hard: updatedProvider.preferred_days_hard || {},
-      preferred_days_soft: updatedProvider.preferred_days_soft || {},
     });
     dispatch({ type: 'SELECT_PROVIDER', payload: selectedProvider });
   };
