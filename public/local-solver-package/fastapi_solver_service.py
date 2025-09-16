@@ -788,9 +788,10 @@ class SolutionCollector(cp_model.CpSolverSolutionCallback):
 # Initialize solver
 solver = AdvancedSchedulingSolver()
 
+from fastapi import BackgroundTasks
 # REST API Endpoints
 @app.post("/solve")
-async def solve_schedule(case: SchedulingCase):
+async def solve_schedule(case: SchedulingCase, background_tasks: BackgroundTasks):
     """Submit a scheduling case for optimization (synchronous)."""
     try:
         run_id = str(uuid.uuid4())
