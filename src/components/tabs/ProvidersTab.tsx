@@ -56,9 +56,12 @@ export default function ProvidersTab() {
   // Merge: shift ids, provider-referenced shift types, defaults, then provider types
 
   // Get unique provider types directly from the providers list.
-  const providerTypes = Array.from(new Set(
-      (schedulingCase.providers || []).map(p => p.type).filter(Boolean)
-  ));
+  const providerTypes = Array.from(new Set([
+    'Staff', // Ensure 'Staff' is always an option
+    ...(schedulingCase.provider_types || []),
+    ...(schedulingCase.providers || []).map(p => p.type).filter(Boolean)
+  ]));
+  
   if (providerTypes.length === 0) providerTypes.push('Staff');
   
   // Get unique shift types ONLY from the shifts you have actually defined.

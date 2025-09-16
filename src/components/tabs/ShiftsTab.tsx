@@ -69,24 +69,36 @@ export default function ShiftsTab() {
       return;
     }
     
-    const dateRange = addToAllDays 
-  ? schedulingCase.calendar.days 
-  : [date];
-  dateRange.forEach((currentDate) => {
-  const newShift: Shift = {
-    id: generateShiftId(currentDate, shiftForm.type!),
-    date: currentDate,
-    type: shiftForm.type!,
-    start: `${currentDate}T${shiftForm.start}:00`,
-    // The end time should also be correctly formatted
-    end: `${currentDate}T${shiftForm.end || shiftForm.start}:00`, 
-    allowed_provider_types: shiftForm.allowed_provider_types || [],
-  };
-  dispatch({ type: 'ADD_SHIFT', payload: newShift });
-});
-
+    // When adding across "month", only include calendar days that fall in the
+    // same month and year as the chosen date. This prevents unintentionally
+    // spanning multiple months when the calendar contains days from other months.
+    const dateRange = addToAllDays
+      ? schedulingCase.calendar.days.filter((d) => {
+          try {
+            const candidate = new Date(d);
+            const base = new Date(date);
+            return (
+              candidate.getFullYear() === base.getFullYear() &&
+              candidate.getMonth() === base.getMonth()
+            );
+          } catch (e) {
+            return false;
+          }
+        })
+      : [date];
     
-    
+    dateRange.forEach((currentDate) => {
+      const newShift: Shift = {
+        id: generateShiftId(currentDate, shiftForm.type!),
+        date: currentDate,
+        type: shiftForm.type!,
+        start: `${currentDate}T${shiftForm.start}:00`,
+        // The end time should also be correctly formatted
+        end: `${currentDate}T${shiftForm.end || shiftForm.start}:00`, 
+        allowed_provider_types: shiftForm.allowed_provider_types || [],
+      };
+      dispatch({ type: 'ADD_SHIFT', payload: newShift });
+    });
 
     // Reset form
     setShiftForm({
@@ -306,13 +318,13 @@ export default function ShiftsTab() {
               <div className="flex items-center space-x-2">
                 <input
                   type="checkbox"
-                  id="add-all-days"
+                  id="add-across-month"
                   checked={addToAllDays}
                   onChange={(e) => setAddToAllDays(e.target.checked)}
                   className="w-4 h-4 text-blue-600 bg-white border-gray-300 rounded dark:bg-gray-800 dark:border-gray-600 focus:ring-blue-500"
                 />
-                <label htmlFor="add-all-days" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Add across ALL calendar days
+                <label htmlFor="add-across-month" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Add across month
                 </label>
               </div>
 
