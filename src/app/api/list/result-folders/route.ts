@@ -3,7 +3,7 @@ import { list } from '@vercel/blob';
 
 export async function GET() {
   try {
-    const { blobs } = await list({ prefix: 'solver_output/', mode: 'folded' });
+    const { blobs } = await list({ prefix: 'solver_output/', mode: 'folded' }); 
 
     const folderData: Record<string, { name: string, path: string, created: string, fileCount: number }> = {};
 
