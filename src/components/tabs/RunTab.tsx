@@ -904,6 +904,34 @@ export default function RunTab() {
   addLog('[WARN] Optimization stopped by user', 'warning');
   };
 
+  const handleExportLatestSchedule = async () => {
+    addLog('[INFO] Exporting latest schedule...', 'info');
+    try {
+      const folders = await getAvailableResultFolders();
+      if (folders.length === 0) {
+        addLog('[WARN] No result folders found to export from', 'warning');
+        return;
+      }
+      const latestFolder = folders[0]; // Folders are sorted descending by name
+      addLog(`[INFO] Latest result folder is: ${latestFolder.name}`, 'info');
+
+      const fileName = 'calendar.xlsx';
+      const downloadUrl = `/api/download/result-folder?name=${encodeURIComponent(latestFolder.name)}&file=${encodeURIComponent(fileName)}`;
+
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = downloadUrl;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      addLog(`[DOWNLOADED] Started download for: ${fileName} from ${latestFolder.name}`, 'success');
+
+    } catch (error) {
+      addLog(`[ERROR] Failed to export latest schedule: ${error}`, 'error');
+    }
+  };
+
   const handleOpenOutputFolder = async () => {
     if (!lastResults) {
   addLog(`[WARN] No recent results available. Current output folder setting: ${schedulingCase.run.out}`, 'warning');
@@ -2170,6 +2198,16 @@ export default function RunTab() {
             <span className="relative z-10">
               {lastResults ? 'View Results' : 'View Output Folder'}
             </span>
+          </button>
+
+          {/* Export Latest Schedule */}
+          <button
+            onClick={handleExportLatestSchedule}
+            className="relative px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl hover:from-green-700 hover:to-green-800 font-semibold flex items-center justify-center space-x-2 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 overflow-hidden group"
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-green-400/20 to-green-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <IoDownloadSharp className="w-5 h-5 relative z-10" />
+            <span className="relative z-10">Export Latest Schedule</span>
           </button>
 
           {/* Clear Logs */}
