@@ -252,7 +252,7 @@ export default function Home() {
 </div>
 
                   {/* Export Results Button */}
- <div className="relative group">
+ {/* <div className="relative group">
   <button
   onClick={handleExportResults}
   disabled={isDownloading.results}
@@ -273,7 +273,7 @@ export default function Home() {
     <span className="hidden sm:inline">Export Results</span>
     <span className="sm:hidden">Export</span>
   </div>
-</div>
+</div> */}
 
                   {/* Settings Button */}
                   <div className="relative group">
