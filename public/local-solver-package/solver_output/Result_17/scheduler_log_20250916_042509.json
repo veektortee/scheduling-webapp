@@ -1,0 +1,69 @@
+{
+  "phase1": {
+    "status": 4,
+    "status_name": "OPTIMAL",
+    "response": "CpSolverResponse summary:\nstatus: OPTIMAL\nobjective: 315000\nbest_bound: 315000\nintegers: 29\nbooleans: 14\nconflicts: 0\nbranches: 13\npropagations: 15\ninteger_propagations: 57\nrestarts: 2\nlp_iterations: 0\nwalltime: 0.371242\nusertime: 0.371243\ndeterministic_time: 8.96e-06\ngap_integral: 8.02332e-05\nsolution_fingerprint: 0x69d711836b0e2781\n",
+    "solutions_collected": 1,
+    "solutions_selected": 2,
+    "best_objective": 315000.0,
+    "best_bound": 315000.0,
+    "per_table": [
+      {
+        "objective": 315000.0,
+        "best_bound": 315000.0,
+        "conflicts": 0,
+        "branches": 13,
+        "wall_time_s": 0.3049209,
+        "assignments": 0
+      },
+      {
+        "objective": 315000.0,
+        "best_bound": 315000.0,
+        "conflicts": 0,
+        "branches": 13,
+        "wall_time_s": 0.3049209,
+        "assignments": 0
+      }
+    ],
+    "L": 1
+  },
+  "phase2": {
+    "status": 4,
+    "status_name": "OPTIMAL",
+    "response": "CpSolverResponse summary:\nstatus: OPTIMAL\nobjective: 315000\nbest_bound: 315000\nintegers: 29\nbooleans: 14\nconflicts: 0\nbranches: 13\npropagations: 15\ninteger_propagations: 57\nrestarts: 2\nlp_iterations: 0\nwalltime: 0.371242\nusertime: 0.371243\ndeterministic_time: 8.96e-06\ngap_integral: 8.02332e-05\nsolution_fingerprint: 0x69d711836b0e2781\n",
+    "solutions_collected": 1,
+    "solutions_selected": 2,
+    "best_objective": 315000.0,
+    "best_bound": 315000.0,
+    "per_table": [
+      {
+        "objective": 315000.0,
+        "best_bound": 315000.0,
+        "conflicts": 0,
+        "branches": 13,
+        "wall_time_s": 0.3049209,
+        "assignments": 0
+      },
+      {
+        "objective": 315000.0,
+        "best_bound": 315000.0,
+        "conflicts": 0,
+        "branches": 13,
+        "wall_time_s": 0.3049209,
+        "assignments": 0
+      }
+    ],
+    "L": 1
+  },
+  "run": {
+    "timestamp": "20250916_042509",
+    "seed": 1,
+    "out_dir": "Result_17",
+    "files": {
+      "grid": "Result_17\\schedules.xlsx",
+      "hospital": "Result_17\\hospital_schedule.xlsx",
+      "calendar": "Result_17\\calendar.xlsx",
+      "capacity": "Result_17\\eligibility_capacity.json"
+    }
+  }
+}

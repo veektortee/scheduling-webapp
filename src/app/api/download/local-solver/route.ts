@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { existsSync, statSync } from 'fs';
 import { join } from 'path';
 
+
+
 /**
  * API endpoint for downloading the complete local solver package
  * GET /api/download/local-solver

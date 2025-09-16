@@ -985,15 +985,15 @@ export default function RunTab() {
   addLog('[INFO] Use "Export Results" to download the generated schedule', 'info');
         
         // Auto-generate and display newest Excel export
-        try {
-          const { exportScheduleToExcel, generateMockResults } = await import('@/lib/excelExport');
-          const mockResults = generateMockResults(schedulingCase);
-          const filename = exportScheduleToExcel(schedulingCase, mockResults, `Latest_Schedule_${new Date().toISOString().split('T')[0]}.xlsx`);
-          addLog(`[DOWNLOADED] Generated latest Excel export: ${filename}`, 'success');
-          addLog('[TIP] This file contains the newest schedule configuration and assignments', 'info');
-        } catch {
-    addLog('[WARN] Could not auto-generate Excel export', 'warning');
-        }
+    //     try {
+    //       const { exportScheduleToExcel, generateMockResults } = await import('@/lib/excelExport');
+    //       const mockResults = generateMockResults(schedulingCase);
+    //       const filename = exportScheduleToExcel(schedulingCase, mockResults, `Latest_Schedule_${new Date().toISOString().split('T')[0]}.xlsx`);
+    //       addLog(`[DOWNLOADED] Generated latest Excel export: ${filename}`, 'success');
+    //       addLog('[TIP] This file contains the newest schedule configuration and assignments', 'info');
+    //     } catch {
+    // addLog('[WARN] Could not auto-generate Excel export', 'warning');
+    //     }
       }
       
       // Display summary of results if available

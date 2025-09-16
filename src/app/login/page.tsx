@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { signIn, getSession } from 'next-auth/react';
 import { HiShieldCheck, HiEye, HiEyeSlash } from 'react-icons/hi2';
 
+
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

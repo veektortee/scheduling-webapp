@@ -17,7 +17,8 @@ import {
   IoSettingsSharp,
   IoDocumentTextSharp,
   IoStatsChartSharp,
-  IoCogSharp
+  IoCogSharp,
+  IoSync 
 } from 'react-icons/io5';
 
 type TabType = 'run' | 'shifts' | 'providers' | 'config';
@@ -28,6 +29,10 @@ export default function Home() {
   const { state, dispatch } = useScheduling();
   const [activeTab, setActiveTab] = useState<TabType>('run');
   const [isInitialized, setIsInitialized] = useState(false);
+    const [isDownloading, setIsDownloading] = useState({
+    config: false,
+    results: false,
+  });
 
   // Authentication check - redirect if not authenticated
   useEffect(() => {
@@ -73,63 +78,49 @@ export default function Home() {
     initializeApp();
   }, [dispatch]);
 
-  const handleExportConfiguration = () => {
-    // Prefer the configuration snapshot from the most recent run when available
-    const configToExport = state.lastResults?.caseSnapshot ?? state.case;
-    exportCurrentCaseToExcel(configToExport);
+  const handleExportConfiguration = async () => {
+    setIsDownloading(prev => ({ ...prev, config: true }));
+    try {
+      const configToExport = state.lastResults?.caseSnapshot ?? state.case;
+      exportCurrentCaseToExcel(configToExport);
+    } catch (error) {
+        console.error("Failed to export configuration:", error);
+        dispatch({ type: 'SET_ERROR', payload: 'Failed to export configuration.' });
+    } finally {
+      setIsDownloading(prev => ({ ...prev, config: false }));
+    }
   };
 
-  const handleExportResults = () => {
-    // Prefer last results and the exact case snapshot saved at run time
-    const resultsSource = state.lastResults;
-    if (resultsSource && resultsSource.results) {
-      // Transform solver results to match export format
-      const solverResults = resultsSource.results as {
-        assignments?: Array<{
-          shift_id: string;
-          provider_id: string;
-          provider_name: string;
-          date: string;
-          shift_type: string;
-          start_time: string;
-          end_time: string;
-        }>;
-        summary?: {
-          total_assignments?: number;
-          provider_workload?: Record<string, number>;
-          shift_coverage?: Record<string, number>;
-        };
-      };
-      
-      if (solverResults.assignments && solverResults.summary) {
-        const transformedResults = {
-          assignments: solverResults.assignments.map(assignment => ({
-            date: assignment.date,
-            shiftId: assignment.shift_id,
-            shiftType: assignment.shift_type,
-            providerId: assignment.provider_id,
-            providerName: assignment.provider_name,
-            startTime: assignment.start_time,
-            endTime: assignment.end_time
-          })),
-          summary: {
-            totalAssignments: solverResults.summary.total_assignments || 0,
-            providerWorkload: solverResults.summary.provider_workload || {},
-            shiftCoverage: solverResults.summary.shift_coverage || {}
-          }
-        };
+  const handleExportResults = async () => {
+    setIsDownloading(prev => ({ ...prev, results: true }));
+    try {
+        const response = await fetch('/api/list/result-folders');
+        if (!response.ok) throw new Error('Could not fetch result folders.');
+        const data = await response.json();
+        
+        const latestFolder = data.folders?.[0];
+        if (!latestFolder) {
+            dispatch({ type: 'SET_ERROR', payload: 'No result folders found to export from.' });
+            return;
+        }
 
-        // Use the case snapshot saved with the run if available, otherwise current case
-        const caseForExport = (state.lastResults && state.lastResults.caseSnapshot) ? state.lastResults.caseSnapshot : state.case;
-        exportScheduleToExcel(caseForExport, transformedResults);
-        return;
-      }
+        const folderName = latestFolder.name;
+        const fileName = 'calendar.xlsx';
+        const downloadUrl = `/api/download/result-folder?name=${encodeURIComponent(folderName)}&file=${encodeURIComponent(fileName)}`;
+        
+        const a = document.createElement('a');
+        a.href = downloadUrl;
+        a.download = `${folderName}_${fileName}`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+
+    } catch (error) {
+        console.error("Failed to export results:", error);
+        dispatch({ type: 'SET_ERROR', payload: 'Failed to export latest results. Run optimization first.' });
+    } finally {
+        setIsDownloading(prev => ({ ...prev, results: false }));
     }
-    
-    // Fallback to mock results for demo if no real results available
-    const caseForMock = state.lastResults?.caseSnapshot ?? state.case;
-    const mockResults = generateMockResults(caseForMock);
-    exportScheduleToExcel(caseForMock, mockResults);
   };
 
   const handleSignOut = () => {
@@ -238,37 +229,51 @@ export default function Home() {
                 <div className="flex items-center justify-center sm:justify-start space-x-4 sm:space-x-6">
                   {/* Export Config Button */}
                   <div className="relative group">
-                    <button
-                      onClick={handleExportConfiguration}
-                      className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-gradient-to-br from-green-500 via-green-600 to-emerald-600 hover:from-green-600 hover:via-green-700 hover:to-emerald-700 text-white rounded-xl sm:rounded-2xl shadow-lg sm:shadow-xl hover:shadow-xl sm:hover:shadow-2xl transition-all duration-300 hover:scale-105 hover:-translate-y-0.5 sm:hover:-translate-y-1 flex items-center justify-center border border-green-400/30 backdrop-blur-sm group relative overflow-hidden"
-                      title="Export Configuration"
-                    >
-                      <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                      <IoDocumentTextSharp className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 relative z-10 group-hover:scale-110 transition-transform duration-200 drop-shadow-lg" />
-                    </button>
-                    <div className="absolute -bottom-12 sm:-bottom-14 left-1/2 transform -translate-x-1/2 bg-gray-900/90 dark:bg-gray-800/90 text-white text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl shadow-2xl opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap z-[9999] backdrop-blur-sm border border-gray-700/50">
-                      <div className="absolute -top-1.5 sm:-top-2 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-3 border-r-3 border-b-3 sm:border-l-4 sm:border-r-4 sm:border-b-4 border-transparent border-b-gray-900/90 dark:border-b-gray-800/90"></div>
-                      <span className="hidden sm:inline">Export Configuration</span>
-                      <span className="sm:hidden">Export Config</span>
-                    </div>
-                  </div>
+                   <button
+  onClick={handleExportConfiguration}
+  disabled={isDownloading.config}
+  className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-gradient-to-br from-green-500 via-green-600 to-emerald-600 hover:from-green-600 hover:via-green-700 hover:to-emerald-700 text-white rounded-xl sm:rounded-2xl shadow-lg sm:shadow-xl hover:shadow-xl sm:hover:shadow-2xl transition-all duration-300 hover:scale-105 hover:-translate-y-0.5 sm:hover:-translate-y-1 flex items-center justify-center border border-green-400/30 backdrop-blur-sm group relative overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed"
+  title="Export Configuration"
+>
+    {isDownloading.config ? (
+        <IoSync className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 animate-spin" />
+    ) : (
+        <>
+            <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <IoDocumentTextSharp className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 relative z-10 group-hover:scale-110 transition-transform duration-200 drop-shadow-lg" />
+        </>
+    )}
+  </button>
+              <div className="absolute -bottom-12 sm:-bottom-14 left-1/2 transform -translate-x-1/2 bg-gray-900/90 text-white text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl shadow-2xl opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap z-[9999] backdrop-blur-sm border border-gray-700/50">
+    <div className="absolute -top-1.5 sm:-top-2 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-3 border-r-3 border-b-3 sm:border-l-4 sm:border-r-4 sm:border-b-4 border-transparent border-b-gray-900/90 dark:border-b-gray-800/90"></div>
+    <span className="hidden sm:inline">Export Configuration</span>
+    <span className="sm:hidden">Export Config</span>
+  </div>
+</div>
 
                   {/* Export Results Button */}
-                  <div className="relative group">
-                    <button
-                      onClick={handleExportResults}
-                      className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 hover:from-blue-600 hover:via-blue-700 hover:to-indigo-700 text-white rounded-xl sm:rounded-2xl shadow-lg sm:shadow-xl hover:shadow-xl sm:hover:shadow-2xl transition-all duration-300 hover:scale-105 hover:-translate-y-0.5 sm:hover:-translate-y-1 flex items-center justify-center border border-blue-400/30 backdrop-blur-sm group relative overflow-hidden"
-                      title="Export Results"
-                    >
-                      <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                      <IoStatsChartSharp className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 relative z-10 group-hover:scale-110 transition-transform duration-200 drop-shadow-lg" />
-                    </button>
-                    <div className="absolute -bottom-12 sm:-bottom-14 left-1/2 transform -translate-x-1/2 bg-gray-900/90 dark:bg-gray-800/90 text-white text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl shadow-2xl opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap z-[9999] backdrop-blur-sm border border-gray-700/50">
-                      <div className="absolute -top-1.5 sm:-top-2 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-3 border-r-3 border-b-3 sm:border-l-4 sm:border-r-4 sm:border-b-4 border-transparent border-b-gray-900/90 dark:border-b-gray-800/90"></div>
-                      <span className="hidden sm:inline">Export Results</span>
-                      <span className="sm:hidden">Export</span>
-                    </div>
-                  </div>
+ <div className="relative group">
+  <button
+  onClick={handleExportResults}
+  disabled={isDownloading.results}
+  className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 hover:from-blue-600 hover:via-blue-700 hover:to-indigo-700 text-white rounded-xl sm:rounded-2xl shadow-lg sm:shadow-xl hover:shadow-xl sm:hover:shadow-2xl transition-all duration-300 hover:scale-105 hover:-translate-y-0.5 sm:hover:-translate-y-1 flex items-center justify-center border border-blue-400/30 backdrop-blur-sm group relative overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed"
+  title="Export Latest Results (calendar.xlsx)"
+>
+    {isDownloading.results ? (
+        <IoSync className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 animate-spin" />
+    ) : (
+        <>
+            <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <IoStatsChartSharp className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 relative z-10 group-hover:scale-110 transition-transform duration-200 drop-shadow-lg" />
+        </>
+    )}
+</button>
+  <div className="absolute -bottom-12 sm:-bottom-14 left-1/2 transform -translate-x-1/2 bg-gray-900/90 text-white text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl shadow-2xl opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap z-[9999] backdrop-blur-sm border border-gray-700/50">
+    <div className="absolute -top-1.5 sm:-top-2 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-3 border-r-3 border-b-3 sm:border-l-4 sm:border-r-4 sm:border-b-4 border-transparent border-b-gray-900/90 dark:border-b-gray-800/90"></div>
+    <span className="hidden sm:inline">Export Results</span>
+    <span className="sm:hidden">Export</span>
+  </div>
+</div>
 
                   {/* Settings Button */}
                   <div className="relative group">

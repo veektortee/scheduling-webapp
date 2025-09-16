@@ -1,0 +1,1000 @@
+2025-09-16 04:46:40,100 | INFO | Logging to Result_18\scheduler_run.log
+2025-09-16 04:46:40,109 | INFO | ===== SCHEDULER RUN 20250916_044640 =====
+2025-09-16 04:46:40,124 | INFO | Args.case=C:\Users\sapper\AppData\Local\Temp\tmpm77921mx.json
+2025-09-16 04:46:40,127 | INFO | Loaded case with 31 days, 22 shifts, 7 providers
+2025-09-16 04:46:40,154 | INFO | Run config: out=Result_18 k=2 seed=1 time=1500 L=1
+2025-09-16 04:46:40,162 | INFO | Wrote: Result_18\constants_effective.log
+2025-09-16 04:46:40,173 | INFO | Wrote capacity snapshot: Result_18\eligibility_capacity.json
+2025-09-16 04:46:40,173 | INFO | Instance: |days|=31 |shifts|=22 |providers|=7 |types|=10
+2025-09-16 04:46:40,195 | INFO | Weekend names: ['Saturday', 'Sunday']
+2025-09-16 04:46:40,197 | INFO | Weekend indices: [3, 4, 10, 11, 17, 18, 24, 25]
+2025-09-16 04:46:40,212 | INFO | Shift[0] keys: ['id', 'date', 'type', 'start', 'end', 'allowed_provider_types']
+2025-09-16 04:46:40,213 | INFO | Provider[0] keys: ['id', 'name', 'type', 'max_consecutive_days', 'limits', 'forbidden_days_soft', 'forbidden_days_hard', 'preferred_days_hard', 'preferred_days_soft']
+2025-09-16 04:46:40,235 | INFO | Provider types: ['MD_N', 'MD_S2']
+2025-09-16 04:46:40,245 | INFO | max_consecutive_days per provider (0 means no cap): [12, 3, 2, 2, 4, 3, 3]
+2025-09-16 04:46:40,469 | INFO | 0
+2025-09-16 04:46:40,470 | INFO | 1
+2025-09-16 04:46:40,473 | INFO | 2
+2025-09-16 04:46:40,499 | INFO | 3
+2025-09-16 04:46:40,501 | INFO | 4
+2025-09-16 04:46:40,520 | INFO | 5
+2025-09-16 04:46:40,522 | INFO | 6
+2025-09-16 04:46:40,551 | INFO | Phase-1 solve: time=120.0s workers=8
+2025-09-16 04:46:40,560 | INFO | [phase1] 
+2025-09-16 04:46:40,572 | INFO | [phase1] Starting CP-SAT solver v9.14.6206
+2025-09-16 04:46:40,574 | INFO | [phase1] Parameters: max_time_in_seconds: 120 log_search_progress: true num_search_workers: 8 log_to_stdout: false
+2025-09-16 04:46:40,599 | INFO | [phase1] 
+2025-09-16 04:46:40,606 | INFO | [phase1] Initial optimization model '': (model_fingerprint: 0x910604613e2ad2ca)
+#Variables: 1'543 (#ints: 1 in objective) (754 primary variables)
+  - 610 Booleans in [0,1]
+  - 7 in [-31,31]
+  - 7 in [0,22]
+  - 448 in [0,31]
+  - 217 in [0,961]
+  - 28 in [0,1000]
+  - 224 in [0,29791]
+  - 1 in [0,1000000000000000000]
+  - 1 constants in {0} 
+#kAtMostOne: 147 (#literals: 294)
+#kIntProd: 434
+#kLinMax: 14 (#expressions: 231)
+#kLinear1: 965 (#enforced: 651 #multi: 210)
+#kLinear2: 1'043 (#enforced: 427 #multi: 210)
+#kLinear3: 238
+#kLinearN: 66 (#terms: 889)
+2025-09-16 04:46:40,613 | INFO | [phase1] 
+2025-09-16 04:46:40,616 | INFO | [phase1] Starting presolve at 0.06s
+2025-09-16 04:46:40,662 | INFO | [phase1]   6.55e-04s  0.00e+00d  [DetectDominanceRelations]
+2025-09-16 04:46:40,663 | INFO | [phase1]   2.22e-02s  0.00e+00d  [operations_research::sat::CpModelPresolver::PresolveToFixPoint] #num_loops=2 #num_dual_strengthening=1
+2025-09-16 04:46:40,664 | INFO | [phase1]   1.13e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::ExtractEncodingFromLinear]
+2025-09-16 04:46:40,668 | INFO | [phase1]   1.40e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::DetectDuplicateColumns]
+2025-09-16 04:46:40,673 | INFO | [phase1]   1.03e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::DetectDuplicateConstraints]
+2025-09-16 04:46:40,675 | INFO | [phase1] [Symmetry] Graph for symmetry has 1'543 nodes and 0 arcs.
+2025-09-16 04:46:40,702 | INFO | [phase1] [Symmetry] Symmetry computation done. time: 0.0003426 dtime: 9.258e-05
+2025-09-16 04:46:40,705 | INFO | [phase1]   3.39e-05s  0.00e+00d  [operations_research::sat::CpModelPresolver::DetectDuplicateConstraintsWithDifferentEnforcements]
+2025-09-16 04:46:40,724 | INFO | [phase1]   2.05e-02s  0.00e+00d  [operations_research::sat::CpModelPresolver::Probe]
+2025-09-16 04:46:40,727 | INFO | [phase1]   3.04e-04s  0.00e+00d  [MaxClique]
+2025-09-16 04:46:40,748 | INFO | [phase1]   1.47e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::PresolveToFixPoint]
+2025-09-16 04:46:40,750 | INFO | [phase1]   7.35e-05s  0.00e+00d  [operations_research::sat::CpModelPresolver::ProcessAtMostOneAndLinear]
+2025-09-16 04:46:40,762 | INFO | [phase1]   7.57e-05s  0.00e+00d  [operations_research::sat::CpModelPresolver::DetectDuplicateConstraints]
+2025-09-16 04:46:40,763 | INFO | [phase1]   5.35e-05s  0.00e+00d  [operations_research::sat::CpModelPresolver::DetectDuplicateConstraintsWithDifferentEnforcements]
+2025-09-16 04:46:40,785 | INFO | [phase1]   6.12e-05s  0.00e+00d  [operations_research::sat::CpModelPresolver::DetectDominatedLinearConstraints]
+2025-09-16 04:46:40,788 | INFO | [phase1]   1.07e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::DetectDifferentVariables]
+2025-09-16 04:46:40,800 | INFO | [phase1]   9.56e-05s  0.00e+00d  [operations_research::sat::CpModelPresolver::ProcessSetPPC]
+2025-09-16 04:46:40,801 | INFO | [phase1]   1.19e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::FindAlmostIdenticalLinearConstraints]
+2025-09-16 04:46:40,824 | INFO | [phase1]   2.27e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::FindBigAtMostOneAndLinearOverlap]
+2025-09-16 04:46:40,836 | INFO | [phase1]   7.77e-05s  2.80e-07d  [operations_research::sat::CpModelPresolver::FindBigVerticalLinearOverlap]
+2025-09-16 04:46:40,838 | INFO | [phase1]   6.27e-05s  0.00e+00d  [operations_research::sat::CpModelPresolver::FindBigHorizontalLinearOverlap]
+2025-09-16 04:46:40,862 | INFO | [phase1]   1.90e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::MergeClauses]
+2025-09-16 04:46:40,864 | INFO | [phase1]   5.73e-05s  0.00e+00d  [operations_research::sat::CpModelPresolver::PresolveToFixPoint]
+2025-09-16 04:46:40,874 | INFO | [phase1]   1.29e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::PresolveToFixPoint]
+2025-09-16 04:46:40,875 | INFO | [phase1]   1.79e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::DetectDuplicateColumns]
+2025-09-16 04:46:40,902 | INFO | [phase1]   1.24e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::DetectDuplicateConstraints]
+2025-09-16 04:46:40,907 | INFO | [phase1] [Symmetry] Graph for symmetry has 1'543 nodes and 0 arcs.
+2025-09-16 04:46:40,925 | INFO | [phase1] [Symmetry] Symmetry computation done. time: 0.0010907 dtime: 9.258e-05
+2025-09-16 04:46:40,937 | INFO | [phase1]   3.99e-05s  0.00e+00d  [operations_research::sat::CpModelPresolver::DetectDuplicateConstraintsWithDifferentEnforcements]
+2025-09-16 04:46:40,938 | INFO | [phase1]   2.11e-03s  0.00e+00d  [operations_research::sat::CpModelPresolver::Probe]
+2025-09-16 04:46:40,949 | INFO | [phase1]   1.05e-04s  0.00e+00d  [MaxClique]
+2025-09-16 04:46:40,951 | INFO | [phase1]   1.51e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::PresolveToFixPoint]
+2025-09-16 04:46:40,980 | INFO | [phase1]   7.62e-05s  0.00e+00d  [operations_research::sat::CpModelPresolver::ProcessAtMostOneAndLinear]
+2025-09-16 04:46:40,982 | INFO | [phase1]   9.28e-05s  0.00e+00d  [operations_research::sat::CpModelPresolver::DetectDuplicateConstraints]
+2025-09-16 04:46:40,990 | INFO | [phase1]   9.56e-05s  0.00e+00d  [operations_research::sat::CpModelPresolver::DetectDuplicateConstraintsWithDifferentEnforcements]
+2025-09-16 04:46:40,991 | INFO | [phase1]   7.54e-05s  0.00e+00d  [operations_research::sat::CpModelPresolver::DetectDominatedLinearConstraints]
+2025-09-16 04:46:41,034 | INFO | [phase1]   1.34e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::DetectDifferentVariables]
+2025-09-16 04:46:41,037 | INFO | [phase1]   7.20e-05s  0.00e+00d  [operations_research::sat::CpModelPresolver::ProcessSetPPC]
+2025-09-16 04:46:41,049 | INFO | [phase1]   5.58e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::FindAlmostIdenticalLinearConstraints]
+2025-09-16 04:46:41,051 | INFO | [phase1]   4.28e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::FindBigAtMostOneAndLinearOverlap]
+2025-09-16 04:46:41,070 | INFO | [phase1]   9.94e-05s  2.80e-07d  [operations_research::sat::CpModelPresolver::FindBigVerticalLinearOverlap]
+2025-09-16 04:46:41,073 | INFO | [phase1]   9.79e-05s  0.00e+00d  [operations_research::sat::CpModelPresolver::FindBigHorizontalLinearOverlap]
+2025-09-16 04:46:41,109 | INFO | [phase1]   4.66e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::MergeClauses]
+2025-09-16 04:46:41,128 | INFO | [phase1]   5.65e-05s  0.00e+00d  [operations_research::sat::CpModelPresolver::PresolveToFixPoint]
+2025-09-16 04:46:41,144 | INFO | [phase1]   3.11e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::ExpandObjective]
+2025-09-16 04:46:41,148 | INFO | [phase1] 
+2025-09-16 04:46:41,177 | INFO | [phase1] Presolve summary:
+2025-09-16 04:46:41,178 | INFO | [phase1]   - 35 affine relations were detected.
+2025-09-16 04:46:41,186 | INFO | [phase1]   - rule 'TODO linear2: contains a Boolean.' was applied 168 times.
+2025-09-16 04:46:41,187 | INFO | [phase1]   - rule 'affine: new relation' was applied 35 times.
+2025-09-16 04:46:41,211 | INFO | [phase1]   - rule 'at_most_one: empty or all false' was applied 147 times.
+2025-09-16 04:46:41,213 | INFO | [phase1]   - rule 'at_most_one: removed literals' was applied 147 times.
+2025-09-16 04:46:41,227 | INFO | [phase1]   - rule 'bool_and: non-reified.' was applied 42 times.
+2025-09-16 04:46:41,229 | INFO | [phase1]   - rule 'bool_or: always true' was applied 7 times.
+2025-09-16 04:46:41,238 | INFO | [phase1]   - rule 'bool_or: implications' was applied 84 times.
+2025-09-16 04:46:41,241 | INFO | [phase1]   - rule 'deductions: 140 stored' was applied 1 time.
+2025-09-16 04:46:41,266 | INFO | [phase1]   - rule 'dual: fix variable' was applied 14 times.
+2025-09-16 04:46:41,268 | INFO | [phase1]   - rule 'enforcement: always false' was applied 441 times.
+2025-09-16 04:46:41,279 | INFO | [phase1]   - rule 'enforcement: false literal' was applied 238 times.
+2025-09-16 04:46:41,280 | INFO | [phase1]   - rule 'enforcement: true literal' was applied 196 times.
+2025-09-16 04:46:41,294 | INFO | [phase1]   - rule 'int_prod: constant product' was applied 427 times.
+2025-09-16 04:46:41,297 | INFO | [phase1]   - rule 'int_prod: removed constant expressions.' was applied 847 times.
+2025-09-16 04:46:41,326 | INFO | [phase1]   - rule 'int_prod: unused affine target' was applied 7 times.
+2025-09-16 04:46:41,352 | INFO | [phase1]   - rule 'int_square: reduced target domain.' was applied 49 times.
+2025-09-16 04:46:41,353 | INFO | [phase1]   - rule 'lin_max: affine_max target domain reduced' was applied 7 times.
+2025-09-16 04:46:41,379 | INFO | [phase1]   - rule 'lin_max: converted to equality' was applied 14 times.
+2025-09-16 04:46:41,382 | INFO | [phase1]   - rule 'lin_max: removed exprs' was applied 21 times.
+2025-09-16 04:46:41,406 | INFO | [phase1]   - rule 'lin_max: target domain reduced' was applied 14 times.
+2025-09-16 04:46:41,410 | INFO | [phase1]   - rule 'linear1: always true' was applied 7 times.
+2025-09-16 04:46:41,436 | INFO | [phase1]   - rule 'linear1: x in domain' was applied 463 times.
+2025-09-16 04:46:41,439 | INFO | [phase1]   - rule 'linear: always true' was applied 594 times.
+2025-09-16 04:46:41,466 | INFO | [phase1]   - rule 'linear: empty' was applied 519 times.
+2025-09-16 04:46:41,469 | INFO | [phase1]   - rule 'linear: enforcement literal in expression' was applied 7 times.
+2025-09-16 04:46:41,493 | INFO | [phase1]   - rule 'linear: fixed or dup variables' was applied 2'019 times.
+2025-09-16 04:46:41,495 | INFO | [phase1]   - rule 'linear: negative clause' was applied 49 times.
+2025-09-16 04:46:41,523 | INFO | [phase1]   - rule 'linear: positive clause' was applied 42 times.
+2025-09-16 04:46:41,526 | INFO | [phase1]   - rule 'linear: reduced variable domains' was applied 526 times.
+2025-09-16 04:46:41,563 | INFO | [phase1]   - rule 'linear: remapped using affine relations' was applied 63 times.
+2025-09-16 04:46:41,564 | INFO | [phase1]   - rule 'linear: singleton column' was applied 7 times.
+2025-09-16 04:46:41,581 | INFO | [phase1]   - rule 'linear: variable substitution 0' was applied 1 time.
+2025-09-16 04:46:41,584 | INFO | [phase1]   - rule 'presolve: 1528 unused variables removed.' was applied 1 time.
+2025-09-16 04:46:41,602 | INFO | [phase1]   - rule 'presolve: iteration' was applied 2 times.
+2025-09-16 04:46:41,604 | INFO | [phase1]   - rule 'variables: both boolean and its negation fix the same variable' was applied 21 times.
+2025-09-16 04:46:41,659 | INFO | [phase1]   - rule 'variables: both boolean and its negation imply same equality' was applied 7 times.
+2025-09-16 04:46:41,662 | INFO | [phase1]   - rule 'variables: detect half reified value encoding' was applied 126 times.
+2025-09-16 04:46:41,664 | INFO | [phase1] 
+2025-09-16 04:46:41,665 | INFO | [phase1] Presolved optimization model '': (model_fingerprint: 0xc705e16f141fc4e1)
+#Variables: 0 ( in objective) (0 primary variables)
+2025-09-16 04:46:41,684 | INFO | [phase1] [Symmetry] Graph for symmetry has 0 nodes and 0 arcs.
+2025-09-16 04:46:41,707 | INFO | [phase1] 
+2025-09-16 04:46:41,714 | INFO | [phase1] Preloading model.
+2025-09-16 04:46:41,746 | INFO | [phase1] #Bound   1.19s best:inf   next:[448,448]  initial_domain
+2025-09-16 04:46:41,748 | INFO | [phase1] The solution hint is complete and is feasible. Its objective value is 448.
+2025-09-16 04:46:41,798 | INFO | [phase1] #Model   1.24s var:0/0 constraints:0/0
+2025-09-16 04:46:41,808 | INFO | [phase1] 
+2025-09-16 04:46:41,829 | INFO | [phase1] Starting search at 1.27s with 8 workers.
+2025-09-16 04:46:41,832 | INFO | [phase1] 5 full problem subsolvers: [default_lp, max_lp, no_lp, quick_restart, quick_restart_no_lp]
+2025-09-16 04:46:41,911 | INFO | [phase1] 3 first solution subsolvers: [fj, fs_random, fs_random_no_lp]
+2025-09-16 04:46:41,913 | INFO | [phase1] 3 interleaved subsolvers: [feasibility_pump, ls, rins/rens]
+2025-09-16 04:46:41,926 | INFO | [phase1] 2 helper subsolvers: [neighborhood_helper, synchronization_agent]
+2025-09-16 04:46:41,953 | INFO | [phase1] 
+2025-09-16 04:46:41,966 | INFO | [phase1] #1       1.41s best:448   next:[]         max_lp
+2025-09-16 04:46:41,967 | INFO | [phase1] #Done    1.41s max_lp
+2025-09-16 04:46:41,985 | INFO | [phase1] 
+2025-09-16 04:46:41,986 | INFO | [phase1] Task timing                      n [     min,      max]      avg      dev     time         n [     min,      max]      avg      dev    dtime
+           'default_lp':         1 [  2.77ms,   2.77ms]   2.77ms   0.00ns   2.77ms         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+     'feasibility_pump':         1 [370.60us, 370.60us] 370.60us   0.00ns 370.60us         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+                   'fj':         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+            'fs_random':         1 [ 98.00us,  98.00us]  98.00us   0.00ns  98.00us         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+      'fs_random_no_lp':         1 [ 97.40us,  97.40us]  97.40us   0.00ns  97.40us         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+                   'ls':         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+               'max_lp':         1 [  2.36ms,   2.36ms]   2.36ms   0.00ns   2.36ms         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+                'no_lp':         1 [  2.48ms,   2.48ms]   2.48ms   0.00ns   2.48ms         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+        'quick_restart':         1 [  1.45ms,   1.45ms]   1.45ms   0.00ns   1.45ms         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+  'quick_restart_no_lp':         1 [264.10us, 264.10us] 264.10us   0.00ns 264.10us         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+            'rins/rens':         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+2025-09-16 04:46:41,987 | INFO | [phase1] Search stats              Bools  Conflicts  Branches  Restarts  BoolPropag  IntegerPropag
+           'default_lp':      0          0         0         0           0              0
+            'fs_random':      0          0         0         0           0              0
+      'fs_random_no_lp':      0          0         0         0           0              0
+               'max_lp':      0          0         0         0           0              1
+                'no_lp':      0          0         0         0           0              0
+        'quick_restart':      0          0         0         0           0              0
+  'quick_restart_no_lp':      0          0         0         0           0              0
+2025-09-16 04:46:42,014 | INFO | [phase1] SAT stats                 ClassicMinim  LitRemoved  LitLearned  LitForgotten  Subsumed  MClauses  MDecisions  MLitTrue  MSubsumed  MLitRemoved  MReused
+           'default_lp':             0           0           0             0         0         0           0         0          0            0        0
+            'fs_random':             0           0           0             0         0         0           0         0          0            0        0
+      'fs_random_no_lp':             0           0           0             0         0         0           0         0          0            0        0
+               'max_lp':             0           0           0             0         0         0           0         0          0            0        0
+                'no_lp':             0           0           0             0         0         0           0         0          0            0        0
+        'quick_restart':             0           0           0             0         0         0           0         0          0            0        0
+  'quick_restart_no_lp':             0           0           0             0         0         0           0         0          0            0        0
+2025-09-16 04:46:42,042 | INFO | [phase1] LNS stats       Improv/Calls  Closed  Difficulty  TimeLimit
+  'rins/rens':           0/0      0%    5.00e-01       0.10
+2025-09-16 04:46:42,045 | INFO | [phase1] Solutions (1)    Num   Rank
+      'max_lp':    1  [1,1]
+2025-09-16 04:46:42,055 | INFO | [phase1] Objective bounds     Num
+  'initial_domain':    1
+2025-09-16 04:46:42,061 | INFO | [phase1] Solution repositories    Added  Queried  Synchro
+  'feasible solutions':      1        0        1
+   'fj solution hints':      0        0        0
+        'lp solutions':      0        0        0
+                'pump':      0        0
+2025-09-16 04:46:42,076 | INFO | [phase1] CpSolverResponse summary:
+status: OPTIMAL
+objective: 448
+best_bound: 448
+integers: 1
+booleans: 0
+conflicts: 0
+branches: 0
+propagations: 0
+integer_propagations: 0
+restarts: 0
+lp_iterations: 0
+walltime: 1.515
+usertime: 1.515
+deterministic_time: 5.6e-07
+gap_integral: 0
+solution_fingerprint: 0x1f89d8db7e6fce8e
+2025-09-16 04:46:42,081 | INFO | Phase-1 status=OPTIMAL objective(U)=448.0
+2025-09-16 04:46:42,104 | INFO | 448.0
+2025-09-16 04:46:42,180 | INFO | [wk_pen_count_0(0..4), wk_pen_count_1(0..4), wk_pen_count_2(0..4), wk_pen_count_3(0..4), wk_pen_count_4(0..4), wk_pen_count_5(0..4), wk_pen_count_6(0..4)]
+2025-09-16 04:46:42,181 | INFO | Model built: |S|=22 |P|=7 |D|=31
+2025-09-16 04:46:42,184 | INFO | Time budget total=1500.00s split: phase1=600.00s phase2=900.00s
+2025-09-16 04:46:42,192 | INFO | Phase-2 solve: time=900.0s workers=16 rgap=1e-05 seed=1
+2025-09-16 04:46:42,193 | INFO | Diversity threshold L=1, K=2
+2025-09-16 04:46:42,217 | INFO | [phase2] 
+2025-09-16 04:46:42,224 | INFO | [phase2] Starting CP-SAT solver v9.14.6206
+2025-09-16 04:46:42,253 | INFO | [phase2] Parameters: random_seed: 1 max_time_in_seconds: 900 log_search_progress: true num_search_workers: 16 relative_gap_limit: 1e-05 log_to_stdout: false
+2025-09-16 04:46:42,262 | INFO | [phase2] 
+2025-09-16 04:46:42,293 | INFO | [phase2] Initial optimization model '': (model_fingerprint: 0xd88779c531954b8f)
+#Variables: 2'133 (#ints: 1 in objective) (1'005 primary variables)
+  - 1'030 Booleans in [0,1]
+  - 7 in [-31,31]
+  - 28 in [-1,1]
+  - 21 in [0,2]
+  - 21 in [0,3]
+  - 14 in [0,4]
+  - 35 in [0,22]
+  - 462 in [0,31]
+  - 7 in [0,40]
+  - 217 in [0,961]
+  - 21 in [0,968]
+  - 28 in [0,1000]
+  - 224 in [0,29791]
+  - 7 in [0,100000]
+  - 7 in [0,1000000000000000]
+  - 2 in [0,1000000000000000000]
+  - 2 constants in {0} 
+#kAtMostOne: 147 (#literals: 294)
+#kIntProd: 455
+#kLinMax: 42 (#expressions: 287)
+#kLinear1: 1'183 (#enforced: 651 #multi: 210)
+#kLinear2: 1'484 (#enforced: 427 #multi: 210)
+#kLinear3: 406
+#kLinearN: 151 (#terms: 1'744)
+2025-09-16 04:46:42,295 | INFO | [phase2] 
+2025-09-16 04:46:42,297 | INFO | [phase2] Starting presolve at 0.08s
+2025-09-16 04:46:42,318 | INFO | [phase2]   4.96e-04s  0.00e+00d  [DetectDominanceRelations]
+2025-09-16 04:46:42,319 | INFO | [phase2]   1.42e-02s  0.00e+00d  [operations_research::sat::CpModelPresolver::PresolveToFixPoint] #num_loops=2 #num_dual_strengthening=1
+2025-09-16 04:46:42,326 | INFO | [phase2]   9.86e-05s  0.00e+00d  [operations_research::sat::CpModelPresolver::ExtractEncodingFromLinear]
+2025-09-16 04:46:42,328 | INFO | [phase2]   1.23e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::DetectDuplicateColumns]
+2025-09-16 04:46:42,344 | INFO | [phase2]   2.05e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::DetectDuplicateConstraints]
+2025-09-16 04:46:42,349 | INFO | [phase2]   1.06e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::DetectDuplicateConstraintsWithDifferentEnforcements]
+2025-09-16 04:46:42,375 | INFO | [phase2]   2.66e-02s  1.40e-07d  [operations_research::sat::CpModelPresolver::Probe]
+2025-09-16 04:46:42,377 | INFO | [phase2]   6.43e-05s  0.00e+00d  [MaxClique]
+2025-09-16 04:46:42,406 | INFO | [phase2]   8.00e-04s  0.00e+00d  [DetectDominanceRelations]
+2025-09-16 04:46:42,407 | INFO | [phase2]   2.84e-03s  0.00e+00d  [operations_research::sat::CpModelPresolver::PresolveToFixPoint] #num_loops=2 #num_dual_strengthening=1
+2025-09-16 04:46:42,434 | INFO | [phase2]   7.51e-05s  0.00e+00d  [operations_research::sat::CpModelPresolver::ProcessAtMostOneAndLinear]
+2025-09-16 04:46:42,439 | INFO | [phase2]   2.38e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::DetectDuplicateConstraints]
+2025-09-16 04:46:42,465 | INFO | [phase2]   3.31e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::DetectDuplicateConstraintsWithDifferentEnforcements]
+2025-09-16 04:46:42,468 | INFO | [phase2]   9.25e-05s  0.00e+00d  [operations_research::sat::CpModelPresolver::DetectDominatedLinearConstraints]
+2025-09-16 04:46:42,477 | INFO | [phase2]   1.41e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::DetectDifferentVariables]
+2025-09-16 04:46:42,479 | INFO | [phase2]   6.58e-05s  0.00e+00d  [operations_research::sat::CpModelPresolver::ProcessSetPPC]
+2025-09-16 04:46:42,496 | INFO | [phase2]   1.10e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::FindAlmostIdenticalLinearConstraints]
+2025-09-16 04:46:42,500 | INFO | [phase2]   2.91e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::FindBigAtMostOneAndLinearOverlap]
+2025-09-16 04:46:42,526 | INFO | [phase2]   1.94e-04s  4.90e-07d  [operations_research::sat::CpModelPresolver::FindBigVerticalLinearOverlap]
+2025-09-16 04:46:42,529 | INFO | [phase2]   1.17e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::FindBigHorizontalLinearOverlap]
+2025-09-16 04:46:42,557 | INFO | [phase2]   1.79e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::MergeClauses]
+2025-09-16 04:46:42,589 | INFO | [phase2]   8.94e-04s  0.00e+00d  [DetectDominanceRelations]
+2025-09-16 04:46:42,591 | INFO | [phase2]   3.51e-03s  0.00e+00d  [operations_research::sat::CpModelPresolver::PresolveToFixPoint] #num_loops=1 #num_dual_strengthening=1
+2025-09-16 04:46:42,619 | INFO | [phase2]   7.69e-04s  0.00e+00d  [DetectDominanceRelations]
+2025-09-16 04:46:42,620 | INFO | [phase2]   3.03e-03s  0.00e+00d  [operations_research::sat::CpModelPresolver::PresolveToFixPoint] #num_loops=1 #num_dual_strengthening=1
+2025-09-16 04:46:42,647 | INFO | [phase2]   1.93e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::DetectDuplicateColumns]
+2025-09-16 04:46:42,650 | INFO | [phase2]   2.25e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::DetectDuplicateConstraints]
+2025-09-16 04:46:42,677 | INFO | [phase2]   1.13e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::DetectDuplicateConstraintsWithDifferentEnforcements]
+2025-09-16 04:46:42,678 | INFO | [phase2]   2.19e-03s  1.40e-07d  [operations_research::sat::CpModelPresolver::Probe]
+2025-09-16 04:46:42,691 | INFO | [phase2]   2.00e-04s  0.00e+00d  [MaxClique]
+2025-09-16 04:46:42,710 | INFO | [phase2]   9.67e-04s  0.00e+00d  [DetectDominanceRelations]
+2025-09-16 04:46:42,710 | INFO | [phase2]   2.43e-03s  0.00e+00d  [operations_research::sat::CpModelPresolver::PresolveToFixPoint] #num_loops=1 #num_dual_strengthening=1
+2025-09-16 04:46:42,738 | INFO | [phase2]   5.10e-05s  0.00e+00d  [operations_research::sat::CpModelPresolver::ProcessAtMostOneAndLinear]
+2025-09-16 04:46:42,740 | INFO | [phase2]   2.21e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::DetectDuplicateConstraints]
+2025-09-16 04:46:42,767 | INFO | [phase2]   3.93e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::DetectDuplicateConstraintsWithDifferentEnforcements]
+2025-09-16 04:46:42,770 | INFO | [phase2]   9.41e-05s  0.00e+00d  [operations_research::sat::CpModelPresolver::DetectDominatedLinearConstraints]
+2025-09-16 04:46:42,780 | INFO | [phase2]   1.12e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::DetectDifferentVariables]
+2025-09-16 04:46:42,784 | INFO | [phase2]   8.39e-05s  0.00e+00d  [operations_research::sat::CpModelPresolver::ProcessSetPPC]
+2025-09-16 04:46:42,798 | INFO | [phase2]   8.92e-05s  0.00e+00d  [operations_research::sat::CpModelPresolver::FindAlmostIdenticalLinearConstraints]
+2025-09-16 04:46:42,802 | INFO | [phase2]   1.67e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::FindBigAtMostOneAndLinearOverlap]
+2025-09-16 04:46:42,811 | INFO | [phase2]   7.38e-05s  4.90e-07d  [operations_research::sat::CpModelPresolver::FindBigVerticalLinearOverlap]
+2025-09-16 04:46:42,813 | INFO | [phase2]   1.13e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::FindBigHorizontalLinearOverlap]
+2025-09-16 04:46:42,829 | INFO | [phase2]   2.50e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::MergeClauses]
+2025-09-16 04:46:42,834 | INFO | [phase2]   7.64e-04s  0.00e+00d  [DetectDominanceRelations]
+2025-09-16 04:46:42,858 | INFO | [phase2]   2.56e-02s  0.00e+00d  [operations_research::sat::CpModelPresolver::PresolveToFixPoint] #num_loops=1 #num_dual_strengthening=1
+2025-09-16 04:46:42,874 | INFO | [phase2]   5.87e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::ExpandObjective]
+2025-09-16 04:46:42,889 | INFO | [phase2] 
+2025-09-16 04:46:42,891 | INFO | [phase2] Presolve summary:
+2025-09-16 04:46:42,936 | INFO | [phase2]   - 35 affine relations were detected.
+2025-09-16 04:46:42,938 | INFO | [phase2]   - rule 'TODO dual: only one blocking constraint?' was applied 252 times.
+2025-09-16 04:46:42,940 | INFO | [phase2]   - rule 'TODO linear2: contains a Boolean.' was applied 168 times.
+2025-09-16 04:46:42,941 | INFO | [phase2]   - rule 'affine: new relation' was applied 35 times.
+2025-09-16 04:46:42,954 | INFO | [phase2]   - rule 'at_most_one: empty or all false' was applied 147 times.
+2025-09-16 04:46:42,970 | INFO | [phase2]   - rule 'at_most_one: removed literals' was applied 147 times.
+2025-09-16 04:46:42,972 | INFO | [phase2]   - rule 'bool_and: non-reified.' was applied 42 times.
+2025-09-16 04:46:42,998 | INFO | [phase2]   - rule 'bool_or: always true' was applied 7 times.
+2025-09-16 04:46:43,000 | INFO | [phase2]   - rule 'bool_or: implications' was applied 84 times.
+2025-09-16 04:46:43,026 | INFO | [phase2]   - rule 'deductions: 140 stored' was applied 1 time.
+2025-09-16 04:46:43,027 | INFO | [phase2]   - rule 'enforcement: always false' was applied 441 times.
+2025-09-16 04:46:43,039 | INFO | [phase2]   - rule 'enforcement: false literal' was applied 238 times.
+2025-09-16 04:46:43,054 | INFO | [phase2]   - rule 'enforcement: true literal' was applied 196 times.
+2025-09-16 04:46:43,081 | INFO | [phase2]   - rule 'int_prod: constant product' was applied 434 times.
+2025-09-16 04:46:43,085 | INFO | [phase2]   - rule 'int_prod: removed constant expressions.' was applied 861 times.
+2025-09-16 04:46:43,108 | INFO | [phase2]   - rule 'int_prod: unused affine target' was applied 7 times.
+2025-09-16 04:46:43,111 | INFO | [phase2]   - rule 'int_square: reduced target domain.' was applied 63 times.
+2025-09-16 04:46:43,124 | INFO | [phase2]   - rule 'lin_max: all exprs fixed during copy' was applied 28 times.
+2025-09-16 04:46:43,125 | INFO | [phase2]   - rule 'lin_max: converted to equality' was applied 7 times.
+2025-09-16 04:46:43,139 | INFO | [phase2]   - rule 'lin_max: reduced expression domain.' was applied 28 times.
+2025-09-16 04:46:43,165 | INFO | [phase2]   - rule 'lin_max: removed exprs' was applied 14 times.
+2025-09-16 04:46:43,169 | INFO | [phase2]   - rule 'lin_max: target domain reduced' was applied 7 times.
+2025-09-16 04:46:43,192 | INFO | [phase2]   - rule 'lin_max: x = max(x, ...)' was applied 7 times.
+2025-09-16 04:46:43,194 | INFO | [phase2]   - rule 'linear1: always true' was applied 14 times.
+2025-09-16 04:46:43,209 | INFO | [phase2]   - rule 'linear1: x in domain' was applied 1'024 times.
+2025-09-16 04:46:43,212 | INFO | [phase2]   - rule 'linear: always true' was applied 945 times.
+2025-09-16 04:46:43,224 | INFO | [phase2]   - rule 'linear: empty' was applied 505 times.
+2025-09-16 04:46:43,226 | INFO | [phase2]   - rule 'linear: enforcement literal in expression' was applied 7 times.
+2025-09-16 04:46:43,251 | INFO | [phase2]   - rule 'linear: fixed or dup variables' was applied 1'999 times.
+2025-09-16 04:46:43,254 | INFO | [phase2]   - rule 'linear: negative clause' was applied 49 times.
+2025-09-16 04:46:43,279 | INFO | [phase2]   - rule 'linear: positive clause' was applied 42 times.
+2025-09-16 04:46:43,282 | INFO | [phase2]   - rule 'linear: reduced variable domains' was applied 519 times.
+2025-09-16 04:46:43,310 | INFO | [phase2]   - rule 'linear: remapped using affine relations' was applied 63 times.
+2025-09-16 04:46:43,313 | INFO | [phase2]   - rule 'linear: variable substitution 0' was applied 1 time.
+2025-09-16 04:46:43,337 | INFO | [phase2]   - rule 'linear: variable substitution 1' was applied 7 times.
+2025-09-16 04:46:43,340 | INFO | [phase2]   - rule 'presolve: 2090 unused variables removed.' was applied 1 time.
+2025-09-16 04:46:43,362 | INFO | [phase2]   - rule 'presolve: iteration' was applied 2 times.
+2025-09-16 04:46:43,365 | INFO | [phase2]   - rule 'variables: both boolean and its negation fix the same variable' was applied 21 times.
+2025-09-16 04:46:43,387 | INFO | [phase2]   - rule 'variables: both boolean and its negation imply same equality' was applied 7 times.
+2025-09-16 04:46:43,400 | INFO | [phase2]   - rule 'variables: detect half reified value encoding' was applied 126 times.
+2025-09-16 04:46:43,403 | INFO | [phase2] 
+2025-09-16 04:46:43,413 | INFO | [phase2] Presolved optimization model '': (model_fingerprint: 0xd64395d635c6e163)
+#Variables: 28 (#ints: 14 in objective) (14 primary variables)
+  - 7 in [0,1][4][9][16][25][36][49][64][81][100][ ... 169][196][225][256][289][324][361][400][441][484]
+  - 7 in [0,22]
+  - 7 in [3,22]
+  - 7 in [9][16][25][36][49][64][81][100][121][144][169][196][225][256][289][324][361][400][441][484]
+#kIntProd: 14
+2025-09-16 04:46:43,417 | INFO | [phase2] 
+2025-09-16 04:46:43,436 | INFO | [phase2] Preloading model.
+2025-09-16 04:46:43,439 | INFO | [phase2] #Bound   1.22s best:inf   next:[315000,33880000] initial_domain
+2025-09-16 04:46:43,450 | INFO | [phase2] #Model   1.23s var:28/28 constraints:14/14 compo:2,2,2,2,2,2,2,2,2,2,...
+2025-09-16 04:46:43,451 | INFO | [phase2] 
+2025-09-16 04:46:43,461 | INFO | [phase2] Starting search at 1.24s with 16 workers.
+2025-09-16 04:46:43,463 | INFO | [phase2] 11 full problem subsolvers: [core, default_lp, lb_tree_search, max_lp, no_lp, objective_lb_search, probing, pseudo_costs, quick_restart, quick_restart_no_lp, reduced_costs]
+2025-09-16 04:46:43,483 | INFO | [phase2] 5 first solution subsolvers: [fj(2), fs_random, fs_random_no_lp, fs_random_quick_restart_no_lp]
+2025-09-16 04:46:43,486 | INFO | [phase2] 11 interleaved subsolvers: [feasibility_pump, graph_arc_lns, graph_cst_lns, graph_dec_lns, graph_var_lns, lb_relax_lns, ls, ls_lin, rins/rens, rnd_cst_lns, rnd_var_lns]
+2025-09-16 04:46:43,505 | INFO | [phase2] 3 helper subsolvers: [neighborhood_helper, synchronization_agent, update_gap_integral]
+2025-09-16 04:46:43,515 | INFO | [phase2] 
+2025-09-16 04:46:43,530 | INFO | [phase2] #1       1.31s best:315000 next:[]         core (fixed_bools=0/14)
+2025-09-16 04:46:43,535 | INFO | [phase2] #Done    1.32s core
+2025-09-16 04:46:43,559 | INFO | [phase2] 
+2025-09-16 04:46:43,560 | INFO | [phase2] Task timing                                n [     min,      max]      avg      dev     time         n [     min,      max]      avg      dev    dtime
+                           'core':         1 [  7.99ms,   7.99ms]   7.99ms   0.00ns   7.99ms         1 [  4.63us,   4.63us]   4.63us   0.00ns   4.63us
+                     'default_lp':         1 [ 11.85ms,  11.85ms]  11.85ms   0.00ns  11.85ms         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+               'feasibility_pump':         1 [  1.80ms,   1.80ms]   1.80ms   0.00ns   1.80ms         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+                             'fj':         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+                             'fj':         1 [510.20us, 510.20us] 510.20us   0.00ns 510.20us         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+                      'fs_random':         1 [  2.13ms,   2.13ms]   2.13ms   0.00ns   2.13ms         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+                'fs_random_no_lp':         1 [  2.57ms,   2.57ms]   2.57ms   0.00ns   2.57ms         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+  'fs_random_quick_restart_no_lp':         1 [  1.85ms,   1.85ms]   1.85ms   0.00ns   1.85ms         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+                  'graph_arc_lns':         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+                  'graph_cst_lns':         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+                  'graph_dec_lns':         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+                  'graph_var_lns':         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+                   'lb_relax_lns':         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+                 'lb_tree_search':         1 [  5.36ms,   5.36ms]   5.36ms   0.00ns   5.36ms         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+                             'ls':         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+                         'ls_lin':         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+                         'max_lp':         1 [  8.32ms,   8.32ms]   8.32ms   0.00ns   8.32ms         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+                          'no_lp':         1 [  8.03ms,   8.03ms]   8.03ms   0.00ns   8.03ms         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+            'objective_lb_search':         1 [  7.48ms,   7.48ms]   7.48ms   0.00ns   7.48ms         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+                        'probing':         1 [  7.74ms,   7.74ms]   7.74ms   0.00ns   7.74ms         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+                   'pseudo_costs':         1 [  6.83ms,   6.83ms]   6.83ms   0.00ns   6.83ms         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+                  'quick_restart':         1 [  8.14ms,   8.14ms]   8.14ms   0.00ns   8.14ms         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+            'quick_restart_no_lp':         1 [  7.12ms,   7.12ms]   7.12ms   0.00ns   7.12ms         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+                  'reduced_costs':         1 [ 10.79ms,  10.79ms]  10.79ms   0.00ns  10.79ms         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+                      'rins/rens':         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+                    'rnd_cst_lns':         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+                    'rnd_var_lns':         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+2025-09-16 04:46:43,571 | INFO | [phase2] Search stats                        Bools  Conflicts  Branches  Restarts  BoolPropag  IntegerPropag
+                           'core':     14          0        13         2          15             57
+                     'default_lp':      0          0         0         0           0              0
+                      'fs_random':      0          0         0         0           0              0
+                'fs_random_no_lp':      0          0         0         0           0              0
+  'fs_random_quick_restart_no_lp':      0          0         0         0           0              0
+                 'lb_tree_search':      0          0         0         0           0              0
+                         'max_lp':      0          0         0         0           0              0
+                          'no_lp':      0          0         0         0           0              0
+            'objective_lb_search':      0          0         0         0           0              0
+                        'probing':      0          0         0         0           0              0
+                   'pseudo_costs':      0          0         0         0           0              0
+                  'quick_restart':      0          0         0         0           0              0
+            'quick_restart_no_lp':      0          0         0         0           0              0
+                  'reduced_costs':      0          0         0         0           0              0
+2025-09-16 04:46:43,583 | INFO | [phase2] SAT stats                           ClassicMinim  LitRemoved  LitLearned  LitForgotten  Subsumed  MClauses  MDecisions  MLitTrue  MSubsumed  MLitRemoved  MReused
+                           'core':             0           0           0             0         0         0           0         0          0            0        0
+                     'default_lp':             0           0           0             0         0         0           0         0          0            0        0
+                      'fs_random':             0           0           0             0         0         0           0         0          0            0        0
+                'fs_random_no_lp':             0           0           0             0         0         0           0         0          0            0        0
+  'fs_random_quick_restart_no_lp':             0           0           0             0         0         0           0         0          0            0        0
+                 'lb_tree_search':             0           0           0             0         0         0           0         0          0            0        0
+                         'max_lp':             0           0           0             0         0         0           0         0          0            0        0
+                          'no_lp':             0           0           0             0         0         0           0         0          0            0        0
+            'objective_lb_search':             0           0           0             0         0         0           0         0          0            0        0
+                        'probing':             0           0           0             0         0         0           0         0          0            0        0
+                   'pseudo_costs':             0           0           0             0         0         0           0         0          0            0        0
+                  'quick_restart':             0           0           0             0         0         0           0         0          0            0        0
+            'quick_restart_no_lp':             0           0           0             0         0         0           0         0          0            0        0
+                  'reduced_costs':             0           0           0             0         0         0           0         0          0            0        0
+2025-09-16 04:46:43,599 | INFO | [phase2] Lp stats                  Component  Iterations  AddedCuts  OPTIMAL  DUAL_F.  DUAL_U.
+           'default_lp':         14           0          0        0        0        0
+       'lb_tree_search':         14           0          0       14        0        0
+               'max_lp':         14           0          0       14        0        0
+  'objective_lb_search':         14           0          0        2        0        0
+              'probing':         14           0          0        0        0        0
+         'pseudo_costs':         14           0          0       14        0        0
+        'quick_restart':         14           0          0       14        0        0
+        'reduced_costs':         14           0          0       14        0        0
+2025-09-16 04:46:43,601 | INFO | [phase2] Lp dimension              Final dimension of first component
+           'default_lp':        0 rows, 2 columns, 0 entries
+       'lb_tree_search':        3 rows, 2 columns, 6 entries
+               'max_lp':        3 rows, 2 columns, 6 entries
+  'objective_lb_search':        0 rows, 2 columns, 0 entries
+              'probing':        0 rows, 2 columns, 0 entries
+         'pseudo_costs':        0 rows, 2 columns, 0 entries
+        'quick_restart':        0 rows, 2 columns, 0 entries
+        'reduced_costs':        0 rows, 2 columns, 0 entries
+2025-09-16 04:46:43,615 | INFO | [phase2] Lp debug                  CutPropag  CutEqPropag  Adjust  Overflow  Bad  BadScaling
+           'default_lp':          0            0       0         0    0           0
+       'lb_tree_search':          0            0       0         0    0           0
+               'max_lp':          0            0       0         0    0           0
+  'objective_lb_search':          0            0       0         0    0           0
+              'probing':          0            0       0         0    0           0
+         'pseudo_costs':          0            0       0         0    0           0
+        'quick_restart':          0            0       0         0    0           0
+        'reduced_costs':          0            0       0         0    0           0
+2025-09-16 04:46:43,630 | INFO | [phase2] Lp pool                   Constraints  Updates  Simplif  Merged  Shortened  Split  Strenghtened  Cuts/Call
+           'default_lp':           42        0        0       0          0      0             0        0/0
+       'lb_tree_search':           42        0        0       0          0      0             0       0/28
+               'max_lp':           42        0        0       0          0      0             0       0/28
+  'objective_lb_search':           42        0        0       0          0      0             0        0/0
+              'probing':           42        0        0       0          0      0             0        0/0
+         'pseudo_costs':           42        0        0       0          0      0             0        0/0
+        'quick_restart':           42        0        0       0          0      0             0        0/0
+        'reduced_costs':           42        0        0       0          0      0             0        0/0
+2025-09-16 04:46:43,631 | INFO | [phase2] LNS stats           Improv/Calls  Closed  Difficulty  TimeLimit
+  'graph_arc_lns':           0/0      0%    5.00e-01       0.10
+  'graph_cst_lns':           0/0      0%    5.00e-01       0.10
+  'graph_dec_lns':           0/0      0%    5.00e-01       0.10
+  'graph_var_lns':           0/0      0%    5.00e-01       0.10
+   'lb_relax_lns':           0/0      0%    5.00e-01       0.50
+      'rins/rens':           0/0      0%    5.00e-01       0.10
+    'rnd_cst_lns':           0/0      0%    5.00e-01       0.10
+    'rnd_var_lns':           0/0      0%    5.00e-01       0.10
+2025-09-16 04:46:43,649 | INFO | [phase2] LS stats         Batches  Restarts/Perturbs  LinMoves  GenMoves  CompoundMoves  Bactracks  WeightUpdates  ScoreComputed
+  'fj_restart':        1                  1         0         0              0          0              0              0
+2025-09-16 04:46:43,667 | INFO | [phase2] Solutions (1)    Num   Rank
+        'core':    1  [1,1]
+2025-09-16 04:46:43,672 | INFO | [phase2] Objective bounds     Num
+  'initial_domain':    1
+2025-09-16 04:46:43,677 | INFO | [phase2] Solution repositories    Added  Queried  Synchro
+  'feasible solutions':      2        0        2
+   'fj solution hints':      0        0        0
+        'lp solutions':      0        0        0
+                'pump':      0        0
+2025-09-16 04:46:43,680 | INFO | [phase2] CpSolverResponse summary:
+status: OPTIMAL
+objective: 315000
+best_bound: 315000
+integers: 29
+booleans: 14
+conflicts: 0
+branches: 13
+propagations: 15
+integer_propagations: 57
+restarts: 2
+lp_iterations: 0
+walltime: 1.4627
+usertime: 1.4627
+deterministic_time: 5.89e-06
+gap_integral: 8.02332e-05
+solution_fingerprint: 0x69d711836b0e2781
+2025-09-16 04:46:43,702 | INFO | Phase-2 status=OPTIMAL
+2025-09-16 04:46:43,703 | INFO | Phase-2 best objective=315000.0 best bound=315000.0
+2025-09-16 04:46:43,713 | INFO | Pool collected=1
+2025-09-16 04:46:43,718 | INFO | Selected tables=2 (requested K=2)
+2025-09-16 04:46:43,731 | INFO | Selected objectives: [315000.0, 315000.0]
+2025-09-16 04:46:43,853 | INFO | Wrote: Result_18\schedules.xlsx
+2025-09-16 04:46:43,856 | INFO | Wrote: Result_18\hospital_schedule.xlsx
+2025-09-16 04:46:43,857 | INFO | Wrote: Result_18\calendar.xlsx
+2025-09-16 04:46:43,862 | INFO | Wrote: Result_18\eligibility_capacity.json
+2025-09-16 04:46:43,864 | INFO | Wrote grid: Result_18\schedules.xlsx
+2025-09-16 04:46:43,878 | INFO | Wrote hospital: Result_18\hospital_schedule.xlsx
+2025-09-16 04:46:43,881 | INFO | Wrote calendar: Result_18\calendar.xlsx
+2025-09-16 04:46:43,894 | INFO | Wrote run meta: Result_18\scheduler_log_20250916_044640.json
+2025-09-16 04:46:43,896 | INFO | ===== SCHEDULER RUN COMPLETE 20250916_044640 =====
+2025-09-16 04:46:43,998 | INFO | Logging to Result_18\scheduler_run.log
+2025-09-16 04:46:44,012 | INFO | ===== SCHEDULER RUN 20250916_044643 =====
+2025-09-16 04:46:44,018 | INFO | Args.case=C:\Users\sapper\AppData\Local\Temp\tmpeq1zaftp.json
+2025-09-16 04:46:44,027 | INFO | Loaded case with 31 days, 22 shifts, 7 providers
+2025-09-16 04:46:44,032 | INFO | Run config: out=Result_18 k=2 seed=1 time=1500 L=1
+2025-09-16 04:46:44,044 | INFO | Wrote: Result_18\constants_effective.log
+2025-09-16 04:46:44,047 | INFO | Wrote capacity snapshot: Result_18\eligibility_capacity.json
+2025-09-16 04:46:44,049 | INFO | Instance: |days|=31 |shifts|=22 |providers|=7 |types|=10
+2025-09-16 04:46:44,075 | INFO | Weekend names: ['Saturday', 'Sunday']
+2025-09-16 04:46:44,082 | INFO | Weekend indices: [3, 4, 10, 11, 17, 18, 24, 25]
+2025-09-16 04:46:44,084 | INFO | Shift[0] keys: ['id', 'date', 'type', 'start', 'end', 'allowed_provider_types']
+2025-09-16 04:46:44,086 | INFO | Provider[0] keys: ['id', 'name', 'type', 'max_consecutive_days', 'limits', 'forbidden_days_soft', 'forbidden_days_hard', 'preferred_days_hard', 'preferred_days_soft']
+2025-09-16 04:46:44,090 | INFO | Provider types: ['MD_N', 'MD_S2']
+2025-09-16 04:46:44,128 | INFO | max_consecutive_days per provider (0 means no cap): [12, 3, 2, 2, 4, 3, 3]
+2025-09-16 04:46:44,923 | INFO | 0
+2025-09-16 04:46:44,925 | INFO | 1
+2025-09-16 04:46:44,928 | INFO | 2
+2025-09-16 04:46:44,936 | INFO | 3
+2025-09-16 04:46:44,944 | INFO | 4
+2025-09-16 04:46:44,947 | INFO | 5
+2025-09-16 04:46:44,954 | INFO | 6
+2025-09-16 04:46:44,965 | INFO | Phase-1 solve: time=120.0s workers=8
+2025-09-16 04:46:44,976 | INFO | [phase1] 
+2025-09-16 04:46:44,977 | INFO | [phase1] Starting CP-SAT solver v9.14.6206
+2025-09-16 04:46:44,978 | INFO | [phase1] Parameters: max_time_in_seconds: 120 log_search_progress: true num_search_workers: 8 log_to_stdout: false
+2025-09-16 04:46:44,997 | INFO | [phase1] 
+2025-09-16 04:46:45,011 | INFO | [phase1] Initial optimization model '': (model_fingerprint: 0x910604613e2ad2ca)
+#Variables: 1'543 (#ints: 1 in objective) (754 primary variables)
+  - 610 Booleans in [0,1]
+  - 7 in [-31,31]
+  - 7 in [0,22]
+  - 448 in [0,31]
+  - 217 in [0,961]
+  - 28 in [0,1000]
+  - 224 in [0,29791]
+  - 1 in [0,1000000000000000000]
+  - 1 constants in {0} 
+#kAtMostOne: 147 (#literals: 294)
+#kIntProd: 434
+#kLinMax: 14 (#expressions: 231)
+#kLinear1: 965 (#enforced: 651 #multi: 210)
+#kLinear2: 1'043 (#enforced: 427 #multi: 210)
+#kLinear3: 238
+#kLinearN: 66 (#terms: 889)
+2025-09-16 04:46:45,012 | INFO | [phase1] 
+2025-09-16 04:46:45,014 | INFO | [phase1] Starting presolve at 0.04s
+2025-09-16 04:46:45,056 | INFO | [phase1]   5.56e-04s  0.00e+00d  [DetectDominanceRelations]
+2025-09-16 04:46:45,057 | INFO | [phase1]   2.13e-02s  0.00e+00d  [operations_research::sat::CpModelPresolver::PresolveToFixPoint] #num_loops=2 #num_dual_strengthening=1
+2025-09-16 04:46:45,058 | INFO | [phase1]   1.26e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::ExtractEncodingFromLinear]
+2025-09-16 04:46:45,059 | INFO | [phase1]   5.89e-05s  0.00e+00d  [operations_research::sat::CpModelPresolver::DetectDuplicateColumns]
+2025-09-16 04:46:45,065 | INFO | [phase1]   1.14e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::DetectDuplicateConstraints]
+2025-09-16 04:46:45,068 | INFO | [phase1] [Symmetry] Graph for symmetry has 1'543 nodes and 0 arcs.
+2025-09-16 04:46:45,091 | INFO | [phase1] [Symmetry] Symmetry computation done. time: 0.0002987 dtime: 9.258e-05
+2025-09-16 04:46:45,095 | INFO | [phase1]   3.06e-05s  0.00e+00d  [operations_research::sat::CpModelPresolver::DetectDuplicateConstraintsWithDifferentEnforcements]
+2025-09-16 04:46:45,117 | INFO | [phase1]   2.32e-02s  0.00e+00d  [operations_research::sat::CpModelPresolver::Probe]
+2025-09-16 04:46:45,120 | INFO | [phase1]   1.14e-04s  0.00e+00d  [MaxClique]
+2025-09-16 04:46:45,145 | INFO | [phase1]   9.38e-05s  0.00e+00d  [operations_research::sat::CpModelPresolver::PresolveToFixPoint]
+2025-09-16 04:46:45,147 | INFO | [phase1]   7.86e-05s  0.00e+00d  [operations_research::sat::CpModelPresolver::ProcessAtMostOneAndLinear]
+2025-09-16 04:46:45,172 | INFO | [phase1]   9.39e-05s  0.00e+00d  [operations_research::sat::CpModelPresolver::DetectDuplicateConstraints]
+2025-09-16 04:46:45,175 | INFO | [phase1]   6.64e-05s  0.00e+00d  [operations_research::sat::CpModelPresolver::DetectDuplicateConstraintsWithDifferentEnforcements]
+2025-09-16 04:46:45,201 | INFO | [phase1]   3.02e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::DetectDominatedLinearConstraints]
+2025-09-16 04:46:45,229 | INFO | [phase1]   1.30e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::DetectDifferentVariables]
+2025-09-16 04:46:45,231 | INFO | [phase1]   8.64e-05s  0.00e+00d  [operations_research::sat::CpModelPresolver::ProcessSetPPC]
+2025-09-16 04:46:45,240 | INFO | [phase1]   2.38e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::FindAlmostIdenticalLinearConstraints]
+2025-09-16 04:46:45,241 | INFO | [phase1]   2.17e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::FindBigAtMostOneAndLinearOverlap]
+2025-09-16 04:46:45,260 | INFO | [phase1]   9.94e-05s  2.80e-07d  [operations_research::sat::CpModelPresolver::FindBigVerticalLinearOverlap]
+2025-09-16 04:46:45,262 | INFO | [phase1]   6.35e-05s  0.00e+00d  [operations_research::sat::CpModelPresolver::FindBigHorizontalLinearOverlap]
+2025-09-16 04:46:45,315 | INFO | [phase1]   1.72e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::MergeClauses]
+2025-09-16 04:46:45,323 | INFO | [phase1]   5.94e-05s  0.00e+00d  [operations_research::sat::CpModelPresolver::PresolveToFixPoint]
+2025-09-16 04:46:45,329 | INFO | [phase1]   1.45e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::PresolveToFixPoint]
+2025-09-16 04:46:45,339 | INFO | [phase1]   1.74e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::DetectDuplicateColumns]
+2025-09-16 04:46:45,367 | INFO | [phase1]   1.03e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::DetectDuplicateConstraints]
+2025-09-16 04:46:45,407 | INFO | [phase1] [Symmetry] Graph for symmetry has 1'543 nodes and 0 arcs.
+2025-09-16 04:46:45,412 | INFO | [phase1] [Symmetry] Symmetry computation done. time: 0.0002985 dtime: 9.258e-05
+2025-09-16 04:46:45,424 | INFO | [phase1]   7.22e-05s  0.00e+00d  [operations_research::sat::CpModelPresolver::DetectDuplicateConstraintsWithDifferentEnforcements]
+2025-09-16 04:46:45,431 | INFO | [phase1]   8.66e-03s  0.00e+00d  [operations_research::sat::CpModelPresolver::Probe]
+2025-09-16 04:46:45,433 | INFO | [phase1]   8.92e-05s  0.00e+00d  [MaxClique]
+2025-09-16 04:46:45,444 | INFO | [phase1]   1.13e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::PresolveToFixPoint]
+2025-09-16 04:46:45,445 | INFO | [phase1]   5.05e-05s  0.00e+00d  [operations_research::sat::CpModelPresolver::ProcessAtMostOneAndLinear]
+2025-09-16 04:46:45,466 | INFO | [phase1]   1.22e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::DetectDuplicateConstraints]
+2025-09-16 04:46:45,469 | INFO | [phase1]   3.29e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::DetectDuplicateConstraintsWithDifferentEnforcements]
+2025-09-16 04:46:45,479 | INFO | [phase1]   9.60e-05s  0.00e+00d  [operations_research::sat::CpModelPresolver::DetectDominatedLinearConstraints]
+2025-09-16 04:46:45,482 | INFO | [phase1]   1.08e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::DetectDifferentVariables]
+2025-09-16 04:46:45,493 | INFO | [phase1]   7.40e-05s  0.00e+00d  [operations_research::sat::CpModelPresolver::ProcessSetPPC]
+2025-09-16 04:46:45,496 | INFO | [phase1]   1.06e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::FindAlmostIdenticalLinearConstraints]
+2025-09-16 04:46:45,517 | INFO | [phase1]   1.38e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::FindBigAtMostOneAndLinearOverlap]
+2025-09-16 04:46:45,530 | INFO | [phase1]   1.20e-04s  2.80e-07d  [operations_research::sat::CpModelPresolver::FindBigVerticalLinearOverlap]
+2025-09-16 04:46:45,531 | INFO | [phase1]   1.10e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::FindBigHorizontalLinearOverlap]
+2025-09-16 04:46:45,544 | INFO | [phase1]   1.40e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::MergeClauses]
+2025-09-16 04:46:45,547 | INFO | [phase1]   3.65e-05s  0.00e+00d  [operations_research::sat::CpModelPresolver::PresolveToFixPoint]
+2025-09-16 04:46:45,569 | INFO | [phase1]   3.35e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::ExpandObjective]
+2025-09-16 04:46:45,583 | INFO | [phase1] 
+2025-09-16 04:46:45,583 | INFO | [phase1] Presolve summary:
+2025-09-16 04:46:45,596 | INFO | [phase1]   - 35 affine relations were detected.
+2025-09-16 04:46:45,599 | INFO | [phase1]   - rule 'TODO linear2: contains a Boolean.' was applied 168 times.
+2025-09-16 04:46:45,623 | INFO | [phase1]   - rule 'affine: new relation' was applied 35 times.
+2025-09-16 04:46:45,625 | INFO | [phase1]   - rule 'at_most_one: empty or all false' was applied 147 times.
+2025-09-16 04:46:45,650 | INFO | [phase1]   - rule 'at_most_one: removed literals' was applied 147 times.
+2025-09-16 04:46:45,651 | INFO | [phase1]   - rule 'bool_and: non-reified.' was applied 42 times.
+2025-09-16 04:46:45,676 | INFO | [phase1]   - rule 'bool_or: always true' was applied 7 times.
+2025-09-16 04:46:45,678 | INFO | [phase1]   - rule 'bool_or: implications' was applied 84 times.
+2025-09-16 04:46:45,689 | INFO | [phase1]   - rule 'deductions: 140 stored' was applied 1 time.
+2025-09-16 04:46:45,689 | INFO | [phase1]   - rule 'dual: fix variable' was applied 14 times.
+2025-09-16 04:46:45,702 | INFO | [phase1]   - rule 'enforcement: always false' was applied 441 times.
+2025-09-16 04:46:45,705 | INFO | [phase1]   - rule 'enforcement: false literal' was applied 238 times.
+2025-09-16 04:46:45,717 | INFO | [phase1]   - rule 'enforcement: true literal' was applied 196 times.
+2025-09-16 04:46:45,719 | INFO | [phase1]   - rule 'int_prod: constant product' was applied 427 times.
+2025-09-16 04:46:45,732 | INFO | [phase1]   - rule 'int_prod: removed constant expressions.' was applied 847 times.
+2025-09-16 04:46:45,734 | INFO | [phase1]   - rule 'int_prod: unused affine target' was applied 7 times.
+2025-09-16 04:46:45,759 | INFO | [phase1]   - rule 'int_square: reduced target domain.' was applied 49 times.
+2025-09-16 04:46:45,762 | INFO | [phase1]   - rule 'lin_max: affine_max target domain reduced' was applied 7 times.
+2025-09-16 04:46:45,772 | INFO | [phase1]   - rule 'lin_max: converted to equality' was applied 14 times.
+2025-09-16 04:46:45,773 | INFO | [phase1]   - rule 'lin_max: removed exprs' was applied 21 times.
+2025-09-16 04:46:45,798 | INFO | [phase1]   - rule 'lin_max: target domain reduced' was applied 14 times.
+2025-09-16 04:46:45,814 | INFO | [phase1]   - rule 'linear1: always true' was applied 7 times.
+2025-09-16 04:46:45,818 | INFO | [phase1]   - rule 'linear1: x in domain' was applied 463 times.
+2025-09-16 04:46:45,841 | INFO | [phase1]   - rule 'linear: always true' was applied 594 times.
+2025-09-16 04:46:45,844 | INFO | [phase1]   - rule 'linear: empty' was applied 519 times.
+2025-09-16 04:46:45,867 | INFO | [phase1]   - rule 'linear: enforcement literal in expression' was applied 7 times.
+2025-09-16 04:46:45,882 | INFO | [phase1]   - rule 'linear: fixed or dup variables' was applied 2'019 times.
+2025-09-16 04:46:45,883 | INFO | [phase1]   - rule 'linear: negative clause' was applied 49 times.
+2025-09-16 04:46:45,897 | INFO | [phase1]   - rule 'linear: positive clause' was applied 42 times.
+2025-09-16 04:46:45,910 | INFO | [phase1]   - rule 'linear: reduced variable domains' was applied 526 times.
+2025-09-16 04:46:45,912 | INFO | [phase1]   - rule 'linear: remapped using affine relations' was applied 63 times.
+2025-09-16 04:46:45,924 | INFO | [phase1]   - rule 'linear: singleton column' was applied 7 times.
+2025-09-16 04:46:45,928 | INFO | [phase1]   - rule 'linear: variable substitution 0' was applied 1 time.
+2025-09-16 04:46:45,949 | INFO | [phase1]   - rule 'presolve: 1528 unused variables removed.' was applied 1 time.
+2025-09-16 04:46:45,964 | INFO | [phase1]   - rule 'presolve: iteration' was applied 2 times.
+2025-09-16 04:46:45,965 | INFO | [phase1]   - rule 'variables: both boolean and its negation fix the same variable' was applied 21 times.
+2025-09-16 04:46:45,979 | INFO | [phase1]   - rule 'variables: both boolean and its negation imply same equality' was applied 7 times.
+2025-09-16 04:46:45,982 | INFO | [phase1]   - rule 'variables: detect half reified value encoding' was applied 126 times.
+2025-09-16 04:46:46,007 | INFO | [phase1] 
+2025-09-16 04:46:46,009 | INFO | [phase1] Presolved optimization model '': (model_fingerprint: 0xc705e16f141fc4e1)
+#Variables: 0 ( in objective) (0 primary variables)
+2025-09-16 04:46:46,020 | INFO | [phase1] [Symmetry] Graph for symmetry has 0 nodes and 0 arcs.
+2025-09-16 04:46:46,023 | INFO | [phase1] 
+2025-09-16 04:46:46,035 | INFO | [phase1] Preloading model.
+2025-09-16 04:46:46,061 | INFO | [phase1] #Bound   1.08s best:inf   next:[448,448]  initial_domain
+2025-09-16 04:46:46,064 | INFO | [phase1] The solution hint is complete and is feasible. Its objective value is 448.
+2025-09-16 04:46:46,074 | INFO | [phase1] #Model   1.10s var:0/0 constraints:0/0
+2025-09-16 04:46:46,076 | INFO | [phase1] 
+2025-09-16 04:46:46,089 | INFO | [phase1] Starting search at 1.11s with 8 workers.
+2025-09-16 04:46:46,092 | INFO | [phase1] 5 full problem subsolvers: [default_lp, max_lp, no_lp, quick_restart, quick_restart_no_lp]
+2025-09-16 04:46:46,116 | INFO | [phase1] 3 first solution subsolvers: [fj, fs_random, fs_random_no_lp]
+2025-09-16 04:46:46,143 | INFO | [phase1] 3 interleaved subsolvers: [feasibility_pump, ls, rins/rens]
+2025-09-16 04:46:46,145 | INFO | [phase1] 2 helper subsolvers: [neighborhood_helper, synchronization_agent]
+2025-09-16 04:46:46,169 | INFO | [phase1] 
+2025-09-16 04:46:46,184 | INFO | [phase1] #1       1.21s best:448   next:[]         no_lp
+2025-09-16 04:46:46,185 | INFO | [phase1] #Done    1.21s no_lp
+2025-09-16 04:46:46,208 | INFO | [phase1] 
+2025-09-16 04:46:46,209 | INFO | [phase1] Task timing                      n [     min,      max]      avg      dev     time         n [     min,      max]      avg      dev    dtime
+           'default_lp':         1 [ 16.47ms,  16.47ms]  16.47ms   0.00ns  16.47ms         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+     'feasibility_pump':         1 [260.70us, 260.70us] 260.70us   0.00ns 260.70us         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+                   'fj':         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+            'fs_random':         1 [ 14.08ms,  14.08ms]  14.08ms   0.00ns  14.08ms         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+      'fs_random_no_lp':         1 [ 15.68ms,  15.68ms]  15.68ms   0.00ns  15.68ms         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+                   'ls':         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+               'max_lp':         1 [ 16.68ms,  16.68ms]  16.68ms   0.00ns  16.68ms         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+                'no_lp':         1 [ 16.15ms,  16.15ms]  16.15ms   0.00ns  16.15ms         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+        'quick_restart':         1 [ 15.93ms,  15.93ms]  15.93ms   0.00ns  15.93ms         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+  'quick_restart_no_lp':         1 [ 16.45ms,  16.45ms]  16.45ms   0.00ns  16.45ms         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+            'rins/rens':         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+2025-09-16 04:46:46,213 | INFO | [phase1] Search stats              Bools  Conflicts  Branches  Restarts  BoolPropag  IntegerPropag
+           'default_lp':      0          0         0         0           0              0
+            'fs_random':      0          0         0         0           0              0
+      'fs_random_no_lp':      0          0         0         0           0              0
+               'max_lp':      0          0         0         0           0              0
+                'no_lp':      0          0         0         0           0              1
+        'quick_restart':      0          0         0         0           0              0
+  'quick_restart_no_lp':      0          0         0         0           0              0
+2025-09-16 04:46:46,226 | INFO | [phase1] SAT stats                 ClassicMinim  LitRemoved  LitLearned  LitForgotten  Subsumed  MClauses  MDecisions  MLitTrue  MSubsumed  MLitRemoved  MReused
+           'default_lp':             0           0           0             0         0         0           0         0          0            0        0
+            'fs_random':             0           0           0             0         0         0           0         0          0            0        0
+      'fs_random_no_lp':             0           0           0             0         0         0           0         0          0            0        0
+               'max_lp':             0           0           0             0         0         0           0         0          0            0        0
+                'no_lp':             0           0           0             0         0         0           0         0          0            0        0
+        'quick_restart':             0           0           0             0         0         0           0         0          0            0        0
+  'quick_restart_no_lp':             0           0           0             0         0         0           0         0          0            0        0
+2025-09-16 04:46:46,240 | INFO | [phase1] LNS stats       Improv/Calls  Closed  Difficulty  TimeLimit
+  'rins/rens':           0/0      0%    5.00e-01       0.10
+2025-09-16 04:46:46,242 | INFO | [phase1] Solutions (1)    Num   Rank
+       'no_lp':    1  [1,1]
+2025-09-16 04:46:46,265 | INFO | [phase1] Objective bounds     Num
+  'initial_domain':    1
+2025-09-16 04:46:46,280 | INFO | [phase1] Solution repositories    Added  Queried  Synchro
+  'feasible solutions':      1        0        1
+   'fj solution hints':      0        0        0
+        'lp solutions':      0        0        0
+                'pump':      0        0
+2025-09-16 04:46:46,282 | INFO | [phase1] CpSolverResponse summary:
+status: OPTIMAL
+objective: 448
+best_bound: 448
+integers: 1
+booleans: 0
+conflicts: 0
+branches: 0
+propagations: 0
+integer_propagations: 0
+restarts: 0
+lp_iterations: 0
+walltime: 1.30525
+usertime: 1.30525
+deterministic_time: 5.6e-07
+gap_integral: 0
+solution_fingerprint: 0x1f89d8db7e6fce8e
+2025-09-16 04:46:46,309 | INFO | Phase-1 status=OPTIMAL objective(U)=448.0
+2025-09-16 04:46:46,312 | INFO | 448.0
+2025-09-16 04:46:46,444 | INFO | [wk_pen_count_0(0..4), wk_pen_count_1(0..4), wk_pen_count_2(0..4), wk_pen_count_3(0..4), wk_pen_count_4(0..4), wk_pen_count_5(0..4), wk_pen_count_6(0..4)]
+2025-09-16 04:46:46,445 | INFO | Model built: |S|=22 |P|=7 |D|=31
+2025-09-16 04:46:46,447 | INFO | Time budget total=1500.00s split: phase1=600.00s phase2=900.00s
+2025-09-16 04:46:46,464 | INFO | Phase-2 solve: time=900.0s workers=16 rgap=1e-05 seed=1
+2025-09-16 04:46:46,466 | INFO | Diversity threshold L=1, K=2
+2025-09-16 04:46:46,504 | INFO | [phase2] 
+2025-09-16 04:46:46,505 | INFO | [phase2] Starting CP-SAT solver v9.14.6206
+2025-09-16 04:46:46,506 | INFO | [phase2] Parameters: random_seed: 1 max_time_in_seconds: 900 log_search_progress: true num_search_workers: 16 relative_gap_limit: 1e-05 log_to_stdout: false
+2025-09-16 04:46:46,514 | INFO | [phase2] 
+2025-09-16 04:46:46,549 | INFO | [phase2] Initial optimization model '': (model_fingerprint: 0xd88779c531954b8f)
+#Variables: 2'133 (#ints: 1 in objective) (1'005 primary variables)
+  - 1'030 Booleans in [0,1]
+  - 7 in [-31,31]
+  - 28 in [-1,1]
+  - 21 in [0,2]
+  - 21 in [0,3]
+  - 14 in [0,4]
+  - 35 in [0,22]
+  - 462 in [0,31]
+  - 7 in [0,40]
+  - 217 in [0,961]
+  - 21 in [0,968]
+  - 28 in [0,1000]
+  - 224 in [0,29791]
+  - 7 in [0,100000]
+  - 7 in [0,1000000000000000]
+  - 2 in [0,1000000000000000000]
+  - 2 constants in {0} 
+#kAtMostOne: 147 (#literals: 294)
+#kIntProd: 455
+#kLinMax: 42 (#expressions: 287)
+#kLinear1: 1'183 (#enforced: 651 #multi: 210)
+#kLinear2: 1'484 (#enforced: 427 #multi: 210)
+#kLinear3: 406
+#kLinearN: 151 (#terms: 1'744)
+2025-09-16 04:46:46,551 | INFO | [phase2] 
+2025-09-16 04:46:46,572 | INFO | [phase2] Starting presolve at 0.07s
+2025-09-16 04:46:46,630 | INFO | [phase2]   7.50e-04s  0.00e+00d  [DetectDominanceRelations]
+2025-09-16 04:46:46,631 | INFO | [phase2]   2.22e-02s  0.00e+00d  [operations_research::sat::CpModelPresolver::PresolveToFixPoint] #num_loops=2 #num_dual_strengthening=1
+2025-09-16 04:46:46,651 | INFO | [phase2]   1.79e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::ExtractEncodingFromLinear]
+2025-09-16 04:46:46,655 | INFO | [phase2]   1.08e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::DetectDuplicateColumns]
+2025-09-16 04:46:46,672 | INFO | [phase2]   1.38e-03s  0.00e+00d  [operations_research::sat::CpModelPresolver::DetectDuplicateConstraints]
+2025-09-16 04:46:46,678 | INFO | [phase2]   2.17e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::DetectDuplicateConstraintsWithDifferentEnforcements]
+2025-09-16 04:46:46,681 | INFO | [phase2]   5.57e-03s  1.40e-07d  [operations_research::sat::CpModelPresolver::Probe]
+2025-09-16 04:46:46,683 | INFO | [phase2]   9.14e-05s  0.00e+00d  [MaxClique]
+2025-09-16 04:46:46,710 | INFO | [phase2]   7.34e-04s  0.00e+00d  [DetectDominanceRelations]
+2025-09-16 04:46:46,712 | INFO | [phase2]   3.75e-03s  0.00e+00d  [operations_research::sat::CpModelPresolver::PresolveToFixPoint] #num_loops=2 #num_dual_strengthening=1
+2025-09-16 04:46:46,720 | INFO | [phase2]   1.95e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::ProcessAtMostOneAndLinear]
+2025-09-16 04:46:46,722 | INFO | [phase2]   2.93e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::DetectDuplicateConstraints]
+2025-09-16 04:46:46,749 | INFO | [phase2]   4.14e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::DetectDuplicateConstraintsWithDifferentEnforcements]
+2025-09-16 04:46:46,760 | INFO | [phase2]   1.03e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::DetectDominatedLinearConstraints]
+2025-09-16 04:46:46,762 | INFO | [phase2]   1.89e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::DetectDifferentVariables]
+2025-09-16 04:46:46,774 | INFO | [phase2]   1.27e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::ProcessSetPPC]
+2025-09-16 04:46:46,775 | INFO | [phase2]   1.19e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::FindAlmostIdenticalLinearConstraints]
+2025-09-16 04:46:46,798 | INFO | [phase2]   3.83e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::FindBigAtMostOneAndLinearOverlap]
+2025-09-16 04:46:46,801 | INFO | [phase2]   1.27e-04s  4.90e-07d  [operations_research::sat::CpModelPresolver::FindBigVerticalLinearOverlap]
+2025-09-16 04:46:46,811 | INFO | [phase2]   1.69e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::FindBigHorizontalLinearOverlap]
+2025-09-16 04:46:46,814 | INFO | [phase2]   1.06e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::MergeClauses]
+2025-09-16 04:46:46,836 | INFO | [phase2]   7.69e-04s  0.00e+00d  [DetectDominanceRelations]
+2025-09-16 04:46:46,837 | INFO | [phase2]   2.21e-03s  0.00e+00d  [operations_research::sat::CpModelPresolver::PresolveToFixPoint] #num_loops=1 #num_dual_strengthening=1
+2025-09-16 04:46:46,850 | INFO | [phase2]   4.52e-04s  0.00e+00d  [DetectDominanceRelations]
+2025-09-16 04:46:46,851 | INFO | [phase2]   2.47e-03s  0.00e+00d  [operations_research::sat::CpModelPresolver::PresolveToFixPoint] #num_loops=1 #num_dual_strengthening=1
+2025-09-16 04:46:46,861 | INFO | [phase2]   2.53e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::DetectDuplicateColumns]
+2025-09-16 04:46:46,863 | INFO | [phase2]   1.94e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::DetectDuplicateConstraints]
+2025-09-16 04:46:46,888 | INFO | [phase2]   1.80e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::DetectDuplicateConstraintsWithDifferentEnforcements]
+2025-09-16 04:46:46,889 | INFO | [phase2]   3.05e-03s  1.40e-07d  [operations_research::sat::CpModelPresolver::Probe]
+2025-09-16 04:46:46,897 | INFO | [phase2]   1.05e-04s  0.00e+00d  [MaxClique]
+2025-09-16 04:46:46,911 | INFO | [phase2]   5.76e-04s  0.00e+00d  [DetectDominanceRelations]
+2025-09-16 04:46:46,913 | INFO | [phase2]   2.64e-03s  0.00e+00d  [operations_research::sat::CpModelPresolver::PresolveToFixPoint] #num_loops=1 #num_dual_strengthening=1
+2025-09-16 04:46:46,933 | INFO | [phase2]   1.26e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::ProcessAtMostOneAndLinear]
+2025-09-16 04:46:46,947 | INFO | [phase2]   2.48e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::DetectDuplicateConstraints]
+2025-09-16 04:46:46,949 | INFO | [phase2]   2.20e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::DetectDuplicateConstraintsWithDifferentEnforcements]
+2025-09-16 04:46:46,958 | INFO | [phase2]   6.77e-05s  0.00e+00d  [operations_research::sat::CpModelPresolver::DetectDominatedLinearConstraints]
+2025-09-16 04:46:46,959 | INFO | [phase2]   8.36e-05s  0.00e+00d  [operations_research::sat::CpModelPresolver::DetectDifferentVariables]
+2025-09-16 04:46:46,979 | INFO | [phase2]   8.32e-05s  0.00e+00d  [operations_research::sat::CpModelPresolver::ProcessSetPPC]
+2025-09-16 04:46:46,981 | INFO | [phase2]   8.15e-05s  0.00e+00d  [operations_research::sat::CpModelPresolver::FindAlmostIdenticalLinearConstraints]
+2025-09-16 04:46:46,992 | INFO | [phase2]   1.65e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::FindBigAtMostOneAndLinearOverlap]
+2025-09-16 04:46:46,992 | INFO | [phase2]   7.38e-05s  4.90e-07d  [operations_research::sat::CpModelPresolver::FindBigVerticalLinearOverlap]
+2025-09-16 04:46:47,004 | INFO | [phase2]   1.10e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::FindBigHorizontalLinearOverlap]
+2025-09-16 04:46:47,007 | INFO | [phase2]   1.03e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::MergeClauses]
+2025-09-16 04:46:47,028 | INFO | [phase2]   8.01e-04s  0.00e+00d  [DetectDominanceRelations]
+2025-09-16 04:46:47,048 | INFO | [phase2]   2.09e-02s  0.00e+00d  [operations_research::sat::CpModelPresolver::PresolveToFixPoint] #num_loops=1 #num_dual_strengthening=1
+2025-09-16 04:46:47,062 | INFO | [phase2]   3.82e-04s  0.00e+00d  [operations_research::sat::CpModelPresolver::ExpandObjective]
+2025-09-16 04:46:47,064 | INFO | [phase2] 
+2025-09-16 04:46:47,071 | INFO | [phase2] Presolve summary:
+2025-09-16 04:46:47,074 | INFO | [phase2]   - 35 affine relations were detected.
+2025-09-16 04:46:47,093 | INFO | [phase2]   - rule 'TODO dual: only one blocking constraint?' was applied 252 times.
+2025-09-16 04:46:47,096 | INFO | [phase2]   - rule 'TODO linear2: contains a Boolean.' was applied 168 times.
+2025-09-16 04:46:47,123 | INFO | [phase2]   - rule 'affine: new relation' was applied 35 times.
+2025-09-16 04:46:47,124 | INFO | [phase2]   - rule 'at_most_one: empty or all false' was applied 147 times.
+2025-09-16 04:46:47,125 | INFO | [phase2]   - rule 'at_most_one: removed literals' was applied 147 times.
+2025-09-16 04:46:47,145 | INFO | [phase2]   - rule 'bool_and: non-reified.' was applied 42 times.
+2025-09-16 04:46:47,147 | INFO | [phase2]   - rule 'bool_or: always true' was applied 7 times.
+2025-09-16 04:46:47,155 | INFO | [phase2]   - rule 'bool_or: implications' was applied 84 times.
+2025-09-16 04:46:47,156 | INFO | [phase2]   - rule 'deductions: 140 stored' was applied 1 time.
+2025-09-16 04:46:47,164 | INFO | [phase2]   - rule 'enforcement: always false' was applied 441 times.
+2025-09-16 04:46:47,168 | INFO | [phase2]   - rule 'enforcement: false literal' was applied 238 times.
+2025-09-16 04:46:47,169 | INFO | [phase2]   - rule 'enforcement: true literal' was applied 196 times.
+2025-09-16 04:46:47,170 | INFO | [phase2]   - rule 'int_prod: constant product' was applied 434 times.
+2025-09-16 04:46:47,171 | INFO | [phase2]   - rule 'int_prod: removed constant expressions.' was applied 861 times.
+2025-09-16 04:46:47,172 | INFO | [phase2]   - rule 'int_prod: unused affine target' was applied 7 times.
+2025-09-16 04:46:47,173 | INFO | [phase2]   - rule 'int_square: reduced target domain.' was applied 63 times.
+2025-09-16 04:46:47,174 | INFO | [phase2]   - rule 'lin_max: all exprs fixed during copy' was applied 28 times.
+2025-09-16 04:46:47,175 | INFO | [phase2]   - rule 'lin_max: converted to equality' was applied 7 times.
+2025-09-16 04:46:47,177 | INFO | [phase2]   - rule 'lin_max: reduced expression domain.' was applied 28 times.
+2025-09-16 04:46:47,177 | INFO | [phase2]   - rule 'lin_max: removed exprs' was applied 14 times.
+2025-09-16 04:46:47,178 | INFO | [phase2]   - rule 'lin_max: target domain reduced' was applied 7 times.
+2025-09-16 04:46:47,179 | INFO | [phase2]   - rule 'lin_max: x = max(x, ...)' was applied 7 times.
+2025-09-16 04:46:47,184 | INFO | [phase2]   - rule 'linear1: always true' was applied 14 times.
+2025-09-16 04:46:47,186 | INFO | [phase2]   - rule 'linear1: x in domain' was applied 1'024 times.
+2025-09-16 04:46:47,187 | INFO | [phase2]   - rule 'linear: always true' was applied 945 times.
+2025-09-16 04:46:47,188 | INFO | [phase2]   - rule 'linear: empty' was applied 505 times.
+2025-09-16 04:46:47,189 | INFO | [phase2]   - rule 'linear: enforcement literal in expression' was applied 7 times.
+2025-09-16 04:46:47,190 | INFO | [phase2]   - rule 'linear: fixed or dup variables' was applied 1'999 times.
+2025-09-16 04:46:47,191 | INFO | [phase2]   - rule 'linear: negative clause' was applied 49 times.
+2025-09-16 04:46:47,192 | INFO | [phase2]   - rule 'linear: positive clause' was applied 42 times.
+2025-09-16 04:46:47,193 | INFO | [phase2]   - rule 'linear: reduced variable domains' was applied 519 times.
+2025-09-16 04:46:47,195 | INFO | [phase2]   - rule 'linear: remapped using affine relations' was applied 63 times.
+2025-09-16 04:46:47,198 | INFO | [phase2]   - rule 'linear: variable substitution 0' was applied 1 time.
+2025-09-16 04:46:47,201 | INFO | [phase2]   - rule 'linear: variable substitution 1' was applied 7 times.
+2025-09-16 04:46:47,202 | INFO | [phase2]   - rule 'presolve: 2090 unused variables removed.' was applied 1 time.
+2025-09-16 04:46:47,203 | INFO | [phase2]   - rule 'presolve: iteration' was applied 2 times.
+2025-09-16 04:46:47,204 | INFO | [phase2]   - rule 'variables: both boolean and its negation fix the same variable' was applied 21 times.
+2025-09-16 04:46:47,205 | INFO | [phase2]   - rule 'variables: both boolean and its negation imply same equality' was applied 7 times.
+2025-09-16 04:46:47,206 | INFO | [phase2]   - rule 'variables: detect half reified value encoding' was applied 126 times.
+2025-09-16 04:46:47,208 | INFO | [phase2] 
+2025-09-16 04:46:47,209 | INFO | [phase2] Presolved optimization model '': (model_fingerprint: 0xd64395d635c6e163)
+#Variables: 28 (#ints: 14 in objective) (14 primary variables)
+  - 7 in [0,1][4][9][16][25][36][49][64][81][100][ ... 169][196][225][256][289][324][361][400][441][484]
+  - 7 in [0,22]
+  - 7 in [3,22]
+  - 7 in [9][16][25][36][49][64][81][100][121][144][169][196][225][256][289][324][361][400][441][484]
+#kIntProd: 14
+2025-09-16 04:46:47,214 | INFO | [phase2] 
+2025-09-16 04:46:47,216 | INFO | [phase2] Preloading model.
+2025-09-16 04:46:47,218 | INFO | [phase2] #Bound   0.71s best:inf   next:[315000,33880000] initial_domain
+2025-09-16 04:46:47,219 | INFO | [phase2] #Model   0.72s var:28/28 constraints:14/14 compo:2,2,2,2,2,2,2,2,2,2,...
+2025-09-16 04:46:47,240 | INFO | [phase2] 
+2025-09-16 04:46:47,243 | INFO | [phase2] Starting search at 0.74s with 16 workers.
+2025-09-16 04:46:47,248 | INFO | [phase2] 11 full problem subsolvers: [core, default_lp, lb_tree_search, max_lp, no_lp, objective_lb_search, probing, pseudo_costs, quick_restart, quick_restart_no_lp, reduced_costs]
+2025-09-16 04:46:47,252 | INFO | [phase2] 5 first solution subsolvers: [fj(2), fs_random, fs_random_no_lp, fs_random_quick_restart_no_lp]
+2025-09-16 04:46:47,253 | INFO | [phase2] 11 interleaved subsolvers: [feasibility_pump, graph_arc_lns, graph_cst_lns, graph_dec_lns, graph_var_lns, lb_relax_lns, ls, ls_lin, rins/rens, rnd_cst_lns, rnd_var_lns]
+2025-09-16 04:46:47,263 | INFO | [phase2] 3 helper subsolvers: [neighborhood_helper, synchronization_agent, update_gap_integral]
+2025-09-16 04:46:47,270 | INFO | [phase2] 
+2025-09-16 04:46:47,277 | INFO | [phase2] #1       0.77s best:315000 next:[]         core (fixed_bools=0/14)
+2025-09-16 04:46:47,285 | INFO | [phase2] #Done    0.78s core
+2025-09-16 04:46:47,338 | INFO | [phase2] 
+2025-09-16 04:46:47,339 | INFO | [phase2] Task timing                                n [     min,      max]      avg      dev     time         n [     min,      max]      avg      dev    dtime
+                           'core':         1 [ 21.89ms,  21.89ms]  21.89ms   0.00ns  21.89ms         1 [  4.63us,   4.63us]   4.63us   0.00ns   4.63us
+                     'default_lp':         1 [ 29.59ms,  29.59ms]  29.59ms   0.00ns  29.59ms         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+               'feasibility_pump':         1 [  1.13ms,   1.13ms]   1.13ms   0.00ns   1.13ms         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+                             'fj':         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+                             'fj':         1 [299.90us, 299.90us] 299.90us   0.00ns 299.90us         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+                      'fs_random':         1 [821.30us, 821.30us] 821.30us   0.00ns 821.30us         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+                'fs_random_no_lp':         1 [589.50us, 589.50us] 589.50us   0.00ns 589.50us         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+  'fs_random_quick_restart_no_lp':         1 [537.30us, 537.30us] 537.30us   0.00ns 537.30us         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+                  'graph_arc_lns':         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+                  'graph_cst_lns':         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+                  'graph_dec_lns':         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+                  'graph_var_lns':         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+                   'lb_relax_lns':         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+                 'lb_tree_search':         1 [  3.12ms,   3.12ms]   3.12ms   0.00ns   3.12ms         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+                             'ls':         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+                         'ls_lin':         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+                         'max_lp':         1 [ 23.09ms,  23.09ms]  23.09ms   0.00ns  23.09ms         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+                          'no_lp':         1 [ 19.03ms,  19.03ms]  19.03ms   0.00ns  19.03ms         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+            'objective_lb_search':         1 [  2.28ms,   2.28ms]   2.28ms   0.00ns   2.28ms         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+                        'probing':         1 [  3.79ms,   3.79ms]   3.79ms   0.00ns   3.79ms         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+                   'pseudo_costs':         1 [  4.20ms,   4.20ms]   4.20ms   0.00ns   4.20ms         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+                  'quick_restart':         1 [  2.88ms,   2.88ms]   2.88ms   0.00ns   2.88ms         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+            'quick_restart_no_lp':         1 [  1.68ms,   1.68ms]   1.68ms   0.00ns   1.68ms         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+                  'reduced_costs':         1 [  8.03ms,   8.03ms]   8.03ms   0.00ns   8.03ms         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+                      'rins/rens':         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+                    'rnd_cst_lns':         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+                    'rnd_var_lns':         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns         0 [  0.00ns,   0.00ns]   0.00ns   0.00ns   0.00ns
+2025-09-16 04:46:47,344 | INFO | [phase2] Search stats                        Bools  Conflicts  Branches  Restarts  BoolPropag  IntegerPropag
+                           'core':     14          0        13         2          15             57
+                     'default_lp':      0          0         0         0           0              0
+                      'fs_random':      0          0         0         0           0              0
+                'fs_random_no_lp':      0          0         0         0           0              0
+  'fs_random_quick_restart_no_lp':      0          0         0         0           0              0
+                 'lb_tree_search':      0          0         0         0           0              0
+                         'max_lp':      0          0         0         0           0              0
+                          'no_lp':      0          0         0         0           0              0
+            'objective_lb_search':      0          0         0         0           0              0
+                        'probing':      0          0         0         0           0              0
+                   'pseudo_costs':      0          0         0         0           0              0
+                  'quick_restart':      0          0         0         0           0              0
+            'quick_restart_no_lp':      0          0         0         0           0              0
+                  'reduced_costs':      0          0         0         0           0              0
+2025-09-16 04:46:47,358 | INFO | [phase2] SAT stats                           ClassicMinim  LitRemoved  LitLearned  LitForgotten  Subsumed  MClauses  MDecisions  MLitTrue  MSubsumed  MLitRemoved  MReused
+                           'core':             0           0           0             0         0         0           0         0          0            0        0
+                     'default_lp':             0           0           0             0         0         0           0         0          0            0        0
+                      'fs_random':             0           0           0             0         0         0           0         0          0            0        0
+                'fs_random_no_lp':             0           0           0             0         0         0           0         0          0            0        0
+  'fs_random_quick_restart_no_lp':             0           0           0             0         0         0           0         0          0            0        0
+                 'lb_tree_search':             0           0           0             0         0         0           0         0          0            0        0
+                         'max_lp':             0           0           0             0         0         0           0         0          0            0        0
+                          'no_lp':             0           0           0             0         0         0           0         0          0            0        0
+            'objective_lb_search':             0           0           0             0         0         0           0         0          0            0        0
+                        'probing':             0           0           0             0         0         0           0         0          0            0        0
+                   'pseudo_costs':             0           0           0             0         0         0           0         0          0            0        0
+                  'quick_restart':             0           0           0             0         0         0           0         0          0            0        0
+            'quick_restart_no_lp':             0           0           0             0         0         0           0         0          0            0        0
+                  'reduced_costs':             0           0           0             0         0         0           0         0          0            0        0
+2025-09-16 04:46:47,371 | INFO | [phase2] Lp stats                  Component  Iterations  AddedCuts  OPTIMAL  DUAL_F.  DUAL_U.
+           'default_lp':         14           0          0       14        0        0
+       'lb_tree_search':         14           0          0       14        0        0
+               'max_lp':         14           0          0       14        0        0
+  'objective_lb_search':         14           0          0       14        0        0
+              'probing':         14           0          0       14        0        0
+         'pseudo_costs':         14           0          0       14        0        0
+        'quick_restart':         14           0          0       14        0        0
+        'reduced_costs':         14           0          0       14        0        0
+2025-09-16 04:46:47,374 | INFO | [phase2] Lp dimension              Final dimension of first component
+           'default_lp':        0 rows, 2 columns, 0 entries
+       'lb_tree_search':        3 rows, 2 columns, 6 entries
+               'max_lp':        3 rows, 2 columns, 6 entries
+  'objective_lb_search':        0 rows, 2 columns, 0 entries
+              'probing':        0 rows, 2 columns, 0 entries
+         'pseudo_costs':        0 rows, 2 columns, 0 entries
+        'quick_restart':        0 rows, 2 columns, 0 entries
+        'reduced_costs':        0 rows, 2 columns, 0 entries
+2025-09-16 04:46:47,375 | INFO | [phase2] Lp debug                  CutPropag  CutEqPropag  Adjust  Overflow  Bad  BadScaling
+           'default_lp':          0            0       0         0    0           0
+       'lb_tree_search':          0            0       0         0    0           0
+               'max_lp':          0            0       0         0    0           0
+  'objective_lb_search':          0            0       0         0    0           0
+              'probing':          0            0       0         0    0           0
+         'pseudo_costs':          0            0       0         0    0           0
+        'quick_restart':          0            0       0         0    0           0
+        'reduced_costs':          0            0       0         0    0           0
+2025-09-16 04:46:47,376 | INFO | [phase2] Lp pool                   Constraints  Updates  Simplif  Merged  Shortened  Split  Strenghtened  Cuts/Call
+           'default_lp':           42        0        0       0          0      0             0        0/0
+       'lb_tree_search':           42        0        0       0          0      0             0       0/28
+               'max_lp':           42        0        0       0          0      0             0       0/28
+  'objective_lb_search':           42        0        0       0          0      0             0        0/0
+              'probing':           42        0        0       0          0      0             0        0/0
+         'pseudo_costs':           42        0        0       0          0      0             0        0/0
+        'quick_restart':           42        0        0       0          0      0             0        0/0
+        'reduced_costs':           42        0        0       0          0      0             0        0/0
+2025-09-16 04:46:47,377 | INFO | [phase2] LNS stats           Improv/Calls  Closed  Difficulty  TimeLimit
+  'graph_arc_lns':           0/0      0%    5.00e-01       0.10
+  'graph_cst_lns':           0/0      0%    5.00e-01       0.10
+  'graph_dec_lns':           0/0      0%    5.00e-01       0.10
+  'graph_var_lns':           0/0      0%    5.00e-01       0.10
+   'lb_relax_lns':           0/0      0%    5.00e-01       0.50
+      'rins/rens':           0/0      0%    5.00e-01       0.10
+    'rnd_cst_lns':           0/0      0%    5.00e-01       0.10
+    'rnd_var_lns':           0/0      0%    5.00e-01       0.10
+2025-09-16 04:46:47,380 | INFO | [phase2] LS stats         Batches  Restarts/Perturbs  LinMoves  GenMoves  CompoundMoves  Bactracks  WeightUpdates  ScoreComputed
+  'fj_restart':        1                  1         0         0              0          0              0              0
+2025-09-16 04:46:47,381 | INFO | [phase2] Solutions (1)    Num   Rank
+        'core':    1  [1,1]
+2025-09-16 04:46:47,383 | INFO | [phase2] Objective bounds     Num
+  'initial_domain':    1
+2025-09-16 04:46:47,389 | INFO | [phase2] Solution repositories    Added  Queried  Synchro
+  'feasible solutions':      2        0        2
+   'fj solution hints':      0        0        0
+        'lp solutions':      0        0        0
+                'pump':      0        0
+2025-09-16 04:46:47,412 | INFO | [phase2] CpSolverResponse summary:
+status: OPTIMAL
+objective: 315000
+best_bound: 315000
+integers: 29
+booleans: 0
+conflicts: 0
+branches: 0
+propagations: 0
+integer_propagations: 0
+restarts: 0
+lp_iterations: 0
+walltime: 0.906179
+usertime: 0.90618
+deterministic_time: 5.89e-06
+gap_integral: 8.02332e-05
+solution_fingerprint: 0x69d711836b0e2781
+2025-09-16 04:46:47,421 | INFO | Phase-2 status=OPTIMAL
+2025-09-16 04:46:47,436 | INFO | Phase-2 best objective=315000.0 best bound=315000.0
+2025-09-16 04:46:47,440 | INFO | Pool collected=1
+2025-09-16 04:46:47,455 | INFO | Selected tables=2 (requested K=2)
+2025-09-16 04:46:47,456 | INFO | Selected objectives: [315000.0, 315000.0]
+2025-09-16 04:46:47,606 | INFO | Wrote: Result_18\schedules.xlsx
+2025-09-16 04:46:47,606 | INFO | Wrote: Result_18\hospital_schedule.xlsx
+2025-09-16 04:46:47,610 | INFO | Wrote: Result_18\calendar.xlsx
+2025-09-16 04:46:47,611 | INFO | Wrote: Result_18\eligibility_capacity.json
+2025-09-16 04:46:47,621 | INFO | Wrote grid: Result_18\schedules.xlsx
+2025-09-16 04:46:47,624 | INFO | Wrote hospital: Result_18\hospital_schedule.xlsx
+2025-09-16 04:46:47,642 | INFO | Wrote calendar: Result_18\calendar.xlsx
+2025-09-16 04:46:47,644 | INFO | Wrote run meta: Result_18\scheduler_log_20250916_044643.json
+2025-09-16 04:46:47,662 | INFO | ===== SCHEDULER RUN COMPLETE 20250916_044643 =====

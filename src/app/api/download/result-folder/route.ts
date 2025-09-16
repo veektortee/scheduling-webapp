@@ -1,118 +1,81 @@
+// in app/api/download/result-folder/route.ts
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
 import archiver from 'archiver';
 import { NextResponse } from 'next/server';
+import mime from 'mime-types';
 
-export async function GET(request: Request) {
-  const url = new URL(request.url);
-  const name = url.searchParams.get('name');
-  if (!name) {
-    return NextResponse.json({ error: 'Missing name' }, { status: 400 });
-  }
-
-  // Basic validation: expect Result_N style names to avoid path traversal
-  if (!/^Result_\d+$/i.test(name)) {
-    return NextResponse.json({ error: 'Invalid folder name' }, { status: 400 });
-  }
-
-  // Search for the folder in multiple candidate locations: the app-level
-  // solver_output and the workspace-level solver_output, and also search
-  // nested run folders for directories named exactly as `name`.
+async function findResultFolder(name: string): Promise<string | null> {
   const candidates = [
     path.join(process.cwd(), 'solver_output'),
     path.join(process.cwd(), '..', 'solver_output'),
-    // include public/solver_output for dev/demo layouts where outputs land under public
-    path.join(process.cwd(), 'public', 'solver_output')
+    path.join(process.cwd(), 'public', 'solver_output'),
+    path.join(process.cwd(), 'public', 'local-solver-package', 'solver_output'),
   ];
-
-  // Also include variants where the repo stores packaged outputs
-  candidates.push(path.join(process.cwd(), 'public', 'local-solver-package', 'solver_output'));
-  candidates.push(path.join(process.cwd(), 'public', 'local-solver-package'));
-
-  let foundFolder: string | null = null;
-
-  const tryMatch = (baseDir: string) => {
-    try {
-      const p = path.join(baseDir, name);
-      if (fs.existsSync(p) && fs.statSync(p).isDirectory()) return p;
-    } catch {
-      // ignore
-    }
-    return null;
-  };
-
-  const searchNested = (baseDir: string) => {
-    try {
-      const entries = fs.readdirSync(baseDir, { withFileTypes: true });
-      for (const e of entries) {
-        try {
-          if (e.isDirectory()) {
-            const candidate = path.join(baseDir, e.name, name);
-            if (fs.existsSync(candidate) && fs.statSync(candidate).isDirectory()) return candidate;
-            // also check one level deeper in case of other layouts
-            const deeper = path.join(baseDir, e.name);
-            const subs = fs.readdirSync(deeper, { withFileTypes: true });
-            for (const s of subs) {
-              if (s.isDirectory() && s.name === name) {
-                const full = path.join(deeper, s.name);
-                if (fs.existsSync(full) && fs.statSync(full).isDirectory()) return full;
-              }
-            }
-          }
-        } catch {
-          continue;
-        }
-      }
-    } catch {
-      // ignore
-    }
-    return null;
-  };
-
   for (const base of candidates) {
-    if (!base) continue;
-    const matched = tryMatch(base);
-    if (matched) {
-      foundFolder = matched;
-      break;
-    }
-    const nested = searchNested(base);
-    if (nested) {
-      foundFolder = nested;
-      break;
-    }
+    try {
+      const p = path.join(base, name);
+      if (fs.existsSync(p) && fs.statSync(p).isDirectory()) return p;
+    } catch {}
+  }
+  return null;
+}
+
+export async function GET(request: Request) {
+  const url = new URL(request.url);
+  const folderName = url.searchParams.get('name');
+  const fileName = url.searchParams.get('file'); // New parameter
+
+  if (!folderName) {
+    return NextResponse.json({ error: 'Missing folder name' }, { status: 400 });
   }
 
+  const foundFolder = await findResultFolder(folderName);
   if (!foundFolder) {
-    return NextResponse.json({ error: 'Folder not found' }, { status: 404 });
+    return NextResponse.json({ error: `Folder '${folderName}' not found` }, { status: 404 });
   }
 
-  // Create a temporary zip file in OS temp directory to avoid collisions
-  const zipPath = path.join(os.tmpdir(), `${name}-${Date.now()}.zip`);
+  // LOGIC FOR SINGLE FILE DOWNLOAD
+  if (fileName) {
+    const filePath = path.join(foundFolder, fileName);
+    if (!fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
+      return NextResponse.json({ error: `File '${fileName}' not found in '${folderName}'` }, { status: 404 });
+    }
+    try {
+      const fileBuffer = fs.readFileSync(filePath);
+      const contentType = mime.lookup(fileName) || 'application/octet-stream';
+      return new NextResponse(fileBuffer, {
+        headers: {
+          'Content-Type': contentType,
+          'Content-Disposition': `attachment; filename="${fileName}"`,
+        },
+      });
+    } catch (err) {
+      return NextResponse.json({ error: 'Failed to read file' }, { status: 500 });
+    }
+  }
+
+  // FALLBACK TO ORIGINAL FOLDER ZIPPING LOGIC
+  const zipPath = path.join(os.tmpdir(), `${folderName}-${Date.now()}.zip`);
   try {
     const output = fs.createWriteStream(zipPath);
     const archive = archiver('zip', { zlib: { level: 9 } });
-
     archive.pipe(output);
     archive.directory(foundFolder, false);
     await archive.finalize();
-
-    // Wait for file to be written
     await new Promise<void>((res, rej) => {
-      output.on('close', () => res());
-      output.on('error', e => rej(e));
+      output.on('close', res);
+      output.on('error', rej);
     });
-
     const data = fs.readFileSync(zipPath);
     return new NextResponse(data, {
       headers: {
         'Content-Type': 'application/zip',
-        'Content-Disposition': `attachment; filename="${name}.zip"`
-      }
+        'Content-Disposition': `attachment; filename="${folderName}.zip"`,
+      },
     });
   } catch (err) {
-    console.error('Error creating zip:', err);
     return NextResponse.json({ error: 'Failed to create zip' }, { status: 500 });
   } finally {
     try { if (fs.existsSync(zipPath)) fs.unlinkSync(zipPath); } catch {}
