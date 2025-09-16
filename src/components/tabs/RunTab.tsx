@@ -2181,7 +2181,7 @@ export default function RunTab() {
           )}
           
           {/* Open Output Folder */}
-          <button
+          {/* <button
             onClick={handleOpenOutputFolder}
             className="relative px-6 py-3 bg-gradient-to-r from-slate-600 to-slate-700 dark:from-slate-700 dark:to-slate-800 text-white rounded-xl hover:from-slate-700 hover:to-slate-800 dark:hover:from-slate-600 dark:hover:to-slate-700 font-semibold flex items-center justify-center space-x-2 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 overflow-hidden group"
           >
@@ -2190,17 +2190,17 @@ export default function RunTab() {
             <span className="relative z-10">
               {lastResults ? 'View Results' : 'View Output Folder'}
             </span>
-          </button>
+          </button> */}
 
           {/* Export Latest Schedule */}
-          <button
+          {/* <button
             onClick={handleExportLatestSchedule}
             className="relative px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl hover:from-green-700 hover:to-green-800 font-semibold flex items-center justify-center space-x-2 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 overflow-hidden group"
           >
             <div className="absolute inset-0 bg-gradient-to-r from-green-400/20 to-green-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             <IoDownloadSharp className="w-5 h-5 relative z-10" />
             <span className="relative z-10">Export Latest Schedule</span>
-          </button>
+          </button> */}
 
           {/* Clear Logs */}
           <button
@@ -2213,14 +2213,14 @@ export default function RunTab() {
           </button>
 
           {/* Data Management */}
-          <button
+          {/* <button
             onClick={() => setShowDataManagementModal(true)}
             className="relative px-6 py-3 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-xl hover:from-purple-700 hover:to-purple-800 font-semibold flex items-center justify-center space-x-2 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 overflow-hidden group"
           >
             <div className="absolute inset-0 bg-gradient-to-r from-purple-400/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             <IoServerSharp className="w-5 h-5 relative z-10" />
             <span className="relative z-10">Data Backup</span>
-          </button>
+          </button> */}
         </div>
 
         {/* Progress Bar */}
