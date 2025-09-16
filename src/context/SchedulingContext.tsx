@@ -295,28 +295,30 @@ function schedulingReducer(state: SchedulingState, action: SchedulingAction): Sc
       };
       break;
     case 'SET_RESULTS':
-      // Save to localStorage when results are updated
-      if (typeof window !== 'undefined') {
-        try {
-          if (action.payload) {
-            // Create a serializable copy to avoid issues with complex objects
-            const serializablePayload = {
-              ...action.payload,
-              results: action.payload.results ? JSON.parse(JSON.stringify(action.payload.results)) : null,
-              caseSnapshot: action.payload.caseSnapshot ? JSON.parse(JSON.stringify(action.payload.caseSnapshot)) : null,
-            };
-            localStorage.setItem(LAST_RESULTS_STORAGE_KEY, JSON.stringify(serializablePayload));
-          } else {
-            localStorage.removeItem(LAST_RESULTS_STORAGE_KEY);
-          }
-        } catch (error) {
-          console.warn('Failed to save lastResults to localStorage due to serialization issue:', error);
-        }
-      }
+      // Update the in-memory state with the full payload
       newState = {
         ...state,
         lastResults: action.payload,
       };
+
+      // Persist a smaller, safer version to localStorage
+      if (typeof window !== 'undefined') {
+        try {
+          if (action.payload) {
+            const persistableResults = {
+              run_id: action.payload.run_id,
+              output_directory: action.payload.output_directory,
+              timestamp: action.payload.timestamp,
+              solver_type: action.payload.solver_type,
+            };
+            localStorage.setItem(LAST_RESULTS_STORAGE_KEY, JSON.stringify(persistableResults));
+          } else {
+            localStorage.removeItem(LAST_RESULTS_STORAGE_KEY);
+          }
+        } catch (error) {
+          console.warn('Failed to save simplified lastResults to localStorage:', error);
+        }
+      }
       break;
     case 'GENERATE_DAYS':
       newState = {
