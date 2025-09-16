@@ -76,7 +76,7 @@ export default function ConfigTab() {
           max_time_in_seconds: 125999.99999999999,
           phase1_fraction: 0.4,
           relative_gap: 0.00001,
-          num_threads: 8,
+          num_threads: 16,
         },
         weights: {
           hard: {
@@ -195,59 +195,7 @@ export default function ConfigTab() {
         </div>
       </div>
 
-      {/* Run Defaults */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Run Defaults</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Output Directory
-            </label>
-            <input
-              type="text"
-              value={schedulingCase.run.out}
-              onChange={(e) => updateRunConfig('out', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 dark:bg-gray-800 dark:text-white dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              k (Solutions)
-            </label>
-            <input
-              type="number"
-              value={schedulingCase.run.k}
-              onChange={(e) => updateRunConfig('k', parseInt(e.target.value) || 0)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 dark:bg-gray-800 dark:text-white dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Seed
-            </label>
-            <input
-              type="number"
-              value={schedulingCase.run.seed}
-              onChange={(e) => updateRunConfig('seed', parseInt(e.target.value) || 0)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 dark:bg-gray-800 dark:text-white dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Time (minutes)
-            </label>
-            <input
-              type="number"
-              value={schedulingCase.run.time}
-              onChange={(e) => updateRunConfig('time', parseFloat(e.target.value) || 0)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 dark:bg-gray-800 dark:text-white dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
-        </div>
-      </div>
+ 
 
       {/* Advanced Configuration */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
