@@ -1074,10 +1074,15 @@ export default function RunTab() {
           const blob = await resp.blob();
           const url = URL.createObjectURL(blob);
           const a = document.createElement('a');
+          a.style.display = 'none';
           a.href = url;
           a.download = `${folderName}.zip`;
+          // Append to DOM to ensure click works in all browsers
+          document.body.appendChild(a);
           a.click();
-          URL.revokeObjectURL(url);
+          // Clean up anchor and revoke URL shortly after to allow the browser to start the download
+          document.body.removeChild(a);
+          setTimeout(() => URL.revokeObjectURL(url), 1500);
           addLog(`[DOWNLOADED] Downloaded: ${folderName}.zip`, 'success');
         } catch (err) {
           addLog(`[ERROR] Failed to download ${folderName}: ${err}`, 'error');
@@ -1094,10 +1099,13 @@ export default function RunTab() {
           const blob = new Blob([configData], { type: 'application/json' });
           const url = URL.createObjectURL(blob);
           const a = document.createElement('a');
+          a.style.display = 'none';
           a.href = url;
           a.download = file.name;
+          document.body.appendChild(a);
           a.click();
-          URL.revokeObjectURL(url);
+          document.body.removeChild(a);
+          setTimeout(() => URL.revokeObjectURL(url), 1500);
           addLog(`[DOWNLOADED] Downloaded: ${file.name}`, 'success');
         }
       } else {
@@ -1106,10 +1114,16 @@ export default function RunTab() {
           addLog(`[INFO] Downloading folder: ${file.name} as ZIP...`, 'info');
         }
         const a = document.createElement('a');
+        a.style.display = 'none';
         a.href = file.downloadUrl;
         a.download = file.isFolder ? `${file.name}.zip` : file.name;
+        document.body.appendChild(a);
         a.click();
+        document.body.removeChild(a);
+        // If this was a folder download that relies on a streamed response, allow the browser a moment
+        setTimeout(() => {
           addLog(`[DOWNLOADED] Downloaded: ${file.isFolder ? `${file.name}.zip` : file.name}`, 'success');
+        }, 10);
       }
     } catch (error) {
       addLog(`[ERROR] Error downloading ${file.name}: ${error}`, 'error');

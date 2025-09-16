@@ -11,6 +11,11 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Missing name' }, { status: 400 });
   }
 
+  // Basic validation: expect Result_N style names to avoid path traversal
+  if (!/^Result_\d+$/i.test(name)) {
+    return NextResponse.json({ error: 'Invalid folder name' }, { status: 400 });
+  }
+
   // Search for the folder in multiple candidate locations: the app-level
   // solver_output and the workspace-level solver_output, and also search
   // nested run folders for directories named exactly as `name`.
@@ -20,6 +25,10 @@ export async function GET(request: Request) {
     // include public/solver_output for dev/demo layouts where outputs land under public
     path.join(process.cwd(), 'public', 'solver_output')
   ];
+
+  // Also include variants where the repo stores packaged outputs
+  candidates.push(path.join(process.cwd(), 'public', 'local-solver-package', 'solver_output'));
+  candidates.push(path.join(process.cwd(), 'public', 'local-solver-package'));
 
   let foundFolder: string | null = null;
 
