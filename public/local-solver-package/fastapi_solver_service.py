@@ -126,8 +126,25 @@ class AdvancedSchedulingSolver:
         Integrated OR-Tools solver logic adapted from your testcase_gui.py
         """
         try:
-            run_output_dir = self.output_dir / run_id
-            run_output_dir.mkdir(exist_ok=True)
+            # Prefer a deterministic output folder when caller provided run.out
+            requested_out = None
+            try:
+                requested_out = case_data.get('run', {}).get('out')
+            except Exception:
+                requested_out = None
+
+            if isinstance(requested_out, str) and requested_out.startswith('Result_'):
+                # If the client supplies an explicit Result_N folder (e.g. Result_14)
+                # prefer that deterministic name so uploads and downstream tooling
+                # can rely on a stable path. We sanitize with os.path.basename to
+                # avoid absolute paths or path traversal ("../"). If no valid
+                # Result_* is provided we fall back to a run-id based folder.
+                out_name = os.path.basename(requested_out)
+                run_output_dir = self.output_dir / out_name
+            else:
+                run_output_dir = self.output_dir / run_id
+
+            run_output_dir.mkdir(parents=True, exist_ok=True)
             
             # Save input case
             case_file = run_output_dir / "input_case.json"
@@ -249,8 +266,19 @@ class AdvancedSchedulingSolver:
         
         try:
             self._update_progress(run_id, 30, "Calling testcase_gui.Solve_test_case...")
-            
-            solver_result = original_solver.Solve_test_case(tmp_path)
+
+            # testcase_gui creates a relative 'out' directory. Ensure that
+            # it's created under our solver_output folder by temporarily
+            # changing cwd to self.output_dir before invoking the solver.
+            current_cwd = os.getcwd()
+            try:
+                os.chdir(str(self.output_dir))
+                solver_result = original_solver.Solve_test_case(os.path.abspath(tmp_path))
+            finally:
+                try:
+                    os.chdir(current_cwd)
+                except Exception:
+                    pass
             
             if isinstance(solver_result, dict) and 'error' in solver_result:
                 error_message = solver_result.get('error', 'Unknown solver script error')

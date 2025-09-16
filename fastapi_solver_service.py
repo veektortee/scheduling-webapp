@@ -157,6 +157,15 @@ class AdvancedSchedulingSolver:
         self.output_dir = repo_root / "solver_output"
         self.output_dir.mkdir(parents=True, exist_ok=True)
         logger.info(f"Using solver output directory: {self.output_dir}")
+        # Note for maintainers:
+        # - If the incoming case JSON contains run.out set to a string like
+        #   'Result_14' the service will prefer that folder name (sanitized)
+        #   and place outputs under solver_output/Result_14. This ensures
+        #   deterministic upload paths that match serverless runs.
+        # - Otherwise a unique run_id is used as the folder name. We also
+        #   temporarily change CWD to solver_output when invoking
+        #   testcase_gui.Solve_test_case so that its relative 'out' path
+        #   is created under the expected folder.
         
     async def solve_async(self, case_data: Dict[str, Any], run_id: str) -> Dict[str, Any]:
         """
@@ -179,8 +188,20 @@ class AdvancedSchedulingSolver:
         Integrated OR-Tools solver logic adapted from your testcase_gui.py
         """
         try:
-            run_output_dir = self.output_dir / run_id
-            run_output_dir.mkdir(exist_ok=True)
+            # Prefer deterministic 'Result_N' folder if caller provided it
+            requested_out = None
+            try:
+                requested_out = case_data.get('run', {}).get('out')
+            except Exception:
+                requested_out = None
+
+            if isinstance(requested_out, str) and requested_out.startswith('Result_'):
+                out_name = os.path.basename(requested_out)
+                run_output_dir = self.output_dir / out_name
+            else:
+                run_output_dir = self.output_dir / run_id
+
+            run_output_dir.mkdir(parents=True, exist_ok=True)
             
             # Save input case
             case_file = run_output_dir / "input_case.json"
