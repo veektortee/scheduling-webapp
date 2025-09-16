@@ -813,14 +813,38 @@ async def solve_schedule(case: SchedulingCase):
             "result": result,
             "completed_at": datetime.now().isoformat()
         })
-
+        background_tasks.add_task(run_optimization, case_dict, run_id)
         # Normalize to the shape expected by the web app/tests
         model_result = result.get("result", {})
-        return solver._to_webapp_response(model_result, run_id)
-
+        return JSONResponse(
+            status_code=202, # HTTP 202 Accepted
+            content={
+                "status": "accepted",
+                "message": "Optimization started in the background.",
+                "run_id": run_id,
+                "solver_service_url": f"http://localhost:8000/status/{run_id}",
+                "websocket_url": f"ws://localhost:8000/ws/{run_id}",
+            }
+        )
     except Exception as e:
         logger.error(f"API error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+async def _send_final_result(run_id: str, result: Dict[str, Any]):
+    """Send the final result payload via WebSocket."""
+    if run_id in websocket_connections:
+        try:
+            # The frontend expects a specific structure, so we normalize it here.
+            normalized_payload = solver._to_webapp_response(result.get("result", {}), run_id)
+            
+            await websocket_connections[run_id].send_text(json.dumps({
+                "type": "result",
+                "run_id": run_id,
+                "payload": normalized_payload,
+                "timestamp": datetime.now().isoformat()
+            }))
+            logger.info(f"Sent final result to WebSocket for run {run_id}")
+        except Exception as e:
+            logger.warning(f"Failed to send final result to WebSocket for run {run_id}: {e}")
 
 async def run_optimization(case_data: Dict[str, Any], run_id: str):
     """Background task for running optimization"""
@@ -836,6 +860,8 @@ async def run_optimization(case_data: Dict[str, Any], run_id: str):
             "result": result,
             "completed_at": datetime.now().isoformat()
         })
+        if result["status"] == "success":
+            await _send_final_result(run_id, result)
         
     except Exception as e:
         logger.error(f"Background optimization failed: {e}")

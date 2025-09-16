@@ -1976,7 +1976,7 @@ def Solve_test_case(case):
     logger.info("Wrote run meta: %s", meta_path)
     logger.info("===== SCHEDULER RUN COMPLETE %s =====", ts)
 
-
+    return tables, meta
 # ---------- Defaults ----------
 IDENTITY_MAX = 31  # "infinity" for limits and max_consecutive_days
 

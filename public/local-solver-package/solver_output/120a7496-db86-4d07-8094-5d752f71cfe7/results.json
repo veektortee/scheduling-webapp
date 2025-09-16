@@ -1,0 +1,41 @@
+{
+  "status": "completed",
+  "solutions": [
+    {
+      "assignments": [],
+      "objective_value": 0
+    },
+    {
+      "assignments": [],
+      "objective_value": 0
+    }
+  ],
+  "solver_stats": {
+    "status": 4,
+    "status_name": "OPTIMAL",
+    "response": "CpSolverResponse summary:\nstatus: OPTIMAL\nobjective: 10315000\nbest_bound: 10315000\nintegers: 29\nbooleans: 0\nconflicts: 0\nbranches: 0\npropagations: 0\ninteger_propagations: 0\nrestarts: 0\nlp_iterations: 0\nwalltime: 0.349408\nusertime: 0.349408\ndeterministic_time: 1.26e-06\ngap_integral: 0\nsolution_fingerprint: 0xc3185eee1898cd0f\n",
+    "solutions_collected": 1,
+    "solutions_selected": 2,
+    "best_objective": 10315000.0,
+    "best_bound": 10315000.0,
+    "per_table": [
+      {
+        "objective": 10315000.0,
+        "best_bound": 10315000.0,
+        "conflicts": 0,
+        "branches": 13,
+        "wall_time_s": 0.2803931,
+        "assignments": 0
+      },
+      {
+        "objective": 10315000.0,
+        "best_bound": 10315000.0,
+        "conflicts": 0,
+        "branches": 13,
+        "wall_time_s": 0.2803931,
+        "assignments": 0
+      }
+    ],
+    "L": 1
+  }
+}

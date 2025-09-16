@@ -65,7 +65,6 @@ export default function ProvidersTab() {
   const shiftTypeOptions = Array.from(new Set(
     (schedulingCase.shifts || []).map(s => s.type).filter(Boolean)
   ));
-  
   // A helper to show pretty names for default shifts (e.g., "Day Shift" instead of "MD_D")
   const shiftTypeNameMap: Record<string, string> = Object.fromEntries(
     DEFAULT_SHIFT_TYPES.map(st => [st.id, st.name])
@@ -283,79 +282,62 @@ export default function ProvidersTab() {
 
   const applyPreferOnDays = () => {
     if (selectedProvider === null) return;
-    
-    // Use the currently selected days based on the calendar mode
     const daysToApply = calendarMode === 'on' ? selectedOnDays : selectedOffDays;
     if (daysToApply.length === 0) return;
-    // Require shift types to be selected
     if (selectedOnShiftTypes.length === 0) {
       alert('Please select one or more shift types to apply for PREFER ON');
       return;
     }
 
     const provider = schedulingCase.providers[selectedProvider];
-    const shiftTypesToApply = selectedOnShiftTypes;
-
-    // Clear any existing preferences for these days first (override functionality)
-    const newPreferredDaysSoft = { ...provider.preferred_days_soft };
+    const newPreferredDaysSoft = { ...(provider.preferred_days_soft || {}) };
     daysToApply.forEach(day => {
-      newPreferredDaysSoft[day] = shiftTypesToApply;
+      newPreferredDaysSoft[day] = selectedOnShiftTypes;
     });
 
     const updatedProvider: Provider = {
       ...provider,
+      preferred_days_soft: newPreferredDaysSoft,
+      // Clear other preferences on these days to avoid conflicts
       forbidden_days_hard: (provider.forbidden_days_hard || []).filter(day => !daysToApply.includes(day)),
       forbidden_days_soft: (provider.forbidden_days_soft || []).filter(day => !daysToApply.includes(day)),
       preferred_days_hard: Object.fromEntries(
         Object.entries(provider.preferred_days_hard || {}).filter(([day]) => !daysToApply.includes(day))
       ),
-      preferred_days_soft: newPreferredDaysSoft,
     };
 
     dispatch({
       type: 'UPDATE_PROVIDER',
       payload: { index: selectedProvider, provider: updatedProvider },
     });
-    
-    // Clear both selected arrays and update form
+
+    // Reset selections after applying
     setSelectedOnDays([]);
     setSelectedOffDays([]);
-    setProviderForm({
-      ...updatedProvider,
-      limits: updatedProvider.limits || { min_total: 0, max_total: null },
-      forbidden_days_soft: updatedProvider.forbidden_days_soft || [],
-      forbidden_days_hard: updatedProvider.forbidden_days_hard || [],
-      preferred_days_hard: updatedProvider.preferred_days_hard || {},
-      preferred_days_soft: updatedProvider.preferred_days_soft || {},
-    });
+    setProviderForm(updatedProvider);
   };
 
   const applyFixedOnDays = () => {
     if (selectedProvider === null) return;
-    
-    // Use the currently selected days based on the calendar mode
     const daysToApply = calendarMode === 'on' ? selectedOnDays : selectedOffDays;
     if (daysToApply.length === 0) return;
-    // Require shift types to be selected
     if (selectedOnShiftTypes.length === 0) {
       alert('Please select one or more shift types to apply for FIXED ON');
       return;
     }
 
     const provider = schedulingCase.providers[selectedProvider];
-    const shiftTypesToApply = selectedOnShiftTypes;
-
-    // Clear any existing preferences for these days first (override functionality)
-    const newPreferredDaysHard = { ...provider.preferred_days_hard };
+    const newPreferredDaysHard = { ...(provider.preferred_days_hard || {}) };
     daysToApply.forEach(day => {
-      newPreferredDaysHard[day] = shiftTypesToApply;
+      newPreferredDaysHard[day] = selectedOnShiftTypes;
     });
 
     const updatedProvider: Provider = {
       ...provider,
+      preferred_days_hard: newPreferredDaysHard,
+      // Clear other preferences on these days to avoid conflicts
       forbidden_days_hard: (provider.forbidden_days_hard || []).filter(day => !daysToApply.includes(day)),
       forbidden_days_soft: (provider.forbidden_days_soft || []).filter(day => !daysToApply.includes(day)),
-      preferred_days_hard: newPreferredDaysHard,
       preferred_days_soft: Object.fromEntries(
         Object.entries(provider.preferred_days_soft || {}).filter(([day]) => !daysToApply.includes(day))
       ),
@@ -366,18 +348,12 @@ export default function ProvidersTab() {
       payload: { index: selectedProvider, provider: updatedProvider },
     });
     
-    // Clear both selected arrays and update form
+    // Reset selections after applying
     setSelectedOnDays([]);
     setSelectedOffDays([]);
-    setProviderForm({
-      ...updatedProvider,
-      limits: updatedProvider.limits || { min_total: 0, max_total: null },
-      forbidden_days_soft: updatedProvider.forbidden_days_soft || [],
-      forbidden_days_hard: updatedProvider.forbidden_days_hard || [],
-      preferred_days_hard: updatedProvider.preferred_days_hard || {},
-      preferred_days_soft: updatedProvider.preferred_days_soft || {},
-    });
+    setProviderForm(updatedProvider);
   };
+
 
   const handleDaySelect = (day: string) => {
     if (selectedProvider === null) {

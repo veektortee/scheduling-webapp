@@ -85,12 +85,21 @@ export interface ShiftType {
 }
 
 export const DEFAULT_SHIFT_TYPES: ShiftType[] = [
-  { id: 'MD_D', name: 'Day Shift', startTime: '08:00', endTime: '16:00', allowedProviderTypes: ['MD'] },
-  { id: 'MD_S1', name: 'Swing 1', startTime: '10:00', endTime: '18:00', allowedProviderTypes: ['MD'] },
-  { id: 'MD_S2', name: 'Swing 2', startTime: '12:00', endTime: '20:00', allowedProviderTypes: ['MD'] },
-  { id: 'MD_S3', name: 'Swing 3', startTime: '14:00', endTime: '22:00', allowedProviderTypes: ['MD'] },
-  { id: 'MD_N', name: 'Night Shift', startTime: '20:00', endTime: '08:00', allowedProviderTypes: ['MD'] },
-  { id: 'MD_PEDS', name: 'Pediatrics', startTime: '08:00', endTime: '16:00', allowedProviderTypes: ['MD'] },
+  // MD Templates
+  { id: 'MD_Day', name: 'MD Day', startTime: '08:00', endTime: '18:00', allowedProviderTypes: ['MD'] },
+  { id: 'MD_Night', name: 'MD Night', startTime: '18:00', endTime: '08:00', allowedProviderTypes: ['MD'] },
+  
+  // NP Templates
+  { id: 'NP_Day', name: 'NP Day', startTime: '09:00', endTime: '17:00', allowedProviderTypes: ['NP'] },
+  { id: 'NP_Night', name: 'NP Night', startTime: '19:00', endTime: '07:00', allowedProviderTypes: ['NP'] },
+
+  // PA Templates
+  { id: 'PA_Day', name: 'PA Day', startTime: '08:30', endTime: '18:30', allowedProviderTypes: ['PA'] },
+  { id: 'PA_Swing', name: 'PA Swing', startTime: '12:00', endTime: '22:00', allowedProviderTypes: ['PA'] },
+
+  // Mixed Type Templates
+  { id: 'Flex_Day', name: 'Flex Day', startTime: '08:00', endTime: '16:00', allowedProviderTypes: ['MD', 'NP', 'PA'] },
+  { id: 'Flex_Night', name: 'Flex Night', startTime: '20:00', endTime: '08:00', allowedProviderTypes: ['MD', 'NP'] },
 ];
 
 export const WEEKDAY_NAMES = [
