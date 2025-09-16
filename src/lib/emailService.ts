@@ -262,20 +262,28 @@ export async function sendCredentialRecoveryEmail(username: string, password: st
   console.log('[EMAIL] Attempting to send credential recovery email...');
   console.log('[EMAIL] Recipient (backup email):', backupEmail);
   console.log('[EMAIL] Recovery token:', recoveryToken);
-    
-    // Create a test account for development
-    const testAccount = await nodemailer.createTestAccount();
-  console.log('[EMAIL] Test account created:', testAccount.user);
-    
-    const transporter = nodemailer.createTransport({
-      host: 'smtp.ethereal.email',
-      port: 587,
-      secure: false,
-      auth: {
-        user: testAccount.user,
-        pass: testAccount.pass
-      }
-    });
+    // Create transporter based on environment configuration (production) or fall back to development test account
+    let transporter = createEmailTransporter();
+    let isDevelopment = false;
+
+    if (!transporter) {
+      // No production transporter configured - use development/test account (Ethereal)
+      console.log('[EMAIL] No production email transporter configured - falling back to development test account');
+      const testAccount = await nodemailer.createTestAccount();
+      console.log('[EMAIL] Test account created:', testAccount.user);
+
+      transporter = nodemailer.createTransport({
+        host: 'smtp.ethereal.email',
+        port: 587,
+        secure: false,
+        auth: {
+          user: testAccount.user,
+          pass: testAccount.pass
+        }
+      });
+
+      isDevelopment = true;
+    }
 
     // Security-focused email template
     const htmlContent = `
@@ -366,7 +374,7 @@ export async function sendCredentialRecoveryEmail(username: string, password: st
     const info = await transporter.sendMail({
       from: '"Staff Scheduling System Security" <security@scheduling.com>',
       to: backupEmail,
-  subject: '[SECURITY] Staff Scheduling System - Credential Recovery',
+      subject: '[SECURITY] Staff Scheduling System - Credential Recovery',
       html: htmlContent,
       text: `
 SECURITY ALERT - Staff Scheduling System
@@ -400,12 +408,14 @@ If you have any concerns about this recovery request, please contact your system
   console.log('[EMAIL] Credential recovery email sent successfully!');
   console.log('[EMAIL] Message ID:', info.messageId);
     
-    // For development, log the preview URL
-    const previewUrl = nodemailer.getTestMessageUrl(info);
-    if (previewUrl) {
-      console.log('[EMAIL] RECOVERY EMAIL PREVIEW URL:');
-      console.log('[EMAIL] PREVIEW URL:', previewUrl);
-      console.log('[NOTICE] NOTE: This is a TEST email service for development');
+    // For development/test transports, log the preview URL so developers can inspect the message
+    if (isDevelopment) {
+      const previewUrl = nodemailer.getTestMessageUrl(info);
+      if (previewUrl) {
+        console.log('[EMAIL] RECOVERY EMAIL PREVIEW URL:');
+        console.log('[EMAIL] PREVIEW URL:', previewUrl);
+        console.log('[NOTICE] NOTE: This is a TEST email service for development');
+      }
     }
     
   console.log('[EMAIL] === CREDENTIAL RECOVERY EMAIL COMPLETE ===');

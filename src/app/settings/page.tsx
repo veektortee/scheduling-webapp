@@ -1,19 +1,20 @@
-'use client';
+"use client";
 
 import { useState, useEffect } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { 
-  HiCog6Tooth, 
-  HiUser, 
-  HiKey, 
-  HiEye, 
-  HiEyeSlash,
-  HiArrowLeft,
-  HiEnvelope,
-  HiLockClosed,
-  HiExclamationTriangle
-} from 'react-icons/hi2';
+import dynamic from 'next/dynamic';
+
+// Lazy-load icons to avoid pulling the entire react-icons bundle into the initial client chunk
+const HiCog6Tooth = dynamic(() => import('react-icons/hi2').then((m) => m.HiCog6Tooth), { ssr: false });
+const HiUser = dynamic(() => import('react-icons/hi2').then((m) => m.HiUser), { ssr: false });
+const HiKey = dynamic(() => import('react-icons/hi2').then((m) => m.HiKey), { ssr: false });
+const HiEye = dynamic(() => import('react-icons/hi2').then((m) => m.HiEye), { ssr: false });
+const HiEyeSlash = dynamic(() => import('react-icons/hi2').then((m) => m.HiEyeSlash), { ssr: false });
+const HiArrowLeft = dynamic(() => import('react-icons/hi2').then((m) => m.HiArrowLeft), { ssr: false });
+const HiEnvelope = dynamic(() => import('react-icons/hi2').then((m) => m.HiEnvelope), { ssr: false });
+const HiLockClosed = dynamic(() => import('react-icons/hi2').then((m) => m.HiLockClosed), { ssr: false });
+const HiExclamationTriangle = dynamic(() => import('react-icons/hi2').then((m) => m.HiExclamationTriangle), { ssr: false });
 import SettingsSkeleton from '@/components/SettingsSkeleton';
 
 export default function SettingsPage() {
@@ -36,35 +37,48 @@ export default function SettingsPage() {
   const [showWarning, setShowWarning] = useState(false);
   const [currentUsername, setCurrentUsername] = useState('');
 
-  // Authentication check
+  // Authentication check - show minimal UI ASAP and fetch credentials in background
   useEffect(() => {
     if (status === 'loading') return;
-    
+
     if (!session || session.user?.role !== 'admin') {
       router.push('/login');
       return;
     }
-    
-    // Fetch current credentials to display
+
+    // If session already contains a displayable username/email, show it immediately
+    const displayName = session.user?.name || session.user?.email || '';
+    if (displayName) {
+      setCurrentUsername(displayName);
+    }
+
+    // End the skeleton as soon as auth is validated so the UI becomes interactive quickly.
+    setPageLoading(false);
+
+    // Fetch current credentials in the background to update backup email / username if needed.
     const fetchCurrentCredentials = async () => {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000); // fail fast after 5s
       try {
-        const response = await fetch('/api/settings/current-credentials');
+        const response = await fetch('/api/settings/current-credentials', { signal: controller.signal });
         if (response.ok) {
           const data = await response.json();
-          setCurrentUsername(data.username);
-          setBackupEmail(data.backupEmail || ''); // Set current backup email
+          if (data.username) setCurrentUsername(data.username);
+          if (data.backupEmail) setBackupEmail(data.backupEmail);
         }
-      } catch (error) {
-        console.error('Failed to fetch current credentials:', error);
+      } catch (error: unknown) {
+        // Narrow the unknown error to an object with an optional name property
+        if (typeof error === 'object' && error !== null && 'name' in error && (error as { name?: string }).name === 'AbortError') {
+          console.warn('current-credentials fetch aborted due to timeout');
+        } else {
+          console.error('Failed to fetch current credentials:', error);
+        }
       } finally {
-        // Add a small delay to ensure smooth transition from skeleton
-        setTimeout(() => {
-          setPageLoading(false);
-        }, 300);
+        clearTimeout(timeout);
       }
     };
-    
-    fetchCurrentCredentials();
+
+    void fetchCurrentCredentials();
   }, [session, status, router]);
 
   const validateForm = () => {
@@ -419,51 +433,9 @@ export default function SettingsPage() {
           </div>
 
           {/* Local Solver Download */}
-          <div className="mt-6 p-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl">
-            <h4 className="font-semibold text-green-900 dark:text-green-300 mb-3 flex items-center space-x-2">
-              <span className="font-mono text-sm">[SOLVER]</span>
-              <span>High-Performance Local Solver</span>
-            </h4>
-            <p className="text-sm text-green-800 dark:text-green-200 mb-4">
-              Download our optimized local solver package for maximum performance. This runs on your computer 
-              and provides faster scheduling with advanced OR-Tools optimization.
-            </p>
-            
-            <div className="space-y-3">
-              <div className="flex flex-wrap gap-3">
-                <a
-                  href="/api/download/local-solver"
-                  className="inline-flex items-center space-x-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105"
-                  download="local-solver-package.zip"
-                >
-                  <span className="font-mono text-sm">[PACKAGE]</span>
-                  <span>Download Local Solver Package</span>
-                  <span className="text-xs opacity-80">(ZIP)</span>
-                </a>
-                
-                <a
-                  href="/LOCAL_SOLVER_DOWNLOAD_GUIDE.md"
-                  target="_blank"
-                  className="inline-flex items-center space-x-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition-all duration-200 shadow-md hover:shadow-lg"
-                >
-                  <span className="font-mono text-sm">[GUIDE]</span>
-                  <span>View Setup Guide</span>
-                </a>
-              </div>
-              
-              <div className="text-xs text-green-700 dark:text-green-300 space-y-1">
-                <div><strong>Features:</strong></div>
-                <ul className="ml-4 space-y-0.5">
-                  <li>• One-click setup for Windows (.bat) and Mac/Linux (.sh)</li>
-                  <li>• Advanced OR-Tools constraint programming</li>
-                  <li>• Auto-detects testcase_gui.py for maximum optimization</li>
-                  <li>• WebSocket real-time progress updates</li>
-                  <li>• Complete with all dependencies and documentation</li>
-                </ul>
-                <div className="mt-2"><strong>Usage:</strong> Extract ZIP → Run start script → Keep running while using webapp</div>
-              </div>
-            </div>
-          </div>
+
+ 
+          
         </div>
       </div>
     </div>
