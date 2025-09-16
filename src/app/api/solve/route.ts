@@ -11,7 +11,7 @@ interface SolverResult {
   output_directory?: string;
   error?: string;
 }
-import fs from 'fs';
+import { put, list } from '@vercel/blob';
 import path from 'path';
 
 interface ShiftData {
@@ -190,36 +190,30 @@ async function runServerlessSolver(caseData: Record<string, unknown>, runId: str
     
 
 // Helper: write serverless results to disk under solver_output/Result_N
-function persistServerlessResult(runId: string, results: SolverResult) {
+async function persistServerlessResult(runId: string, results: SolverResult): Promise<string | null> {
   try {
-    const base = path.join(process.cwd(), 'solver_output');
-    if (!fs.existsSync(base)) fs.mkdirSync(base, { recursive: true });
+    const { blobs } = await list({ prefix: 'solver_output/Result_' });
+    const existingNums = blobs.map(blob => {
+      const match = blob.pathname.match(/^solver_output\/Result_(\d+)\//);
+      return match ? parseInt(match[1], 10) : 0;
+    });
+    const nextNum = Math.max(0, ...existingNums) + 1;
+    const folderName = `Result_${nextNum}`;
 
-    // Determine next available Result_N folder if runId isn't already prefixed
-    let folderName = runId;
-    if (!/^Result_/i.test(folderName)) {
-      // find next Result_N
-      const existing = fs.readdirSync(base).filter(f => /^Result_\d+$/i.test(f));
-      const nums = existing.map(f => parseInt(f.split('_')[1], 10)).filter(n => !isNaN(n));
-      const next = (nums.length > 0 ? Math.max(...nums) : 0) + 1;
-      folderName = `Result_${next}`;
-    }
+    const basePath = `solver_output/${folderName}`;
 
-    const outDir = path.join(base, folderName);
-    if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
+    // Upload results JSON
+    const resultPath = `${basePath}/results.json`;
+    await put(resultPath, JSON.stringify(results, null, 2), { access: 'public' });
 
-    // Write results JSON
-    const resultPath = path.join(outDir, 'results.json');
-    fs.writeFileSync(resultPath, JSON.stringify(results, null, 2), 'utf8');
-
-    // Write a minimal run log
-    const logPath = path.join(outDir, 'scheduler_run.log');
+    // Upload a minimal run log
+    const logPath = `${basePath}/scheduler_run.log`;
     const logContent = `[${new Date().toISOString()}] Serverless run persisted: ${folderName}\n`;
-    fs.writeFileSync(logPath, logContent, 'utf8');
+    await put(logPath, logContent, { access: 'public' });
 
     return folderName;
   } catch (err) {
-    console.error('Failed to persist serverless result:', err);
+    console.error('Failed to persist serverless result to Vercel Blob:', err);
     return null;
   }
 }
@@ -265,7 +259,7 @@ function persistServerlessResult(runId: string, results: SolverResult) {
     console.log(`[SUCCESS] Generated ${solutions.length} solutions in ${executionTime}ms`);
     
     // Persist serverless result to disk so downloads and listing work
-    const persistedFolder = persistServerlessResult(runId, {
+    const persistedFolder = await persistServerlessResult(runId, {
       status: 'completed',
       message: `Optimization completed successfully - generated ${solutions.length} solution(s)`,
       run_id: runId,
