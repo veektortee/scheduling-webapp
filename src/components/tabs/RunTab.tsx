@@ -761,13 +761,13 @@ export default function RunTab() {
           let finalOutputDirectory = (result as any).output_directory;
 
           // If local solver was used, upload the packaged results to Vercel Blob
-          if (actualSolver === 'local' && (result as any).packaged_outputs_b64) {
+          if (actualSolver === 'local' && (result as any).packaged_files) {
             addLog('[INFO] Uploading local solver results to persistent storage...', 'info');
             try {
-              const uploadResponse = await fetch('/api/upload-local-results', {
+              const uploadResponse = await fetch('/api/upload-packaged-results', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ packaged_outputs_b64: (result as any).packaged_outputs_b64 }),
+                body: JSON.stringify({ packaged_files: (result as any).packaged_files }),
               });
 
               if (uploadResponse.ok) {
@@ -893,16 +893,20 @@ export default function RunTab() {
   const handleExportLatestSchedule = async () => {
     addLog('[INFO] Exporting latest schedule...', 'info');
     try {
+      addLog('[INFO] Getting available result folders for export...', 'info');
       const folders = await getAvailableResultFolders();
+      addLog(`[INFO] Found ${folders.length} folders for export.`, 'info');
+
       if (folders.length === 0) {
         addLog('[WARN] No result folders found to export from', 'warning');
         return;
       }
       const latestFolder = folders[0]; // Folders are sorted descending by name
-      addLog(`[INFO] Latest result folder is: ${latestFolder.name}`, 'info');
+      addLog(`[INFO] Identified latest result folder for export: ${latestFolder.name}`, 'info');
 
       const fileName = 'calendar.xlsx';
       const downloadUrl = `/api/download/result-folder?name=${encodeURIComponent(latestFolder.name)}&file=${encodeURIComponent(fileName)}`;
+      addLog(`[INFO] Constructed download URL for export: ${downloadUrl}`, 'info');
 
       const a = document.createElement('a');
       a.style.display = 'none';
