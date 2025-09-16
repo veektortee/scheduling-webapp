@@ -1,16 +1,16 @@
-# 🔐 Authentication Troubleshooting Guide
+# [Secure] Authentication Troubleshooting Guide
 
 ## Problem: NextAuth 500 Server Error on Vercel
 
 ### Symptoms
-- ❌ `Failed to load resource: the server responded with a status of 500`
-- ❌ `[next-auth][error][CLIENT_FETCH_ERROR]`
-- ❌ Authentication works locally but fails on Vercel deployment
+- [Error] `Failed to load resource: the server responded with a status of 500`
+- [Error] `[next-auth][error][CLIENT_FETCH_ERROR]`
+- [Error] Authentication works locally but fails on Vercel deployment
 
 ### Root Cause
 The NextAuth configuration is missing required environment variables for production deployment.
 
-## ✅ Solution Steps
+## [Done] Solution Steps
 
 ### 1. Set Environment Variables in Vercel
 
@@ -39,12 +39,12 @@ openssl rand -base64 32
 
 ### 3. Update NEXTAUTH_URL
 
-⚠️ **Critical**: Replace `https://your-actual-vercel-domain.vercel.app` with your **exact** Vercel URL.
+[Warning] **Critical**: Replace `https://your-actual-vercel-domain.vercel.app` with your **exact** Vercel URL.
 
 Example:
-- ✅ `https://scheduling-webapp-abc123.vercel.app`
-- ❌ `http://localhost:3000` (wrong for production)
-- ❌ `https://yourapp.com` (if that's not your actual domain)
+- [Done] `https://scheduling-webapp-abc123.vercel.app`
+- [Error] `http://localhost:3000` (wrong for production)
+- [Error] `https://yourapp.com` (if that's not your actual domain)
 
 ### 4. Redeploy Your Application
 
@@ -56,7 +56,7 @@ vercel --prod
 
 Or push a commit to trigger automatic deployment.
 
-## 🔍 How to Verify the Fix
+## [Info] How to Verify the Fix
 
 ### Check Vercel Function Logs
 1. Go to Vercel Dashboard → Your Project
@@ -73,7 +73,7 @@ Or push a commit to trigger automatic deployment.
 
 ## 🚨 Common Mistakes
 
-### ❌ Wrong NEXTAUTH_URL
+### [Error] Wrong NEXTAUTH_URL
 ```bash
 # DON'T USE:
 NEXTAUTH_URL=http://localhost:3000              # Local only
@@ -84,7 +84,7 @@ NEXTAUTH_URL=https://myapp.com                  # Wrong domain
 NEXTAUTH_URL=https://your-project-hash.vercel.app
 ```
 
-### ❌ Missing or Weak NEXTAUTH_SECRET
+### [Error] Missing or Weak NEXTAUTH_SECRET
 ```bash
 # DON'T USE:
 NEXTAUTH_SECRET=secret                          # Too weak
@@ -95,7 +95,7 @@ NEXTAUTH_SECRET=123456                          # Too weak
 NEXTAUTH_SECRET=abcd1234efgh5678ijkl9012mnop3456  # 32+ chars
 ```
 
-### ❌ Incorrect Environment Variable Names
+### [Error] Incorrect Environment Variable Names
 ```bash
 # DON'T USE:
 NEXT_AUTH_SECRET=...                            # Wrong name
@@ -131,4 +131,4 @@ NEXTAUTH_SECRET=production-secret-32-chars-min
 
 ---
 
-💡 **Pro Tip**: Always use different `NEXTAUTH_SECRET` values for development and production!
+[Note] **Pro Tip**: Always use different `NEXTAUTH_SECRET` values for development and production!

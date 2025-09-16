@@ -109,7 +109,7 @@ def test_realistic_solver():
     }
     
     try:
-        print("🚀 Testing with realistic scheduling data...")
+        print("[Feature] Testing with realistic scheduling data...")
         print(f"📊 Shifts: {len(test_data['shifts'])}")
         print(f"👥 Providers: {len(test_data['providers'])}")  
         print(f"📅 Days: {len(test_data['days'])}")
@@ -119,7 +119,7 @@ def test_realistic_solver():
         response = requests.post("http://localhost:8000/solve", json=test_data, timeout=120)
         
         if response.status_code == 200:
-            print("✅ Local solver responded successfully!")
+            print("[Done] Local solver responded successfully!")
             result = response.json()
             
             # Check solver information
@@ -134,31 +134,31 @@ def test_realistic_solver():
             
             # Look for signs of real solver usage
             if 'statistics' in result:
-                print("\n🔍 Solver Statistics:")
+                print("\n[Info] Solver Statistics:")
                 print(json.dumps(result['statistics'], indent=2))
             
             # Check if we have detailed results structure
             if 'results' in result and result['results'].get('solutions'):
                 solutions = result['results']['solutions'] 
-                print(f"\n📋 Solutions structure: {len(solutions)} solutions")
+                print(f"\n[Info] Solutions structure: {len(solutions)} solutions")
                 
                 # Real testcase_gui.py should produce complex solution data
                 if solutions:
-                    print("✅ Solutions found - likely using REAL testcase_gui.py!")
+                    print("[Done] Solutions found - likely using REAL testcase_gui.py!")
                     print(f"First solution keys: {list(solutions[0].keys()) if solutions else 'None'}")
                 else:
-                    print("⚠️  No solutions in response")
+                    print("[Warning]  No solutions in response")
             
-            print(f"\n📝 Full response structure: {list(result.keys())}")
+            print(f"\n[Note] Full response structure: {list(result.keys())}")
                 
         else:
-            print(f"❌ Request failed with status: {response.status_code}")
+            print(f"[Error] Request failed with status: {response.status_code}")
             print(f"Response: {response.text}")
             
     except requests.exceptions.RequestException as e:
-        print(f"❌ Request failed: {e}")
+        print(f"[Error] Request failed: {e}")
     except Exception as e:
-        print(f"❌ Unexpected error: {e}")
+        print(f"[Error] Unexpected error: {e}")
 
 if __name__ == "__main__":
     print("Testing Real Scheduler with Realistic Data...")

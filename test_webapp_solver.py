@@ -46,9 +46,9 @@ def test_webapp_solver():
             
             # Check if it's using real scheduler_sat_core
             if 'real_scheduler_sat_core' in solver_type or 'testcase_gui.py' in algorithm:
-                print("\n✅ SUCCESS: Webapp is using REAL scheduler_sat_core implementation!")
+                print("\n[Done] SUCCESS: Webapp is using REAL scheduler_sat_core implementation!")
             else:
-                print("\n❌ FAILED: Webapp is still using fallback solver")
+                print("\n[Error] FAILED: Webapp is still using fallback solver")
                 
             # Show first solution stats if available
             solutions = result.get('results', {}).get('solutions', [])

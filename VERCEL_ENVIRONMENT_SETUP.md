@@ -11,7 +11,7 @@ Set the following environment variables in your Vercel project settings:
 ### Authentication Credentials
 - `ADMIN_USERNAME`: The admin login email (e.g., `admin@scheduling.com`)
 - `ADMIN_PASSWORD`: The admin login password (use a strong password)
-- `ADMIN_BACKUP_EMAIL`: Optional backup email for credential recovery
+- Credential recovery via backup email has been removed; ADMIN_BACKUP_EMAIL is no longer used by the application.
 - `CREDENTIALS_UPDATED_AT`: ISO timestamp of when credentials were last updated
 
 ### NextAuth Configuration
@@ -31,7 +31,7 @@ Set the following environment variables in your Vercel project settings:
 # Set production environment variables
 vercel env add ADMIN_USERNAME production
 vercel env add ADMIN_PASSWORD production
-vercel env add ADMIN_BACKUP_EMAIL production
+// ADMIN_BACKUP_EMAIL removed - no environment variable to add for backup-email recovery
 vercel env add CREDENTIALS_UPDATED_AT production
 vercel env add NEXTAUTH_SECRET production
 vercel env add NEXTAUTH_URL production
@@ -42,7 +42,7 @@ vercel env add NEXTAUTH_URL production
 ```bash
 ADMIN_USERNAME=admin@yourcompany.com
 ADMIN_PASSWORD=YourSecurePassword123!
-ADMIN_BACKUP_EMAIL=backup@yourcompany.com
+# ADMIN_BACKUP_EMAIL removed - backup-email recovery is not supported
 CREDENTIALS_UPDATED_AT=2024-01-15T10:30:00.000Z
 NEXTAUTH_SECRET=your-super-secret-key-here
 NEXTAUTH_URL=https://your-app.vercel.app
@@ -63,7 +63,7 @@ For local development, you can either:
    ```
    ADMIN_USERNAME=admin@scheduling.com
    ADMIN_PASSWORD=admin123
-   ADMIN_BACKUP_EMAIL=your-backup@email.com
+   # Backup email support removed
    CREDENTIALS_UPDATED_AT=2024-01-15T10:30:00.000Z
    NEXTAUTH_SECRET=your-development-secret
    NEXTAUTH_URL=http://localhost:3000
@@ -86,7 +86,7 @@ node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
 ### Common Issues
 1. **Environment variables not loading**: Redeploy after setting environment variables
 2. **Authentication failing**: Check that ADMIN_USERNAME and ADMIN_PASSWORD are set correctly
-3. **Credential recovery not working**: Ensure ADMIN_BACKUP_EMAIL is set and valid
+3. **Credential recovery not working**: Credential recovery via email has been removed; this step is not applicable.
 
 ### Debug Information
 The system logs detailed information about the environment and credential loading:

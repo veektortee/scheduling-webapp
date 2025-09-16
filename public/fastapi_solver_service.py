@@ -76,13 +76,13 @@ try:
             HAVE_TESTCASE_GUI = False
 
     if HAVE_TESTCASE_GUI:
-        print("✅ Found testcase_gui.py — local runs will use the real solver")
+        print("[Done] Found testcase_gui.py — local runs will use the real solver")
     else:
-        print("ℹ️ testcase_gui.py not found — using built-in simplified solver")
+        print("[Note] testcase_gui.py not found — using built-in simplified solver")
     
-    print("✅ OR-Tools imported successfully")
+    print("[Done] OR-Tools imported successfully")
 except ImportError as e:
-    print(f"❌ Failed to import OR-Tools: {e}")
+    print(f"[Error] Failed to import OR-Tools: {e}")
     print("Please install: pip install ortools")
 
 # Configure logging
@@ -267,7 +267,7 @@ class AdvancedSchedulingSolver:
                             result_payload.setdefault('debug_info', {})
                             result_payload['debug_info']['used_testcase_gui'] = True
                             result_payload['debug_info']['tcg_output_type'] = str(type(tcg_out))
-                            logger.info("✅ Successfully used testcase_gui.py!")
+                            logger.info("[Done] Successfully used testcase_gui.py!")
                     except Exception as e:
                         logger.warning(f"Solve_test_case failed, will try build+solve path: {e}")
 
@@ -296,7 +296,7 @@ class AdvancedSchedulingSolver:
 
                 logger.warning("testcase_gui.py available but result could not be coerced; falling back")
                 # Add debug info for fallback case  
-                logger.info("⚠️  Using built-in solver fallback")
+                logger.info("[Warning] Using built-in solver fallback")
             except Exception as e:
                 logger.warning(f"Failed to use testcase_gui.py, using built-in model. Reason: {e}")
 
@@ -884,17 +884,17 @@ async def root():
     }
 
 if __name__ == "__main__":
-    print("🚀 Starting Medical Staff Scheduling Solver Service (FastAPI)")
+    print("[Feature] Starting Medical Staff Scheduling Solver Service (FastAPI)")
     print("📊 Service URL: http://localhost:8000")
     print("📚 API Documentation: http://localhost:8000/docs")
     print("🔌 WebSocket: ws://localhost:8000/ws/{run_id}")
-    print("\n🎯 Endpoints:")
+    print("\n[Goal] Endpoints:")
     print("  POST /solve              - Submit optimization case")
     print("  GET  /status/{run_id}    - Get run status") 
     print("  GET  /runs               - List all runs")
     print("  WebSocket /ws/{run_id}   - Real-time updates")
     print("  GET  /health             - Health check")
-    print("\n⚡ Press Ctrl+C to stop the service")
+    print("\n[Info] Press Ctrl+C to stop the service")
     
     uvicorn.run(
         "fastapi_solver_service:app",

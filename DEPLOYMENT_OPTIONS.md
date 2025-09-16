@@ -15,10 +15,10 @@ docker run -d -p 8000:8000 scheduling-solver
 ```
 
 **Benefits:**
-- ✅ Full control over data
-- ✅ No internet dependency for sensitive data
-- ✅ Maximum performance
-- ✅ Compliance-friendly (HIPAA, etc.)
+- [Done] Full control over data
+- [Done] No internet dependency for sensitive data
+- [Done] Maximum performance
+- [Done] Compliance-friendly (HIPAA, etc.)
 
 ### 2. ☁️ **Cloud-Hosted Solver Service**
 **Best for: Multi-tenant SaaS**

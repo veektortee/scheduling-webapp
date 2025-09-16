@@ -57,12 +57,12 @@ print("Health check...")
 try:
     health = requests.get("http://localhost:8000/health", timeout=5)
     if health.ok:
-        print("✅ Health check OK")
+        print("[Done] Health check OK")
     else:
-        print(f"❌ Health check failed: {health.status_code}")
+        print(f"[Error] Health check failed: {health.status_code}")
         exit(1)
 except Exception as e:
-    print(f"❌ Cannot connect: {e}")
+    print(f"[Error] Cannot connect: {e}")
     exit(1)
 
 print("Testing optimization...")
@@ -73,7 +73,7 @@ try:
     
     if response.ok:
         result = response.json()
-        print("✅ Optimization completed!")
+        print("[Done] Optimization completed!")
         print(f"Status: {result.get('status')}")
         print(f"Message: {result.get('message')}")
         
@@ -86,8 +86,8 @@ try:
                 print(f"  - {assignment.get('provider_name')} -> {assignment.get('shift_id')} on {assignment.get('date')}")
         
     else:
-        print(f"❌ Request failed: {response.status_code}")
+        print(f"[Error] Request failed: {response.status_code}")
         print(response.text)
         
 except Exception as e:
-    print(f"❌ Error: {e}")
+    print(f"[Error] Error: {e}")

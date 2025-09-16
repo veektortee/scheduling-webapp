@@ -23,10 +23,10 @@ def test_zip_package():
     zip_path = script_dir / "public" / "local-solver-package.zip"
     
     if not zip_path.exists():
-        print("❌ ZIP package not found. Run create_zip_package.bat first!")
+        print("[Error] ZIP package not found. Run create_zip_package.bat first!")
         return False
     
-    print(f"📦 Found ZIP package: {zip_path}")
+    print(f"[Package] Found ZIP package: {zip_path}")
     print(f"📊 Size: {zip_path.stat().st_size:,} bytes")
     
     # Create temporary directory for extraction
@@ -52,20 +52,20 @@ def test_zip_package():
             "LOCAL_SOLVER_DOWNLOAD_GUIDE.md"
         ]
         
-        print("\n🔍 Checking extracted files:")
+        print("\n[Info] Checking extracted files:")
         all_files_present = True
         
         for filename in expected_files:
             file_path = extract_dir / filename
             if file_path.exists():
                 size = file_path.stat().st_size
-                print(f"  ✅ {filename} ({size:,} bytes)")
+                print(f"  [Done] {filename} ({size:,} bytes)")
             else:
-                print(f"  ❌ {filename} (MISSING)")
+                print(f"  [Error] {filename} (MISSING)")
                 all_files_present = False
         
         if not all_files_present:
-            print("\n❌ Some files are missing from the package!")
+            print("\n[Error] Some files are missing from the package!")
             return False
         
         # Test Python file syntax
@@ -76,12 +76,12 @@ def test_zip_package():
                 file_path = extract_dir / py_file
                 with open(file_path, 'r', encoding='utf-8') as f:
                     compile(f.read(), py_file, 'exec')
-                print(f"  ✅ {py_file} syntax OK")
+                print(f"  [Done] {py_file} syntax OK")
             except SyntaxError as e:
-                print(f"  ❌ {py_file} syntax error: {e}")
+                print(f"  [Error] {py_file} syntax error: {e}")
                 return False
             except Exception as e:
-                print(f"  ⚠️  {py_file} warning: {e}")
+                print(f"  [Warning]  {py_file} warning: {e}")
         
         # Test script permissions (on Unix-like systems)
         if sys.platform != 'win32':
@@ -89,18 +89,18 @@ def test_zip_package():
             if sh_script.exists():
                 # Make executable
                 os.chmod(sh_script, 0o755)
-                print("  ✅ start_local_solver.sh made executable")
+                print("  [Done] start_local_solver.sh made executable")
         
-        print("\n📋 Testing README content:")
+        print("\n[Info] Testing README content:")
         readme_path = extract_dir / "README.txt"
         if readme_path.exists():
             content = readme_path.read_text(encoding='utf-8')
             if "Quick Start Guide" in content and "Windows Users" in content:
-                print("  ✅ README contains setup instructions")
+                print("  [Done] README contains setup instructions")
             else:
-                print("  ⚠️  README may be incomplete")
+                print("  [Warning]  README may be incomplete")
         
-        print("\n📋 Testing requirements.txt:")
+        print("\n[Info] Testing requirements.txt:")
         req_path = extract_dir / "requirements.txt"
         if req_path.exists():
             content = req_path.read_text(encoding='utf-8')
@@ -112,18 +112,18 @@ def test_zip_package():
                     missing_packages.append(pkg)
             
             if missing_packages:
-                print(f"  ⚠️  Missing packages in requirements.txt: {missing_packages}")
+                print(f"  [Warning]  Missing packages in requirements.txt: {missing_packages}")
             else:
-                print("  ✅ All required packages listed")
+                print("  [Done] All required packages listed")
         
         print("\n" + "=" * 50)
-        print("✅ Package test completed successfully!")
-        print(f"📦 Total files: {len(expected_files)}")
+        print("[Done] Package test completed successfully!")
+        print(f"[Package] Total files: {len(expected_files)}")
         print(f"💾 Package size: {zip_path.stat().st_size:,} bytes")
         
         # Show download URL info
         print("\n🌐 Download URL: /api/download/local-solver")
-        print("🎯 Settings page: Navigate to Settings → Local Solver section")
+        print("[Goal] Settings page: Navigate to Settings → Local Solver section")
         
         return True
 
@@ -138,29 +138,29 @@ def test_api_endpoint():
         response = requests.head("http://localhost:3001/api/download/local-solver", timeout=5)
         
         if response.status_code == 200:
-            print("  ✅ Download API endpoint responding")
+            print("  [Done] Download API endpoint responding")
             size = response.headers.get('Content-Length', 'unknown')
             print(f"  📊 Reported size: {size} bytes")
             
             # Test actual download
             response = requests.get("http://localhost:3001/api/download/local-solver", timeout=10)
             if response.status_code == 200:
-                print(f"  ✅ Download successful ({len(response.content):,} bytes)")
+                print(f"  [Done] Download successful ({len(response.content):,} bytes)")
             else:
-                print(f"  ❌ Download failed: {response.status_code}")
+                print(f"  [Error] Download failed: {response.status_code}")
                 
         elif response.status_code == 404:
-            print("  ❌ API endpoint not found (check if server is running)")
+            print("  [Error] API endpoint not found (check if server is running)")
         else:
-            print(f"  ⚠️  API endpoint status: {response.status_code}")
+            print(f"  [Warning]  API endpoint status: {response.status_code}")
             
     except ImportError:
-        print("  ⚠️  Requests library not available - skipping API test")
+        print("  [Warning]  Requests library not available - skipping API test")
     except Exception as e:
-        print(f"  ⚠️  API test failed: {e}")
+        print(f"  [Warning]  API test failed: {e}")
 
 if __name__ == "__main__":
-    print("🚀 Local Solver Package Test Suite")
+    print("[Feature] Local Solver Package Test Suite")
     print(f"🐍 Python: {sys.version}")
     print(f"💻 Platform: {sys.platform}")
     print()
@@ -169,7 +169,7 @@ if __name__ == "__main__":
     
     if success:
         test_api_endpoint()
-        print("\n🎉 All tests completed!")
+        print("\n[Done] All tests completed!")
     else:
         print("\n💥 Tests failed - check package creation")
         sys.exit(1)

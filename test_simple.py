@@ -69,24 +69,24 @@ try:
     response = requests.post('http://localhost:8000/solve', json=simple_case, timeout=30)
     if response.ok:
         result = response.json()
-        print(f"✅ Status: {result.get('status')}")
+        print(f"[Done] Status: {result.get('status')}")
         print(f"Solutions: {len(result.get('results', {}).get('solutions', []))}")
         solver_stats = result.get('results', {}).get('solver_stats', {})
         print(f"Solver status: {solver_stats.get('status')}")
         
         solutions = result.get('results', {}).get('solutions', [])
         if solutions:
-            print("✅ SUCCESS! Found solutions:")
+            print("[Done] SUCCESS! Found solutions:")
             for i, sol in enumerate(solutions):
                 assignments = sol.get('assignments', [])
                 print(f"  Solution {i+1}: {len(assignments)} assignments")
                 for assignment in assignments[:2]:  # Show first 2
                     print(f"    - {assignment['provider_name']} -> {assignment['shift_name']}")
         else:
-            print("❌ No solutions found")
+            print("[Error] No solutions found")
     else:
-        print(f"❌ Request failed: {response.status_code}")
+        print(f"[Error] Request failed: {response.status_code}")
         print(response.text)
         
 except Exception as e:
-    print(f"❌ Error: {e}")
+    print(f"[Error] Error: {e}")

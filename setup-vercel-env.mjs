@@ -27,7 +27,7 @@ function getCurrentTimestamp() {
   return new Date().toISOString();
 }
 
-console.log('🔐 Vercel Environment Variables Setup');
+console.log('[Secure] Vercel Environment Variables Setup');
 console.log('=====================================\n');
 
 console.log('Here are the environment variables you need to set in your Vercel project:\n');
@@ -39,16 +39,15 @@ const sampleBackupEmail = 'backup@yourcompany.com';
 const nextAuthSecret = generateNextAuthSecret();
 const timestamp = getCurrentTimestamp();
 
-console.log('📋 Copy these values to your Vercel project settings:');
+console.log('[Note] Copy these values to your Vercel project settings:');
 console.log('------------------------------------------------------');
 console.log(`ADMIN_USERNAME=${sampleUsername}`);
 console.log(`ADMIN_PASSWORD=${samplePassword}`);
-console.log(`ADMIN_BACKUP_EMAIL=${sampleBackupEmail}`);
 console.log(`CREDENTIALS_UPDATED_AT=${timestamp}`);
 console.log(`NEXTAUTH_SECRET=${nextAuthSecret}`);
 console.log('NEXTAUTH_URL=https://your-app-name.vercel.app\n');
 
-console.log('🔧 Vercel CLI Commands:');
+console.log('[Maintenance] Vercel CLI Commands:');
 console.log('-----------------------');
 console.log(`vercel env add ADMIN_USERNAME production`);
 console.log(`# Enter: ${sampleUsername}\n`);
@@ -56,7 +55,7 @@ console.log(`# Enter: ${sampleUsername}\n`);
 console.log(`vercel env add ADMIN_PASSWORD production`);
 console.log(`# Enter: ${samplePassword}\n`);
 
-console.log(`vercel env add ADMIN_BACKUP_EMAIL production`);
+// Backup-email recovery removed - ADMIN_BACKUP_EMAIL is deprecated and not set by this script.
 console.log(`# Enter: ${sampleBackupEmail}\n`);
 
 console.log(`vercel env add CREDENTIALS_UPDATED_AT production`);
@@ -68,16 +67,16 @@ console.log(`# Enter: ${nextAuthSecret}\n`);
 console.log(`vercel env add NEXTAUTH_URL production`);
 console.log('# Enter: https://your-app-name.vercel.app\n');
 
-console.log('📝 Local Development (.env.local):');
+console.log('[Note] Local Development (.env.local):');
 console.log('-----------------------------------');
 console.log(`ADMIN_USERNAME=${sampleUsername}`);
 console.log(`ADMIN_PASSWORD=${samplePassword}`);
-console.log(`ADMIN_BACKUP_EMAIL=${sampleBackupEmail}`);
+// ADMIN_BACKUP_EMAIL deprecated
 console.log(`CREDENTIALS_UPDATED_AT=${timestamp}`);
 console.log(`NEXTAUTH_SECRET=${nextAuthSecret}`);
 console.log('NEXTAUTH_URL=http://localhost:3000\n');
 
-console.log('⚠️  Important Notes:');
+console.log('[Warning] Important Notes:');
 console.log('------------------');
 console.log('1. Replace the sample email addresses with your actual email addresses');
 console.log('2. Save the generated password in a secure location');
@@ -85,11 +84,11 @@ console.log('3. Replace "your-app-name" with your actual Vercel app name');
 console.log('4. Set these variables for Production, Preview, and Development environments');
 console.log('5. Redeploy your application after setting the environment variables\n');
 
-console.log('🔍 Testing:');
+console.log('[Info] Testing:');
 console.log('----------');
 console.log('After setting the environment variables and redeploying:');
 console.log('1. Try logging in with the new credentials');
 console.log('2. Check the Vercel function logs for environment variable loading messages');
 console.log('3. Test credential recovery if you set a backup email\n');
 
-console.log('✅ Setup complete! Copy the values above to your Vercel project settings.');
+console.log('[Done] Setup complete! Copy the values above to your Vercel project settings.');

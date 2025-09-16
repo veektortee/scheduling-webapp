@@ -10,12 +10,12 @@ A modern web-based scheduling system for staff with AI-powered optimization.
 - **Authentication**: Single admin user with secure login
 
 ### **Benefits**
-- ✅ Web accessible from anywhere
-- ✅ Powerful local processing for optimization
-- ✅ Secure admin-only access
-- ✅ Professional Excel export functionality
+- [Done] Web accessible from anywhere
+- [Done] Powerful local processing for optimization
+- [Done] Secure admin-only access
+- [Done] Professional Excel export functionality
 
-## 🚀 Quick Start
+## [Feature] Quick Start
 
 ### **1. Web Application Setup**
 
@@ -56,14 +56,14 @@ The solver service will be available at `http://localhost:8000`
 5. **Config** - Adjust solver parameters and optimization settings
 
 ### **Key Capabilities**
-- 🔐 **Secure Authentication** (admin-only access)
+- [Secure] **Secure Authentication** (admin-only access)
 - 🏥 **Medical Staff Management** (doctors, nurses, specialists)
-- ⏰ **Flexible Shift Scheduling** (day, night, swing shifts)
+- [Progressing] **Flexible Shift Scheduling** (day, night, swing shifts)
 - 🤖 **AI Optimization** (Google OR-Tools integration)
 - 📊 **Excel Export** (configuration and results)
 - 📱 **Responsive Design** (desktop and mobile)
 
-## 🔧 Deployment Options
+## [Maintenance] Deployment Options
 
 ### **Option A: Hybrid (Recommended)**
 1. **Deploy web app to Vercel**:
@@ -98,14 +98,14 @@ The solver service will be available at `http://localhost:8000`
 - Shift coverage statistics
 - Optimization performance metrics
 
-## 🔒 Security Features
+## [Secure] Security Features
 
 - **Single Admin Authentication** using NextAuth.js
 - **Session Management** with 24-hour timeout
 - **Local Processing** keeps sensitive data on your machine
 - **Secure API Communication** between web app and solver
 
-## 🛠️ Technical Stack
+## [Maintenance] Technical Stack
 
 ### **Frontend**
 - Next.js 15 (React framework)
@@ -118,7 +118,7 @@ The solver service will be available at `http://localhost:8000`
 - Google OR-Tools (optimization engine)
 - Excel export (openpyxl)
 
-## 📋 Production Checklist
+## [Info] Production Checklist
 
 ### **Before Deploying**
 - [ ] Update admin credentials in environment variables
@@ -139,7 +139,7 @@ ADMIN_PASSWORD_HASH=$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewviUK1CXLaWhWH2
 
 #### **For Vercel Production Deployment**
 
-⚠️ **CRITICAL**: You must set these environment variables in your Vercel dashboard:
+[Warning] **CRITICAL**: You must set these environment variables in your Vercel dashboard:
 
 1. Go to your Vercel project dashboard
 2. Navigate to Settings > Environment Variables
@@ -192,4 +192,4 @@ ADMIN_PASSWORD_HASH=$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewviUK1CXLaWhWH2
 
 ---
 
-**Ready to revolutionize your medical staff scheduling!** 🏥✨
+**Ready to revolutionize your medical staff scheduling!** [Feature]

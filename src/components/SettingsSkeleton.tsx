@@ -83,14 +83,7 @@ export default function SettingsSkeleton() {
             </div>
 
             {/* Backup Email Field */}
-            <div>
-              <div className="flex items-center space-x-2 mb-2">
-                <div className="w-4 h-4 bg-gray-300 dark:bg-gray-600 rounded"></div>
-                <div className="w-36 h-4 bg-gray-300 dark:bg-gray-600 rounded"></div>
-              </div>
-              <div className="w-full h-12 bg-gray-300 dark:bg-gray-600 rounded-xl"></div>
-              <div className="mt-1 w-72 h-3 bg-gray-300 dark:bg-gray-600 rounded"></div>
-            </div>
+            {/* Backup Email Field removed */}
           </div>
 
           {/* Submit Button Skeleton */}

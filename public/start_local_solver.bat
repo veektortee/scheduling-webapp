@@ -44,23 +44,23 @@ echo.
 
 REM Check for required solver files
 if exist fastapi_solver_service.py (
-    echo [INFO] ✅ Found FastAPI solver service - launching ADVANCED scheduler
-    echo [INFO] 🔍 This will automatically detect and use testcase_gui.py if available
-    echo [INFO] 🚀 Starting high-performance medical scheduling optimizer...
+    echo [INFO] [Done] Found FastAPI solver service - launching ADVANCED scheduler
+    echo [INFO] [Info] This will automatically detect and use testcase_gui.py if available
+    echo [INFO] [Feature] Starting high-performance medical scheduling optimizer...
     "%PY_EXE%" fastapi_solver_service.py
 ) else if exist local_solver.py (
-    echo [WARN] ⚠️  fastapi_solver_service.py not found, using basic solver
-    echo [INFO] ⚡ OR-Tools detected - using high-performance solver
-    echo [INFO] 💡 For BEST performance, download fastapi_solver_service.py too
+    echo [WARN] [Warning] fastapi_solver_service.py not found, using basic solver
+    echo [INFO] [Info] OR-Tools detected - using high-performance solver
+    echo [INFO] [Note] For BEST performance, download fastapi_solver_service.py too
     "%PY_EXE%" local_solver.py
 ) else (
     echo.
     echo ================================================================
-    echo  ❌ MISSING REQUIRED FILES
+    echo  [Error] MISSING REQUIRED FILES
     echo ================================================================
     echo You need to download these files to the SAME folder as this .bat:
     echo.
-    echo  📁 REQUIRED FILES:
+    echo  [Files] REQUIRED FILES:
     echo    • fastapi_solver_service.py  ^(RECOMMENDED - Advanced solver^)
     echo    • local_solver.py           ^(Fallback - Basic solver^)
     echo    • scheduler_sat_core.py     ^(Core optimization engine^)

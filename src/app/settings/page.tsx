@@ -12,7 +12,6 @@ const HiKey = dynamic(() => import('react-icons/hi2').then((m) => m.HiKey), { ss
 const HiEye = dynamic(() => import('react-icons/hi2').then((m) => m.HiEye), { ssr: false });
 const HiEyeSlash = dynamic(() => import('react-icons/hi2').then((m) => m.HiEyeSlash), { ssr: false });
 const HiArrowLeft = dynamic(() => import('react-icons/hi2').then((m) => m.HiArrowLeft), { ssr: false });
-const HiEnvelope = dynamic(() => import('react-icons/hi2').then((m) => m.HiEnvelope), { ssr: false });
 const HiLockClosed = dynamic(() => import('react-icons/hi2').then((m) => m.HiLockClosed), { ssr: false });
 const HiExclamationTriangle = dynamic(() => import('react-icons/hi2').then((m) => m.HiExclamationTriangle), { ssr: false });
 import SettingsSkeleton from '@/components/SettingsSkeleton';
@@ -25,7 +24,6 @@ export default function SettingsPage() {
   const [newUsername, setNewUsername] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [backupEmail, setBackupEmail] = useState('');
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -64,7 +62,6 @@ export default function SettingsPage() {
         if (response.ok) {
           const data = await response.json();
           if (data.username) setCurrentUsername(data.username);
-          if (data.backupEmail) setBackupEmail(data.backupEmail);
         }
       } catch (error: unknown) {
         // Narrow the unknown error to an object with an optional name property
@@ -107,15 +104,6 @@ export default function SettingsPage() {
       return false;
     }
     
-    if (!backupEmail.trim()) {
-      setError('Backup email is required for security');
-      return false;
-    }
-    
-    if (!backupEmail.includes('@')) {
-      setError('Please enter a valid backup email address');
-      return false;
-    }
     
     return true;
   };
@@ -146,8 +134,7 @@ export default function SettingsPage() {
         body: JSON.stringify({
           currentPassword,
           newUsername,
-          newPassword,
-          backupEmail
+          newPassword
         }),
       });
 
@@ -157,17 +144,13 @@ export default function SettingsPage() {
         throw new Error(data.message || 'Failed to update credentials');
       }
 
-      const successMsg = data.sentToBothEmails 
-        ? `${data.message} Check the browser console for both email preview URLs. You will be logged out in 5 seconds...`
-        : `${data.message} Check the browser console for the email preview URL. You will be logged out in 5 seconds...`;
+      setSuccess(data.message || 'Credentials updated successfully.');
       
-      setSuccess(successMsg);
-      
-      // Clear form - but don't clear backupEmail if it was just updated
+  // Clear form
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
-      // setBackupEmail(''); // Keep the new backup email displayed
+      
       
       // Auto logout after 5 seconds (extended for dual emails)
       setTimeout(() => {
@@ -228,7 +211,7 @@ export default function SettingsPage() {
                     Update Credentials?
                   </h3>
                   <p className="text-sm text-gray-600 dark:text-gray-300 mb-6">
-                    Your credentials will be updated and you will be automatically logged out. New credentials will be sent to your backup email.
+                    Your credentials will be updated and you will be automatically logged out. Email notifications for credential backup/recovery have been disabled.
                   </p>
                   <div className="flex space-x-3">
                     <button
@@ -383,27 +366,7 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            {/* Backup Email */}
-            <div>
-              <label htmlFor="backupEmail" className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
-                <div className="flex items-center space-x-2">
-                  <HiEnvelope className="w-4 h-4" />
-                  <span>Backup Email Address</span>
-                </div>
-              </label>
-              <input
-                id="backupEmail"
-                type="email"
-                required
-                value={backupEmail}
-                onChange={(e) => setBackupEmail(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/90 dark:bg-gray-700/90 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 selection:bg-blue-200 selection:text-blue-900 dark:selection:bg-blue-700 dark:selection:text-white"
-                placeholder="your-backup@email.com"
-              />
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                New credentials will be sent to this email for backup purposes
-              </p>
-            </div>
+            {/* Backup Email field removed - email functionality disabled */}
 
             {/* Submit Button */}
             <div className="pt-4">
@@ -422,12 +385,9 @@ export default function SettingsPage() {
 
           {/* Security Notice */}
           <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl">
-            <h4 className="font-semibold text-blue-900 dark:text-blue-300 mb-2">[EMAIL] Email & Security Notice</h4>
+            <h4 className="font-semibold text-blue-900 dark:text-blue-300 mb-2">Security Notice</h4>
             <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
               <li>• You will be automatically logged out after updating credentials</li>
-              <li>• New credentials will be sent to your backup email address</li>
-              <li>• <strong>Development Mode:</strong> Email preview URL will be shown in console - check browser dev tools</li>
-              <li>• Keep your backup email secure and accessible</li>
               <li>• Use a strong password with at least 6 characters</li>
             </ul>
           </div>

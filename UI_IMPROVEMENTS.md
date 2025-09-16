@@ -4,22 +4,22 @@ This document describes the user interface improvements made to the Staff Schedu
 
 ## Recent Changes
 
-### 🎨 Enhanced Navigation Bar
+###  Enhanced Navigation Bar
 - **Bigger Elements**: Increased padding and font sizes for better visibility
 - **Modern Icons**: Replaced emoji icons with professional Lucide React icons
 - **Clean Design**: Removed appearance settings for a simpler interface
 - **Better Spacing**: Improved spacing between navigation elements
 
-### 🔧 Navigation Icons
+### [Maintenance] Navigation Icons
 The navigation now uses professional SVG icons from Lucide React:
 
 1. **Run Tab** - Play icon (▶️) for starting/running operations
 2. **Calendar Tab** - Calendar icon (📅) for schedule viewing
-3. **Shifts Tab** - Clock icon (⏰) for shift management
+3. **Shifts Tab** - Clock icon ([Progressing]) for shift management
 4. **Providers Tab** - Users icon (👥) for staff management  
 5. **Config Tab** - Settings icon (⚙️) for configuration
 
-### 🎯 Simplified Interface
+### [Goal] Simplified Interface
 - Removed theme switching options
 - Removed font customization features
 - Streamlined header with just essential buttons

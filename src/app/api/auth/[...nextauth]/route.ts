@@ -43,7 +43,7 @@ const handler = NextAuth({
 
         // Load current credentials dynamically each time
         const isValid = validateCredentials(credentials.email, credentials.password);
-        console.log('🔍 Credential validation:', { 
+        console.log('[Info] Credential validation:', { 
           isValid,
           providedEmail: credentials.email,
           attemptCount: lockoutInfo.attemptCount
@@ -85,7 +85,7 @@ const handler = NextAuth({
   },
   callbacks: {
     async jwt({ token, user }) {
-      console.log('🔍 JWT callback:', { user: !!user, token: { sub: token.sub, role: token.role } });
+      console.log('[Info] JWT callback:', { user: !!user, token: { sub: token.sub, role: token.role } });
       if (user) {
         token.role = user.role;
   console.log('[SUCCESS] User added to token:', { role: user.role });
@@ -93,7 +93,7 @@ const handler = NextAuth({
       return token;
     },
     async session({ session, token }) {
-      console.log('🔍 Session callback:', { token: { sub: token.sub, role: token.role }, session: !!session });
+      console.log('[Info] Session callback:', { token: { sub: token.sub, role: token.role }, session: !!session });
       if (token) {
         session.user.id = token.sub!;
         session.user.role = token.role as string;

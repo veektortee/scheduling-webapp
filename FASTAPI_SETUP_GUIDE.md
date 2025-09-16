@@ -13,15 +13,15 @@ Your medical staff scheduling application now uses a high-performance **FastAPI*
 
 ### Why FastAPI over Flask/Django?
 
-1. **⚡ Performance**: 2-3x faster than Flask
+1. **[Info] Performance**: 2-3x faster than Flask
 2. **🔄 Async Support**: Better for long-running optimizations  
 3. **📡 WebSocket Built-in**: Real-time progress updates
-4. **🔧 Modern APIs**: Auto-generated docs, type validation
-5. **🚀 Production Ready**: High concurrency support
+4. **[Maintenance] Modern APIs**: Auto-generated docs, type validation
+5. **[Feature] Production Ready**: High concurrency support
 
 ### Why Local Service?
 
-- **⏱️ Vercel Limitations**: 10-second timeout for serverless functions
+- **[Progressing]️ Vercel Limitations**: 10-second timeout for serverless functions
 - **🔢 Large Problems**: Your OR-Tools optimization can take minutes
 - **💾 Memory**: Local service can use full system resources
 - **📊 Complex Output**: Generate Excel files, detailed logs
@@ -50,7 +50,7 @@ python fastapi_solver_service.py
 
 You should see:
 ```
-🚀 Starting Medical Staff Scheduling Solver Service (FastAPI)
+[Feature] Starting Medical Staff Scheduling Solver Service (FastAPI)
 📊 Service URL: http://localhost:8000
 📚 API Documentation: http://localhost:8000/docs
 ```
@@ -145,28 +145,28 @@ The FastAPI service integrates your existing solver configuration from the `cons
 
 ### Common Issues
 
-#### ❌ "Cannot connect to solver service"
+#### [Error] "Cannot connect to solver service"
 
 **Solutions:**
 1. Start the FastAPI service: `python fastapi_solver_service.py`
 2. Check service health: http://localhost:8000/health
 3. Verify firewall/antivirus isn't blocking port 8000
 
-#### ❌ "Service timeout"
+#### [Error] "Service timeout"
 
 **Solutions:**
 1. Increase timeout in `.env.local`: `SOLVER_TIMEOUT=60000`
 2. Check system resources (CPU/memory)
 3. Restart both services
 
-#### ❌ "WebSocket connection failed"
+#### [Error] "WebSocket connection failed"
 
 **Solutions:**
 1. Service will automatically fallback to polling
 2. Check browser console for WebSocket errors
 3. Ensure port 8000 is accessible
 
-#### ❌ "Import errors" (OR-Tools, FastAPI)
+#### [Error] "Import errors" (OR-Tools, FastAPI)
 
 **Solutions:**
 1. Reinstall dependencies: `pip install -r requirements.txt`
@@ -275,4 +275,4 @@ ws.onmessage = (event) => {
 - **Logs**: Check console output from `fastapi_solver_service.py`
 - **Browser Console**: Check for WebSocket/API errors
 
-Your scheduling application is now ready for high-performance optimization with real-time progress updates! 🚀
+Your scheduling application is now ready for high-performance optimization with real-time progress updates! [Feature]

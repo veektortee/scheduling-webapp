@@ -5,7 +5,6 @@ import bcrypt from 'bcryptjs';
 interface UserCredentials {
   username: string;
   password: string;
-  backupEmail?: string;
   updatedAt: string;
 }
 
@@ -49,21 +48,17 @@ export function getCurrentCredentials(): UserCredentials {
     const username = process.env.ADMIN_USERNAME || process.env.ADMIN_EMAIL || 'admin@scheduling.com';
     // Prioritize plaintext password over hash for easier configuration
     const password = process.env.ADMIN_PASSWORD || process.env.ADMIN_PASSWORD_HASH || 'admin123';
-    const backupEmail = process.env.ADMIN_BACKUP_EMAIL || process.env.EMAIL_FROM_ADDRESS;
-    
   console.log('[INFO] Environment variable mapping:', {
       username,
       passwordSource: process.env.ADMIN_PASSWORD ? 'ADMIN_PASSWORD (plaintext)' : 
                      process.env.ADMIN_PASSWORD_HASH ? 'ADMIN_PASSWORD_HASH (bcrypt)' : 'default',
       hasPasswordHash: !!process.env.ADMIN_PASSWORD_HASH,
-      hasPlaintextPassword: !!process.env.ADMIN_PASSWORD,
-      hasBackupEmail: !!backupEmail
+      hasPlaintextPassword: !!process.env.ADMIN_PASSWORD
     });
     
     return {
       username,
       password,
-      backupEmail,
       updatedAt: process.env.CREDENTIALS_UPDATED_AT || new Date().toISOString()
     };
   }
@@ -87,18 +82,15 @@ export function getCurrentCredentials(): UserCredentials {
   const username = process.env.ADMIN_USERNAME || process.env.ADMIN_EMAIL || 'admin@scheduling.com';
   // Prioritize plaintext password over hash for easier configuration
   const password = process.env.ADMIN_PASSWORD || process.env.ADMIN_PASSWORD_HASH || 'admin123';
-  const backupEmail = process.env.ADMIN_BACKUP_EMAIL || process.env.EMAIL_FROM_ADDRESS;
-  
   return {
     username,
     password,
-    backupEmail,
     updatedAt: process.env.CREDENTIALS_UPDATED_AT || new Date().toISOString()
   };
 }
 
 // Update credentials
-export function updateCredentials(username: string, password: string, backupEmail?: string): boolean {
+export function updateCredentials(username: string, password: string): boolean {
   // In serverless environments, credentials cannot be updated at runtime
   if (isServerlessEnvironment()) {
     console.log('[WARN] Cannot update credentials in serverless environment - use environment variables instead');
@@ -115,7 +107,6 @@ export function updateCredentials(username: string, password: string, backupEmai
     const newCredentials: UserCredentials = {
       username,
       password,
-      backupEmail,
       updatedAt: new Date().toISOString()
     };
     
@@ -181,8 +172,8 @@ export function validateCredentials(username: string, password: string): boolean
 // Get backup email (for security, only return if it exists)
 export function getBackupEmail(): string | null {
   try {
-    const currentCredentials = getCurrentCredentials();
-    return currentCredentials.backupEmail || null;
+    // Backup email support has been removed. Return null for compatibility.
+    return null;
   } catch (error) {
     console.error('[ERROR] Error retrieving backup email:', error);
     return null;
@@ -192,14 +183,9 @@ export function getBackupEmail(): string | null {
 // Check if backup email is configured
 export function isBackupEmailConfigured(): boolean {
   try {
-    const backupEmail = getBackupEmail();
-    const isConfigured = !!backupEmail && backupEmail.includes('@');
-  console.log('[INFO] Backup email check:', {
-      environment: isServerlessEnvironment() ? 'serverless' : 'local',
-      isConfigured,
-      hasEmail: !!backupEmail
-    });
-    return isConfigured;
+    // Backup email support removed - always return false
+    console.log('[INFO] Backup email check: feature removed - returning false');
+    return false;
     } catch (error) {
     console.error('[ERROR] Error checking backup email configuration:', error);
     return false;

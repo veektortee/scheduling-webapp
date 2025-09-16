@@ -13,11 +13,11 @@ function generateSecret() {
 
 const secret = generateSecret();
 
-console.log('\n🔐 Generated NEXTAUTH_SECRET:');
+console.log('\n[Secure] Generated NEXTAUTH_SECRET:');
 console.log('================================');
 console.log(secret);
 console.log('================================');
-console.log('\n📋 Add this to your Vercel environment variables:');
+console.log('\n[Note] Add this to your Vercel environment variables:');
 console.log(`NEXTAUTH_SECRET=${secret}`);
-console.log('\n⚠️  Keep this secret secure and never commit it to git!');
-console.log('💡 This secret should be at least 32 characters long.');
+console.log('\n[Warning] Keep this secret secure and never commit it to git!');
+console.log('[Note] This secret should be at least 32 characters long.');

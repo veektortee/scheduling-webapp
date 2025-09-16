@@ -1,10 +1,10 @@
 # Email Service Configuration Guide
 
-## 🚀 Production Email Setup
+## [Feature] Production Email Setup
 
 Your email service has been **successfully updated** to support **real email delivery** instead of development previews!
 
-## ✅ What Changed
+## [Done] What Changed
 
 - **Production email transporter** with Gmail, Outlook, SendGrid, and custom SMTP support
 - **Dynamic sender addresses** based on your email provider
@@ -13,7 +13,7 @@ Your email service has been **successfully updated** to support **real email del
 
 ---
 
-## 🔧 Configuration Options
+## [Maintenance] Configuration Options
 
 ### Option 1: Gmail (Recommended for Testing)
 
@@ -27,7 +27,7 @@ EMAIL_PASS=your-app-password
 
 # Optional: Customize sender info
 EMAIL_FROM_NAME=Medical Scheduling System
-EMAIL_FROM_ADDRESS=your-gmail-address@gmail.com
+# Email features have been removed from this application. EMAIL_FROM_ADDRESS is no longer used.
 ```
 
 **Setup Gmail App Password:**
@@ -46,7 +46,7 @@ EMAIL_PASS=your-password
 
 # Optional: Customize sender info
 EMAIL_FROM_NAME=Medical Scheduling System
-EMAIL_FROM_ADDRESS=your-email@outlook.com
+# deprecated
 ```
 
 ### Option 3: SendGrid (Professional/Production)
@@ -59,7 +59,7 @@ EMAIL_PASS=your-sendgrid-api-key
 
 # Required: Verified sender email
 EMAIL_FROM_NAME=Medical Scheduling System
-EMAIL_FROM_ADDRESS=your-verified-sender@yourdomain.com
+# deprecated
 ```
 
 ### Option 4: Custom SMTP
@@ -74,7 +74,7 @@ EMAIL_PASS=your-password
 
 # Required: Sender info
 EMAIL_FROM_NAME=Medical Scheduling System
-EMAIL_FROM_ADDRESS=your-email@yourdomain.com
+# deprecated
 ```
 
 ---
@@ -100,7 +100,7 @@ npm run dev
 
 ---
 
-## 🔍 Troubleshooting
+## [Info] Troubleshooting
 
 ### Email Not Being Sent?
 
@@ -133,7 +133,7 @@ If you still see "Ethereal Email preview URLs" in the console, it means:
 ## 📧 Email Features Now Active
 
 ### 1. Credential Recovery Emails
-- **Subject:** "🔐 SECURITY ALERT - Medical Scheduling System Credential Recovery"
+- **Subject:** "[Secure] SECURITY ALERT - Medical Scheduling System Credential Recovery"
 - **Sent to:** User's backup email
 - **Contains:** Recovery token and login instructions
 - **Professional HTML styling** with security warnings
@@ -147,11 +147,11 @@ If you still see "Ethereal Email preview URLs" in the console, it means:
 
 ## � Security Features
 
-- ✅ **Rate limiting** prevents spam/abuse of recovery system
-- ✅ **Dual notifications** keep both old and new backup emails informed
-- ✅ **Secure tokens** for credential recovery (time-limited, one-use)
-- ✅ **HTML + Text versions** work in all email clients
-- ✅ **Professional styling** with consistent branding
+- [Done] **Rate limiting** prevents spam/abuse of recovery system
+- [Done] **Dual notifications** keep both old and new backup emails informed
+- [Done] **Secure tokens** for credential recovery (time-limited, one-use)
+- [Done] **HTML + Text versions** work in all email clients
+- [Done] **Professional styling** with consistent branding
 
 ---
 
@@ -166,7 +166,7 @@ The system will automatically detect your configuration and switch from developm
 
 ---
 
-## 🚀 Production Deployment
+## [Feature] Production Deployment
 
 When you deploy to production:
 - **Vercel:** Add environment variables in Settings > Environment Variables

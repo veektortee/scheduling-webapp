@@ -1,9 +1,9 @@
-# 🚀 Local Staff Scheduling Solver Package
+# [Feature] Local Staff Scheduling Solver Package
 
 ## Overview
 This ZIP package contains a complete high-performance local solver for staff scheduling optimization. It runs on your computer to provide faster, more advanced scheduling compared to the basic online solver.
 
-## 📦 Package Contents
+## [Package] Package Contents
 - **start_local_solver.bat** - Windows one-click launcher
 - **start_local_solver.sh** - Mac/Linux launcher  
 - **fastapi_solver_service.py** - Advanced FastAPI solver with OR-Tools
@@ -12,7 +12,7 @@ This ZIP package contains a complete high-performance local solver for staff sch
 - **requirements.txt** - Python dependencies list
 - **README.txt** - Detailed setup instructions
 
-## ⚡ Quick Start
+## [Info] Quick Start
 
 ### Windows Users:
 1. **Download**: Get `local-solver-package.zip` from your webapp settings
@@ -29,7 +29,7 @@ This ZIP package contains a complete high-performance local solver for staff sch
 5. **Launch**: Run `./start_local_solver.sh`
 6. **Use**: Keep the terminal open while using your webapp!
 
-## 🎯 Features
+## [Goal] Features
 
 ### Advanced Performance:
 - **OR-Tools Integration**: Uses Google's constraint programming solver
@@ -44,7 +44,7 @@ This ZIP package contains a complete high-performance local solver for staff sch
 - **One-click Launch**: No manual configuration needed
 - **Fallback Support**: Graceful degradation if components fail
 
-## 🔧 Advanced Usage
+## [Maintenance] Advanced Usage
 
 ### Maximum Performance:
 If you have a custom `testcase_gui.py` file:
@@ -64,7 +64,7 @@ If automatic dependency installation fails:
 pip install fastapi uvicorn websockets python-multipart ortools openpyxl colorama
 ```
 
-## 🛠 System Requirements
+## [Maintenance] System Requirements
 
 ### Minimum:
 - **Python**: 3.8+ (download from python.org)

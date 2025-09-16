@@ -5,7 +5,7 @@ console.log('=== State Persistence Test Utility ===\n');
 
 // Function to display localStorage contents
 function checkLocalStorage() {
-  console.log('📁 LocalStorage Contents:');
+  console.log('[Note] LocalStorage Contents:');
   
   const keys = [
     'scheduling-state-v1',
@@ -18,7 +18,7 @@ function checkLocalStorage() {
     if (value) {
       try {
         const parsed = JSON.parse(value);
-        console.log(`\n🔑 ${key}:`);
+  console.log(`\n[Key] ${key}:`);
         console.log('  Size:', value.length, 'chars');
         console.log('  Data preview:', Object.keys(parsed));
         
@@ -36,10 +36,10 @@ function checkLocalStorage() {
           console.log('  - Categories:', parsed.categories?.length || 0);
         }
       } catch (e) {
-        console.log(`\n🔑 ${key}: Invalid JSON`);
+        console.log(`\n[Key] ${key}: Invalid JSON`);
       }
     } else {
-      console.log(`\n🔑 ${key}: Not found`);
+      console.log(`\n[Key] ${key}: Not found`);
     }
   });
 }
@@ -56,7 +56,7 @@ function clearAllState() {
     localStorage.removeItem(key);
   });
   
-  console.log('🗑️  All state cleared!');
+  console.log('[Done] All state cleared!');
 }
 
 // Function to simulate state age test
@@ -69,11 +69,11 @@ function checkStateAge() {
       const days = Math.floor(age / (24 * 60 * 60 * 1000));
       const hours = Math.floor((age % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
       
-      console.log(`\n⏰ Scheduling State Age: ${days} days, ${hours} hours`);
-      console.log('   Expires after: 7 days');
-      console.log('   Status:', days >= 7 ? '❌ Expired' : '✅ Valid');
+  console.log(`\n[Clock] Scheduling State Age: ${days} days, ${hours} hours`);
+  console.log('   Expires after: 7 days');
+  console.log('   Status:', days >= 7 ? '[Error] Expired' : '[Done] Valid');
     } catch (e) {
-      console.log('\n⏰ Could not check scheduling state age');
+  console.log('\n[Clock] Could not check scheduling state age');
     }
   }
 }

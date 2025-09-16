@@ -17,13 +17,13 @@ print(f"Case data: {len(case_data.get('shifts', []))} shifts, {len(case_data.get
 try:
     health_response = requests.get('http://localhost:8000/health')
     if health_response.ok:
-        print("✅ Local solver health check: OK")
+        print("[Done] Local solver health check: OK")
         print(json.dumps(health_response.json(), indent=2))
     else:
-        print("❌ Health check failed")
+        print("[Error] Health check failed")
         exit(1)
 except Exception as e:
-    print(f"❌ Cannot connect to local solver: {e}")
+    print(f"[Error] Cannot connect to local solver: {e}")
     exit(1)
 
 # Test optimization
@@ -41,7 +41,7 @@ try:
         result = solve_response.json()
         execution_time = time.time() - start_time
         
-        print(f"✅ Optimization completed in {execution_time:.2f}s")
+        print(f"[Done] Optimization completed in {execution_time:.2f}s")
         print(f"Status: {result.get('status', 'unknown')}")
         print(f"Message: {result.get('message', '')}")
         
@@ -73,8 +73,8 @@ try:
         print("="*60)
         
     else:
-        print(f"❌ Optimization failed: {solve_response.status_code}")
+        print(f"[Error] Optimization failed: {solve_response.status_code}")
         print(solve_response.text)
         
 except Exception as e:
-    print(f"❌ Optimization error: {e}")
+    print(f"[Error] Optimization error: {e}")

@@ -23,7 +23,7 @@ echo [CREATE] Creating README.txt...
 (
 echo # Local Staff Scheduling Optimizer
 echo.
-echo ## 🚀 Quick Start Guide
+echo ## [Feature] Quick Start Guide
 echo.
 echo ### Windows Users:
 echo 1. Extract this ZIP file to any folder
@@ -38,7 +38,7 @@ echo 3. Run: chmod +x start_local_solver.sh
 echo 4. Run: ./start_local_solver.sh
 echo 5. Keep the terminal open while using your webapp
 echo.
-echo ## 📁 Files Included
+echo ## [Files] Files Included
 echo.
 echo ### Main Launchers:
 echo - start_local_solver.bat    ^(Windows launcher^)
@@ -49,7 +49,7 @@ echo - fastapi_solver_service.py ^(RECOMMENDED - Advanced solver^)
 echo - local_solver.py          ^(Fallback solver^)
 echo - scheduler_sat_core.py     ^(Core optimization engine^)
 echo.
-echo ## ⚡ Performance Features
+echo ## [Feature] Performance Features
 echo.
 echo The advanced solver ^(fastapi_solver_service.py^) provides:
 echo - Multi-threaded OR-Tools optimization
@@ -58,7 +58,7 @@ echo - Advanced constraint handling
 echo - Automatic testcase_gui.py detection ^(if available^)
 echo - REST API endpoints for integration
 echo.
-echo ## 🔧 Advanced Usage
+echo ## [Maintenance] Advanced Usage
 echo.
 echo ### For Maximum Performance:
 echo If you have testcase_gui.py, place it in the PARENT folder
@@ -70,7 +70,7 @@ echo - http://localhost:8000/health   ^(Check if running^)
 echo - http://localhost:8000/docs     ^(API documentation^)
 echo - http://localhost:8000/solve    ^(Optimization endpoint^)
 echo.
-echo ## 🛠 Troubleshooting
+echo ## [Maintenance] Troubleshooting
 echo.
 echo ### Dependencies:
 echo The launcher automatically installs required Python packages:
@@ -127,20 +127,20 @@ powershell -Command "Compress-Archive -Path 'temp-package\*' -DestinationPath 'l
 if exist "local-solver-package.zip" (
     echo.
     echo ================================================================
-    echo ✅ SUCCESS! Created: local-solver-package.zip
+    echo [Done] SUCCESS! Created: local-solver-package.zip
     echo ================================================================
     echo.
-    echo 📦 Package Contents:
+    echo [Note] Package Contents:
     powershell -Command "Get-ChildItem -Path 'temp-package' | Format-Table Name, Length -AutoSize"
     echo.
     echo 📊 ZIP Size:
     dir "local-solver-package.zip"
     echo.
-    echo 🚀 Users can now download local-solver-package.zip
+    echo [Feature] Users can now download local-solver-package.zip
     echo    and extract it anywhere to get the complete solver!
     echo.
 ) else (
-    echo ❌ Failed to create ZIP package
+    echo [Error] Failed to create ZIP package
 )
 
 REM Clean up temporary directory

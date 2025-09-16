@@ -52,10 +52,10 @@ except ImportError:
 try:
     import testcase_gui as original_solver
     HAVE_ORIGINAL_SOLVER = True
-    print("✅ Successfully imported testcase_gui.py as the solver engine.")
+    print("[Done] Successfully imported testcase_gui.py as the solver engine.")
 except ImportError:
     HAVE_ORIGINAL_SOLVER = False
-    print("❌ WARNING: testcase_gui.py not found. Local solver will not work.")
+    print("[Error] WARNING: testcase_gui.py not found. Local solver will not work.")
 
 
 # Configure logging
@@ -304,7 +304,7 @@ class AdvancedSchedulingSolver:
 
                 solutions.append({ "assignments": assignments, "objective_value": objective })
 
-            logger.info(f"✅ testcase_gui.py finished, found {len(solutions)} diverse solutions.")
+            logger.info(f"[Done] testcase_gui.py finished, found {len(solutions)} diverse solutions.")
 
             return { 'status': 'completed', 'solutions': solutions, 'solver_stats': meta.get('phase2', {}) }
         finally:
@@ -1059,17 +1059,17 @@ async def list_result_folders():
     return {"folders": folders}
 
 if __name__ == "__main__":
-    print("🚀 Starting Medical Staff Scheduling Solver Service (FastAPI)")
+    print("[Feature] Starting Medical Staff Scheduling Solver Service (FastAPI)")
     print("📊 Service URL: http://localhost:8000")
     print("📚 API Documentation: http://localhost:8000/docs")
     print("🔌 WebSocket: ws://localhost:8000/ws/{run_id}")
-    print("\n🎯 Endpoints:")
+    print("\n[Goal] Endpoints:")
     print("  POST /solve              - Submit optimization case")
     print("  GET  /status/{run_id}    - Get run status") 
     print("  GET  /runs               - List all runs")
     print("  WebSocket /ws/{run_id}   - Real-time updates")
     print("  GET  /health             - Health check")
-    print("\n⚡ Press Ctrl+C to stop the service")
+    print("\n[Info] Press Ctrl+C to stop the service")
     
     uvicorn.run(
         "fastapi_solver_service:app",

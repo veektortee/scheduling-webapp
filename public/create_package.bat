@@ -45,7 +45,7 @@ echo testcase_gui.py if you place it in the parent folder. >> "local-solver-pack
 
 echo.
 echo ================================================================
-echo ✅ Package created: local-solver-package\
+echo [Done] Package created: local-solver-package\
 echo ================================================================
 echo.
 echo Contents:

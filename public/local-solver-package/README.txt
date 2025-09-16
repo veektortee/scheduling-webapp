@@ -1,6 +1,6 @@
 # Local Staff Scheduling Optimizer
 
-## 🚀 Quick Start Guide
+## [Feature] Quick Start Guide
 
 ### Windows Users:
 1. Extract this ZIP file to any folder
@@ -15,7 +15,7 @@
 4. Run: ./start_local_solver.sh
 5. Keep the terminal open while using your webapp
 
-## 📁 Files Included
+## [Files] Files Included
 
 ### Main Launchers:
 - start_local_solver.bat    (Windows launcher)
@@ -26,7 +26,7 @@
 - local_solver.py          (Fallback solver)
 - scheduler_sat_core.py     (Core optimization engine)
 
-## ⚡ Performance Features
+## [Info] Performance Features
 
 The advanced solver (fastapi_solver_service.py) provides:
 - Multi-threaded OR-Tools optimization
@@ -35,7 +35,7 @@ The advanced solver (fastapi_solver_service.py) provides:
 - Automatic testcase_gui.py detection (if available)
 - REST API endpoints for integration
 
-## 🔧 Advanced Usage
+## [Maintenance] Advanced Usage
 
 ### For Maximum Performance:
 If you have testcase_gui.py, place it in the PARENT folder
@@ -47,7 +47,7 @@ automatically detect and use it for even better optimization!
 - http://localhost:8000/docs     (API documentation)
 - http://localhost:8000/solve    (Optimization endpoint)
 
-## 🛠 Troubleshooting
+## [Maintenance] Troubleshooting
 
 ### Dependencies:
 The launcher automatically installs required Python packages:

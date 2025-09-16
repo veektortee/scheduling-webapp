@@ -1,12 +1,12 @@
-# 🚀 One-Click Local Scheduler Optimizer
+# [Feature] One-Click Local Scheduler Optimizer
 
 Get **10-100x faster optimization** with minimal setup! This optional local solver runs on your computer for high-performance scheduling optimization.
 
-## ✅ **Why Use the Local Solver?**
-- **⚡ 10-100x faster** than serverless for large problems
-- **🎯 OR-Tools integration** - Google's world-class optimization engine
+## [Done] **Why Use the Local Solver?**
+- **[Info] 10-100x faster** than serverless for large problems
+- **[Goal] OR-Tools integration** - Google's world-class optimization engine
 - **💪 Handle complex cases** - 1000+ shifts, complex constraints
-- **🔒 Your data stays local** - no cloud processing required
+- **[Secure] Your data stays local** - no cloud processing required
 - **🆓 Still works without it** - webapp falls back to serverless automatically
 
 ## 📥 **Super Easy Setup (2 clicks)**
@@ -21,7 +21,7 @@ Get **10-100x faster optimization** with minimal setup! This optional local solv
 2. **Double-click**: `start_local_solver.sh` (or run in terminal)
 3. **Done!** Your webapp will now use high-performance optimization
 
-## 🎯 **How It Works**
+## [Goal] **How It Works**
 
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
@@ -40,7 +40,7 @@ Get **10-100x faster optimization** with minimal setup! This optional local solv
 3. **Automatic performance boost** - no changes needed
 4. **Instant fallback** to serverless if local solver stops
 
-## 🔧 **What Gets Installed**
+## [Maintenance] **What Gets Installed**
 
 - **Python packages**: `ortools` (Google's optimization library)
 - **Local server**: Runs on `localhost:8000` (only accessible by you)
@@ -64,11 +64,11 @@ Open: `http://localhost:8000/health`
 
 ## 🛡️ **Security & Privacy**
 
-- ✅ **Runs locally only** - no data sent to external servers
-- ✅ **No internet required** - works completely offline
-- ✅ **Your firewall protects it** - only accessible from your computer
-- ✅ **Easy to stop** - just close the window
-- ✅ **No permanent installation** - just delete the files to remove
+- [Done] **Runs locally only** - no data sent to external servers
+- [Done] **No internet required** - works completely offline
+- [Done] **Your firewall protects it** - only accessible from your computer
+- [Done] **Easy to stop** - just close the window
+- [Done] **No permanent installation** - just delete the files to remove
 
 ## 🚨 **Troubleshooting**
 
@@ -85,7 +85,7 @@ Open: `http://localhost:8000/health`
 - **Mac/Linux**: Run `chmod +x start_local_solver.sh`
 - **Windows**: Right-click → "Run as administrator"
 
-## 💡 **Pro Tips**
+## [Note] **Pro Tips**
 
 - 🔥 **Keep it running** for best performance
 - 🔄 **Restart if problems** - just close and double-click again
@@ -103,4 +103,4 @@ The webapp works great without the local solver! This is just an optional perfor
 
 ---
 
-**Remember**: The webapp works perfectly without this local solver. This is just an optional turbo boost! 🚀
+**Remember**: The webapp works perfectly without this local solver. This is just an optional turbo boost! [Feature]
