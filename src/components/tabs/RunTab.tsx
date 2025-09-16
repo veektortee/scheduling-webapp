@@ -766,39 +766,33 @@ export default function RunTab() {
           addLog(`[OK] Generated ${solutions.length} solution(s)`, 'success');
           addLog(`[SOLVER] Solver: ${stats.solver_type || 'serverless'} (${stats.status || 'completed'})`, 'info');
           
-          // Generate a result folder name. Prefer output_directory returned by serverless solver
-          const generatedName = generateResultFolderName();
-          const outputDirFromServer = (result as SolverResult).output_directory as string | undefined;
-          let finalOutputDirectory = outputDirFromServer || generatedName;
+          let finalOutputDirectory = (result as any).output_directory;
 
-          // If using local solver: try to convert using run_id when output_directory wasn't provided
-          const serverRunId = (result as SolverResult).run_id as string | undefined;
-          if (actualSolver === 'local') {
-            // Prefer converting the returned output_directory if it's a uuid-like path
-            const candidate = outputDirFromServer || serverRunId;
-            if (candidate && !/^Result_\d+$/i.test(candidate)) {
-              try {
-                const conv = await fetch(`/api/convert/run-to-result?runId=${encodeURIComponent(candidate)}`);
-                if (conv.ok) {
-                  const data = await conv.json();
-                    if (data.folderName) {
-                    finalOutputDirectory = data.folderName;
-                    localStorage.setItem('result-folder-counter', JSON.stringify(parseInt(data.folderName.split('_')[1], 10)));
-                    addLog(`[FILE] Converted run folder to ${data.folderName}`, 'success');
-                  }
-                }
-              } catch {
-                // conversion failed; keep original
+          // If local solver was used, upload the packaged results to Vercel Blob
+          if (actualSolver === 'local' && (result as any).packaged_outputs_b64) {
+            addLog('[INFO] Uploading local solver results to persistent storage...', 'info');
+            try {
+              const uploadResponse = await fetch('/api/upload-local-results', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ packaged_outputs_b64: (result as any).packaged_outputs_b64 }),
+              });
+
+              if (uploadResponse.ok) {
+                const uploadResult = await uploadResponse.json();
+                finalOutputDirectory = uploadResult.folderName;
+                addLog(`[SUCCESS] Successfully stored local results in: ${finalOutputDirectory}`, 'success');
+              } else {
+                const errorData = await uploadResponse.json();
+                throw new Error(errorData.error || 'Failed to upload local results');
               }
+            } catch (uploadError) {
+              addLog(`[ERROR] Failed to upload local results to Vercel Blob: ${uploadError}`, 'error');
             }
-          }
-          // If server provided a name, ensure our local counter is at least that high
-          if (outputDirFromServer && /^Result_\d+$/i.test(outputDirFromServer)) {
-            const existingCounter = JSON.parse(localStorage.getItem('result-folder-counter') || '0');
-            const serverNum = parseInt(outputDirFromServer.split('_')[1], 10);
-            if (!isNaN(serverNum) && serverNum > existingCounter) {
-              localStorage.setItem('result-folder-counter', JSON.stringify(serverNum));
-            }
+          } else {
+             // Generate a result folder name for serverless run
+            const generatedName = generateResultFolderName();
+            finalOutputDirectory = finalOutputDirectory || generatedName;
           }
 
           // Store last run results for output folder functionality
