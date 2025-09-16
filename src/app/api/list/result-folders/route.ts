@@ -9,7 +9,9 @@ export async function GET() {
       path.join(process.cwd(), 'solver_output'),
       path.join(process.cwd(), '..', 'solver_output'),
       // also include public/solver_output where some runs are written in dev/demo setups
-      path.join(process.cwd(), 'public', 'solver_output')
+      path.join(process.cwd(), 'public', 'solver_output'),
+      // include demo bundled solver outputs used by the local-solver-package
+      path.join(process.cwd(), 'public', 'local-solver-package', 'solver_output')
     ];
 
     const entriesCollections: string[] = [];
