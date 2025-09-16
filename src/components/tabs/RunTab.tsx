@@ -2020,57 +2020,12 @@ export default function RunTab() {
           </h2>
         </div>
         {/* Enhanced Solver Mode Selection */}
-  <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 mb-6">
+  <div className="grid grid-cols-1 gap-4 lg:grid-cols-1 mb-6 ">
           {/* Smart Run Button (Auto-detect) */}
-          <div className="flex flex-col">
-            <button
-              onClick={() => handleRunSolver('auto')}
-              disabled={isRunning || !isMonthSelectionLocked}
-              className={`relative px-6 py-4 rounded-2xl font-bold text-base flex flex-col items-center justify-center space-y-2 transition-all duration-300 shadow-lg hover:shadow-2xl overflow-hidden group min-h-[120px] ${
-                isRunning
-                  ? 'bg-gray-400 text-white cursor-not-allowed'
-                  : 'bg-gradient-to-br from-emerald-500 via-blue-500 to-indigo-600 text-white hover:from-emerald-600 hover:via-blue-600 hover:to-indigo-700 hover:scale-[1.02] transform'
-              } backdrop-blur-sm border border-white/20 dark:border-gray-700/50`}
-              title="Automatically detects and uses the best available solver - recommended for most users"
-            >
-              {/* Animated background glow */}
-              <div className="absolute inset-0 bg-gradient-to-br from-emerald-400/20 via-blue-400/20 to-indigo-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              
-              {/* Shimmer effect */}
-              <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/10 to-transparent transform skew-x-12"></div>
-              
-              <div className="relative z-10 flex flex-col items-center space-y-2">
-                {isRunning ? (
-                  <>
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
-                    <span className="text-sm font-semibold">Running...</span>
-                  </>
-                ) : (
-                  <>
-                    <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                      <IoPlaySharp className="w-6 h-6" />
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <span className="font-bold">Smart Run</span>
-                      <span className="text-xs bg-white/20 px-2 py-1 rounded-full font-medium">Recommended</span>
-                    </div>
-                    <span className="text-xs opacity-90 font-medium">(Auto-detect)</span>
-                  </>
-                )}
-              </div>
-            </button>
-            
-            {/* Status indicator */}
-            <div className="mt-2 text-center">
-              <div className="inline-flex items-center space-x-1 px-2 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs font-medium">
-                <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
-                <span>Recommended</span>
-              </div>
-            </div>
-          </div>
+          
 
           {/* Local Solver Button */}
-          <div className="flex flex-col">
+          <div className="flex alg flex-col ">
             <button
               onClick={() => handleRunSolver('local')}
               disabled={isRunning || !localSolverAvailable || !isMonthSelectionLocked}
@@ -2121,40 +2076,7 @@ export default function RunTab() {
           </div>
 
           {/* Serverless Button */}
-          <div className="flex flex-col">
-            <button
-              onClick={() => handleRunSolver('serverless')}
-              disabled={isRunning || !isMonthSelectionLocked}
-              className={`relative px-6 py-4 rounded-2xl font-bold text-base flex flex-col items-center justify-center space-y-2 transition-all duration-300 shadow-lg hover:shadow-2xl overflow-hidden group min-h-[120px] ${
-                isRunning
-                  ? 'bg-gray-400 text-white cursor-not-allowed'
-                  : 'bg-gradient-to-br from-blue-500 via-cyan-500 to-teal-600 text-white hover:from-blue-600 hover:via-cyan-600 hover:to-teal-700 hover:scale-[1.02] transform'
-              } backdrop-blur-sm border border-white/20 dark:border-gray-700/50`}
-              title="Run with serverless cloud solver (works everywhere, no installation required)"
-            >
-              {/* Animated background glow */}
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-400/20 via-cyan-400/20 to-teal-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              
-              {/* Shimmer effect */}
-              <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/10 to-transparent transform skew-x-12"></div>
-              
-              <div className="relative z-10 flex flex-col items-center space-y-2">
-                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                  <IoCloudSharp className="w-6 h-6" />
-                </div>
-                <span className="font-bold">Serverless</span>
-                <span className="text-xs opacity-90 font-medium">(Not Recommended)</span>
-              </div>
-            </button>
-            
-            {/* Status indicator */}
-            <div className="mt-2 text-center">
-              <div className="inline-flex items-center space-x-1 px-2 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs font-medium">
-                <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></div>
-                <span>Always Available</span>
-              </div>
-            </div>
-          </div>
+        
         </div>
 
         {/* Action Buttons Row */}
