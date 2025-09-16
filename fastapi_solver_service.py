@@ -32,6 +32,9 @@ import traceback
 from concurrent.futures import ThreadPoolExecutor
 import threading
 import shutil
+import zipfile
+import io
+import base64
 
 
 try:
@@ -921,7 +924,28 @@ async def solve_schedule(case: SchedulingCase):
 
         # Normalize to the shape expected by the web app/tests
         model_result = result.get("result", {})
-        return solver._to_webapp_response(model_result, run_id)
+        response_payload = solver._to_webapp_response(model_result, run_id)
+
+        # Package the output folder and add it to the response
+        output_dir_str = result.get("output_directory")
+        if output_dir_str:
+            output_dir = Path(output_dir_str)
+            if output_dir.exists() and output_dir.is_dir():
+                try:
+                    zip_buffer = io.BytesIO()
+                    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zipf:
+                        for file_path in output_dir.rglob('*'):
+                            if file_path.is_file():
+                                zipf.write(file_path, arcname=file_path.relative_to(output_dir))
+
+                    zip_buffer.seek(0)
+                    b64_encoded_zip = base64.b64encode(zip_buffer.read()).decode('utf-8')
+                    response_payload['packaged_outputs_b64'] = b64_encoded_zip
+                    logger.info(f"Packaged and encoded output folder: {output_dir}")
+                except Exception as e:
+                    logger.error(f"Failed to package output folder {output_dir}: {e}")
+
+        return response_payload
 
     except Exception as e:
         logger.error(f"API error: {str(e)}")
