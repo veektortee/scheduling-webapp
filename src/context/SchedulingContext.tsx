@@ -299,12 +299,18 @@ function schedulingReducer(state: SchedulingState, action: SchedulingAction): Sc
       if (typeof window !== 'undefined') {
         try {
           if (action.payload) {
-            localStorage.setItem(LAST_RESULTS_STORAGE_KEY, JSON.stringify(action.payload));
+            // Create a serializable copy to avoid issues with complex objects
+            const serializablePayload = {
+              ...action.payload,
+              results: action.payload.results ? JSON.parse(JSON.stringify(action.payload.results)) : null,
+              caseSnapshot: action.payload.caseSnapshot ? JSON.parse(JSON.stringify(action.payload.caseSnapshot)) : null,
+            };
+            localStorage.setItem(LAST_RESULTS_STORAGE_KEY, JSON.stringify(serializablePayload));
           } else {
             localStorage.removeItem(LAST_RESULTS_STORAGE_KEY);
           }
         } catch (error) {
-          console.warn('Failed to save lastResults to localStorage:', error);
+          console.warn('Failed to save lastResults to localStorage due to serialization issue:', error);
         }
       }
       newState = {

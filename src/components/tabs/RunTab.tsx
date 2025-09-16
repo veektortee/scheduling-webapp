@@ -1316,6 +1316,7 @@ export default function RunTab() {
 
   // Function to get all available result folders
   const getAvailableResultFolders = async () => {
+    addLog('[INFO] Fetching available result folders...', 'info');
     const folders: Array<{
       name: string;
       path: string;
@@ -1324,54 +1325,55 @@ export default function RunTab() {
     }> = [];
 
     try {
-      // Try Next.js serverless listing first (this includes converted Result_N)
+      // Try Next.js serverless listing first
+      addLog('[INFO] Checking for serverless results (Vercel Blob)...', 'info');
       try {
         const respServerless = await fetch('/api/list/result-folders');
         if (respServerless.ok) {
           const data = await respServerless.json();
-          (data.folders || []).forEach((f: { name: string; path: string; created: string; fileCount: number }) => {
+          const serverlessFolders = data.folders || [];
+          addLog(`[INFO] Found ${serverlessFolders.length} folder(s) in Vercel Blob.`, 'success');
+          serverlessFolders.forEach((f: { name: string; path: string; created: string; fileCount: number }) => {
             if (!folders.some(existing => existing.name === f.name)) folders.push(f);
           });
+        } else {
+          addLog(`[WARN] Serverless listing failed with status: ${respServerless.status}`, 'warning');
         }
-      } catch {
-        // ignore serverless listing errors
+      } catch (err) {
+        addLog(`[ERROR] Could not fetch serverless results: ${err}`, 'error');
       }
 
-      // If local solver is available, also query its listing and merge (so FastAPI-listed folders show too)
+      // If local solver is available, also query its listing and merge
       if (localSolverAvailable) {
+        addLog('[INFO] Checking for local results (localhost:8000)...', 'info');
         try {
           const response = await fetch('http://localhost:8000/results/folders');
           if (response.ok) {
             const data = await response.json();
-            (data.folders || []).forEach((f: { name: string; path: string; created: number | string; fileCount: number }) => {
+            const localFolders = data.folders || [];
+            addLog(`[INFO] Found ${localFolders.length} folder(s) from local solver.`, 'success');
+            localFolders.forEach((f: { name: string; path: string; created: number | string; fileCount: number }) => {
               const createdIso = typeof f.created === 'number' ? new Date(f.created * 1000).toISOString() : f.created;
               if (!folders.some(existing => existing.name === f.name)) {
                 folders.push({ name: f.name, path: f.path, created: createdIso, fileCount: f.fileCount });
               }
             });
+          } else {
+            addLog(`[WARN] Local solver listing failed with status: ${response.status}`, 'warning');
           }
-        } catch {
-          // ignore local listing errors
+        } catch (err) {
+          addLog(`[ERROR] Could not fetch local results: ${err}`, 'error');
         }
+      } else {
+        addLog('[INFO] Local solver not available, skipping local folder check.', 'info');
       }
 
-      // If no folders found, fallback to localStorage-generated mock folders (useful for demo/serverless when nothing persisted)
-      if (folders.length === 0) {
-        const counter = JSON.parse(localStorage.getItem('result-folder-counter') || '0');
-        for (let i = 1; i <= counter; i++) {
-          folders.push({
-            name: `Result_${i}`,
-            path: `./solver_output/Result_${i}`,
-            created: new Date(Date.now() - (counter - i) * 60000).toISOString(),
-            fileCount: Math.floor(Math.random() * 8) + 3 // 3-10 files
-          });
-        }
-      }
     } catch (error) {
-      addLog(`[ERROR] Error loading result folders: ${error}`, 'error');
+      addLog(`[ERROR] Unhandled error in getAvailableResultFolders: ${error}`, 'error');
     }
 
-    return folders;
+    addLog(`[INFO] Total unique result folders found: ${folders.length}`, 'success');
+    return folders.sort((a, b) => parseInt(b.name.split('_')[1], 10) - parseInt(a.name.split('_')[1], 10));
   };
 
   const handleSmartInstall = async () => {
