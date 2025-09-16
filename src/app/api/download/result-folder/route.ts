@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
-import { list, head } from '@vercel/blob';
+import { list } from '@vercel/blob';
 import archiver from 'archiver';
 import mime from 'mime-types';
-import { Readable } from 'stream';
+// ...existing code...
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
@@ -25,35 +25,41 @@ export async function GET(request: Request) {
     if (!fileBlob) {
       return NextResponse.json({ error: `File '${fileName}' not found in '${folderName}'` }, { status: 404 });
     }
-    const blob = await head(fileBlob.url);
+    // Fetch the file contents and return as a binary download
+    const fetched = await fetch(fileBlob.url);
+    const buffer = Buffer.from(await fetched.arrayBuffer());
     const contentType = mime.lookup(fileName) || 'application/octet-stream';
-    const response = new NextResponse(blob.body);
+    const response = new NextResponse(buffer);
     response.headers.set('Content-Type', contentType);
     response.headers.set('Content-Disposition', `attachment; filename="${fileName}"`);
+    response.headers.set('Content-Length', String(buffer.length));
     return response;
 
   } else {
-    const archive = archiver('zip', { zlib: { level: 9 } });
-    const stream = new Readable({
-        read() {}
-    });
-    archive.pipe(stream);
+  const archive = archiver('zip', { zlib: { level: 9 } });
 
-    for (const blob of blobs) {
-        const fileUrl = blob.url;
-        const response = await fetch(fileUrl);
-        const buffer = Buffer.from(await response.arrayBuffer());
-        const name = blob.pathname.replace(blobPathPrefix, '');
-        archive.append(buffer, { name });
-    }
+  // Collect archive data into buffers
+  const chunks: Buffer[] = [];
+  archive.on('data', (chunk: Buffer) => chunks.push(Buffer.from(chunk)));
 
-    archive.finalize();
+  for (const blob of blobs) {
+    const fileUrl = blob.url;
+    const response = await fetch(fileUrl);
+    const buffer = Buffer.from(await response.arrayBuffer());
+    const name = blob.pathname.replace(blobPathPrefix, '');
+    archive.append(buffer, { name });
+  }
 
-    return new NextResponse(stream as any, {
-        headers: {
-            'Content-Type': 'application/zip',
-            'Content-Disposition': `attachment; filename="${folderName}.zip"`,
-        },
-    });
+  await archive.finalize();
+
+  const zipBuffer = Buffer.concat(chunks);
+
+  return new NextResponse(zipBuffer, {
+    headers: {
+      'Content-Type': 'application/zip',
+      'Content-Disposition': `attachment; filename="${folderName}.zip"`,
+      'Content-Length': String(zipBuffer.length),
+    },
+  });
   }
 }
