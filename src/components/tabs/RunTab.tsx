@@ -537,6 +537,7 @@ export default function RunTab() {
 
   const handleRunSolver = async (solverMode: 'auto' | 'local' | 'serverless' = 'auto') => {
     if (isRunning) return;
+    let actualSolver = 'unknown';
     
     if (!schedulingCase.shifts?.length) {
       addLog('No shifts available to optimize', 'error');
@@ -672,11 +673,7 @@ export default function RunTab() {
           if (localResponse.ok) {
             result = await localResponse.json();
             addLog('[SUCCESS] Using LOCAL high-performance solver', 'success');
-            
-            // Add solver type info to result
-            if (result && result.statistics) {
-              result.statistics.actualSolverUsed = 'local';
-            }
+            actualSolver = 'local';
           } else {
             throw new Error(`Local solver returned ${localResponse.status}`);
           }
@@ -737,12 +734,8 @@ export default function RunTab() {
         }
 
         result = await serverlessResponse.json();
-  addLog('[SUCCESS] Using SERVERLESS solver', 'success');
-        
-        // Add solver type info to result
-        if (result && result.statistics) {
-          result.statistics.actualSolverUsed = 'serverless';
-        }
+        addLog('[SUCCESS] Using SERVERLESS solver', 'success');
+        actualSolver = 'serverless';
       }
       
       if (!result) {
@@ -750,8 +743,7 @@ export default function RunTab() {
       }
 
       const executionTime = Date.now() - startTime;
-      const actualSolver = (result.statistics?.actualSolverUsed as string) || 'unknown';
-  addLog(`[SUCCESS] Optimization completed in ${executionTime}ms using ${actualSolver.toUpperCase()} solver`, 'success');
+      addLog(`[SUCCESS] Optimization completed in ${executionTime}ms using ${actualSolver.toUpperCase()} solver`, 'success');
       
       if (result.status === 'completed') {
         setSolverState('finished');
