@@ -19,7 +19,7 @@ import {
   IoStopSharp,
   IoDownloadSharp,
   IoDesktopSharp,
-  IoServerSharp,
+  // IoServerSharp,
   IoCodeSlash
 } from 'react-icons/io5';
 import { 
@@ -45,6 +45,7 @@ interface SolverResult {
   error?: string;
   instructions?: Record<string, unknown>;
   output_directory?: string;
+  packaged_files?: unknown; // Added to make type explicit
 }
 
 // Minimal shapes for solver/health metadata used by this component
@@ -612,25 +613,27 @@ export default function RunTab() {
 
           if (p.preferred_days_hard && typeof p.preferred_days_hard === 'object') {
             const map: Record<string, string[]> = {};
-            Object.entries(p.preferred_days_hard).forEach(([k, v]) => {
-              if (Array.isArray(v)) {
-                const filtered = v.filter((d) => typeof d === 'string' && inMonth(d));
-                if (filtered.length) map[k] = filtered;
-              }
-            });
-            np.preferred_days_hard = map;
+            Object.entries(p.preferred_days_hard).forEach(([dateKey, shiftTypes]) => {
+    // FIX: Check if the dateKey is within the selected month.
+          if (inMonth(dateKey)) {
+            // If it is, add the original entry to the new map.
+            map[dateKey] = shiftTypes;
           }
+  });
+  np.preferred_days_hard = map;
+}
 
           if (p.preferred_days_soft && typeof p.preferred_days_soft === 'object') {
-            const map: Record<string, string[]> = {};
-            Object.entries(p.preferred_days_soft).forEach(([k, v]) => {
-              if (Array.isArray(v)) {
-                const filtered = v.filter((d) => typeof d === 'string' && inMonth(d));
-                if (filtered.length) map[k] = filtered;
-              }
-            });
-            np.preferred_days_soft = map;
-          }
+  const map: Record<string, string[]> = {};
+  Object.entries(p.preferred_days_soft).forEach(([dateKey, shiftTypes]) => {
+    // FIX: Check if the dateKey is within the selected month.
+    if (inMonth(dateKey)) {
+      // If it is, add the original entry to the new map.
+      map[dateKey] = shiftTypes;
+    }
+  });
+  np.preferred_days_soft = map;
+}
 
           return np;
         });
@@ -758,16 +761,16 @@ export default function RunTab() {
           addLog(`[OK] Generated ${solutions.length} solution(s)`, 'success');
           addLog(`[SOLVER] Solver: ${stats.solver_type || 'serverless'} (${stats.status || 'completed'})`, 'info');
           
-          let finalOutputDirectory = (result as any).output_directory;
+          let finalOutputDirectory = result.output_directory;
 
           // If local solver was used, upload the packaged results to Vercel Blob
-          if (actualSolver === 'local' && (result as any).packaged_files) {
+          if (actualSolver === 'local' && result.packaged_files) {
             addLog('[INFO] Uploading local solver results to persistent storage...', 'info');
             try {
               const uploadResponse = await fetch('/api/upload-packaged-results', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ packaged_files: (result as any).packaged_files }),
+                body: JSON.stringify({ packaged_files: result.packaged_files }),
               });
 
               if (uploadResponse.ok) {
@@ -790,7 +793,7 @@ export default function RunTab() {
           // Store last run results for output folder functionality
           const runResultsPayload = {
             run_id: result.run_id || `serverless_${Date.now()}`,
-            output_directory: finalOutputDirectory,
+            output_directory: finalOutputDirectory || generateResultFolderName(),
             timestamp: new Date().toISOString(),
             solver_type: actualSolver,
             results: result.results,
@@ -798,7 +801,7 @@ export default function RunTab() {
             caseSnapshot: schedulingCase,
             statistics: result.statistics
           };
-          
+                    
           dispatch({
             type: 'SET_RESULTS',
             payload: runResultsPayload
