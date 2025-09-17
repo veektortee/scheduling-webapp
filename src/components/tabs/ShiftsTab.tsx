@@ -112,20 +112,67 @@ export default function ShiftsTab() {
   };
 
   const updateShift = () => {
-    if (!selectedShiftId) return; // Check for ID
+    if (!selectedShiftId || !shiftForm.type || !shiftForm.date) return;
 
-    const updatedShift: Shift = {
-      id: selectedShiftId, // Keep original ID
-      date: shiftForm.date!,
-      type: shiftForm.type!,
-      start: `${shiftForm.date}T${shiftForm.start}:00`,
-      end: `${shiftForm.date}T${shiftForm.end}:00`,
-      allowed_provider_types: shiftForm.allowed_provider_types || [],
-    };
-    dispatch({
-      type: 'UPDATE_SHIFT',
-      payload: { id: selectedShiftId, shift: updatedShift } // Send ID
-    });
+    // Logic to update across the entire month
+    if (addToAllDays) {
+      if (
+        !window.confirm(
+          `Are you sure you want to update all "${shiftForm.type}" shifts for this month?`
+        )
+      ) {
+        return;
+      }
+
+      const baseDate = new Date(shiftForm.date);
+      const targetYear = baseDate.getFullYear();
+      const targetMonth = baseDate.getMonth();
+
+      // Find all shifts of the same type in the same month/year
+      const shiftsToUpdate = schedulingCase.shifts.filter((shift) => {
+        try {
+          const shiftDate = new Date(shift.date);
+          return (
+            shift.type === shiftForm.type &&
+            shiftDate.getFullYear() === targetYear &&
+            shiftDate.getMonth() === targetMonth
+          );
+        } catch (e) {
+          return false;
+        }
+      });
+
+      // Dispatch an update for each matching shift
+      shiftsToUpdate.forEach((shift) => {
+        const updatedShift: Shift = {
+          ...shift, // Keep original id and date
+          type: shiftForm.type!,
+          start: `${shift.date}T${shiftForm.start}:00`,
+          end: `${shift.date}T${shiftForm.end}:00`,
+          allowed_provider_types: shiftForm.allowed_provider_types || [],
+        };
+        dispatch({
+          type: 'UPDATE_SHIFT',
+          payload: { id: shift.id!, shift: updatedShift },
+        });
+      });
+    } else {
+      // Original logic for updating a single shift
+      const updatedShift: Shift = {
+        id: selectedShiftId,
+        date: shiftForm.date!,
+        type: shiftForm.type!,
+        start: `${shiftForm.date}T${shiftForm.start}:00`,
+        end: `${shiftForm.date}T${shiftForm.end}:00`,
+        allowed_provider_types: shiftForm.allowed_provider_types || [],
+      };
+      dispatch({
+        type: 'UPDATE_SHIFT',
+        payload: { id: selectedShiftId, shift: updatedShift },
+      });
+    }
+
+    // Reset form
     setSelectedShiftId(null);
     setShiftForm({
       id: '',
@@ -137,13 +184,56 @@ export default function ShiftsTab() {
     });
   };
 
- const deleteShift = () => {
-    if (!selectedShiftId) return; // Check for ID
-    
-    dispatch({ type: 'DELETE_SHIFT', payload: selectedShiftId }); // Send ID
+  const deleteShift = () => {
+    if (!selectedShiftId || !shiftForm.type || !shiftForm.date) return;
 
+    // Logic to delete across the entire month
+    if (addToAllDays) {
+      if (
+        !window.confirm(
+          `Are you sure you want to delete all "${shiftForm.type}" shifts for this month?`
+        )
+      ) {
+        return;
+      }
+      
+      const baseDate = new Date(shiftForm.date);
+      const targetYear = baseDate.getFullYear();
+      const targetMonth = baseDate.getMonth();
+
+      // Find all shifts of the same type in the same month/year
+      const shiftsToDelete = schedulingCase.shifts.filter((shift) => {
+        try {
+          const shiftDate = new Date(shift.date);
+          return (
+            shift.type === shiftForm.type &&
+            shiftDate.getFullYear() === targetYear &&
+            shiftDate.getMonth() === targetMonth
+          );
+        } catch(e) {
+          return false;
+        }
+      });
+
+      // Dispatch a delete action for each matching shift
+      shiftsToDelete.forEach((shift) => {
+        dispatch({ type: 'DELETE_SHIFT', payload: shift.id! });
+      });
+    } else {
+      // Original logic for deleting a single shift
+      dispatch({ type: 'DELETE_SHIFT', payload: selectedShiftId });
+    }
+
+    // Reset form
     setSelectedShiftId(null);
-    setShiftForm({ /* ... reset form ... */ });
+    setShiftForm({
+      id: '',
+      type: '',
+      start: '',
+      end: '',
+      date: selectedDate || '',
+      allowed_provider_types: [],
+    });
   };
 
 
@@ -318,13 +408,13 @@ export default function ShiftsTab() {
               <div className="flex items-center space-x-2">
                 <input
                   type="checkbox"
-                  id="add-across-month"
+                  id="apply-across-month" // Changed ID
                   checked={addToAllDays}
                   onChange={(e) => setAddToAllDays(e.target.checked)}
                   className="w-4 h-4 text-blue-600 bg-white border-gray-300 rounded dark:bg-gray-800 dark:border-gray-600 focus:ring-blue-500"
                 />
-                <label htmlFor="add-across-month" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Add across month
+                <label htmlFor="apply-across-month" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Apply to entire month {/* Changed Label Text */}
                 </label>
               </div>
 
