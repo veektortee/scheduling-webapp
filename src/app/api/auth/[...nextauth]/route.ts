@@ -6,7 +6,29 @@ import { lockoutManager } from '@/lib/lockoutManager'
 
 // Dynamic credentials managed by credentials manager
 
-const handler = NextAuth({
+// Defensive runtime check: NextAuth requires a secret in production.
+// If the secret is missing we return a clear 500 JSON response instead of
+// letting NextAuth assert and produce an internal server error stack trace.
+const isMissingSecretInProd = process.env.NODE_ENV === 'production' && !process.env.NEXTAUTH_SECRET
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let handler: any
+
+if (isMissingSecretInProd) {
+  console.error('[SECURITY] NEXTAUTH_SECRET is not set in production. Please set NEXTAUTH_SECRET in your Vercel project settings or environment. See VERCEL_ENVIRONMENT_SETUP.md for instructions.')
+  handler = async () => {
+    return new Response(
+      JSON.stringify({
+        error: 'NEXTAUTH_SECRET not set in production. Please set NEXTAUTH_SECRET environment variable in your hosting provider.'
+      }),
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' }
+      }
+    )
+  }
+} else {
+  handler = NextAuth({
   secret: process.env.NEXTAUTH_SECRET,
   ...(process.env.VERCEL_URL && {
     // Use Vercel URL if available, otherwise fall back to NEXTAUTH_URL
@@ -119,5 +141,7 @@ const handler = NextAuth({
     }
   }
 })
+
+}
 
 export { handler as GET, handler as POST }
