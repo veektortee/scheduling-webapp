@@ -1997,7 +1997,7 @@ export default function RunTab() {
           <div>
             <label className="flex items-center space-x-2 text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
               <IoTimerSharp className="w-3 h-3 lg:w-4 lg:h-4" />
-              <span>Time (minutes)</span>
+              <span>Time (Seconds)</span>
             </label>
             <input
               type="number"
