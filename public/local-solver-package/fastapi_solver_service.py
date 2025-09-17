@@ -124,7 +124,7 @@ class AdvancedSchedulingSolver:
         )
         
         return result
-        def _sanitize_shifts(self, shifts: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    def _sanitize_shifts(self, shifts: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """
         Ensure shift end times are after start times, handling overnight shifts.
         """
