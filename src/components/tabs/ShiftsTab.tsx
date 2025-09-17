@@ -11,6 +11,27 @@ import {
 } from 'react-icons/io5';
 import SchedulingCalendar from '@/components/SchedulingCalendar';
 
+function getCorrectedEndDateString(dateStr: string, startTime: string, endTime: string): string {
+  // If end time is on the next day (e.g., 20:00 to 08:00)
+  if (endTime <= startTime) {
+    // Create a date object safely from YYYY-MM-DD to avoid timezone issues
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
+    
+    // Increment the day by one
+    date.setDate(date.getDate() + 1);
+    
+    // Format back to YYYY-MM-DD
+    const nextYear = date.getFullYear();
+    const nextMonth = String(date.getMonth() + 1).padStart(2, '0');
+    const nextDay = String(date.getDate()).padStart(2, '0');
+    
+    return `${nextYear}-${nextMonth}-${nextDay}`;
+  }
+  // Otherwise, the end date is the same as the start date
+  return dateStr;
+}
+
 export default function ShiftsTab() {
   const { state, dispatch } = useScheduling();
   const { case: schedulingCase, selectedDate } = state;
@@ -57,8 +78,8 @@ export default function ShiftsTab() {
   };
 
   const addShift = () => {
-    if (!shiftForm.type || !shiftForm.start) {
-      alert('Please fill in all required fields (type and start time)');
+   if (!shiftForm.type || !shiftForm.start || !shiftForm.end) { // Ensure end time is also present
+      alert('Please fill in all required fields (type, start time, and end time)');
       return;
     }
     
@@ -88,17 +109,20 @@ export default function ShiftsTab() {
       : [date];
     
     dateRange.forEach((currentDate) => {
+      // Use the helper to determine the correct end date
+      const endDateStr = getCorrectedEndDateString(currentDate, shiftForm.start!, shiftForm.end!);
+      
       const newShift: Shift = {
         id: generateShiftId(currentDate, shiftForm.type!),
         date: currentDate,
         type: shiftForm.type!,
         start: `${currentDate}T${shiftForm.start}:00`,
-        // The end time should also be correctly formatted
-        end: `${currentDate}T${shiftForm.end || shiftForm.start}:00`, 
+        end: `${endDateStr}T${shiftForm.end}:00`,
         allowed_provider_types: shiftForm.allowed_provider_types || [],
       };
       dispatch({ type: 'ADD_SHIFT', payload: newShift });
     });
+
 
     // Reset form
     setShiftForm({
@@ -112,7 +136,7 @@ export default function ShiftsTab() {
   };
 
   const updateShift = () => {
-    if (!selectedShiftId || !shiftForm.type || !shiftForm.date) return;
+    if (!selectedShiftId || !shiftForm.type || !shiftForm.date || !shiftForm.start || !shiftForm.end) return;
 
     // Logic to update across the entire month
     if (addToAllDays) {
@@ -144,11 +168,12 @@ export default function ShiftsTab() {
 
       // Dispatch an update for each matching shift
       shiftsToUpdate.forEach((shift) => {
+        const endDateStr = getCorrectedEndDateString(shift.date, shiftForm.start!, shiftForm.end!);
         const updatedShift: Shift = {
-          ...shift, // Keep original id and date
+          ...shift,
           type: shiftForm.type!,
           start: `${shift.date}T${shiftForm.start}:00`,
-          end: `${shift.date}T${shiftForm.end}:00`,
+          end: `${endDateStr}T${shiftForm.end}:00`,
           allowed_provider_types: shiftForm.allowed_provider_types || [],
         };
         dispatch({
@@ -158,12 +183,13 @@ export default function ShiftsTab() {
       });
     } else {
       // Original logic for updating a single shift
+      const endDateStr = getCorrectedEndDateString(shiftForm.date!, shiftForm.start!, shiftForm.end!);
       const updatedShift: Shift = {
         id: selectedShiftId,
         date: shiftForm.date!,
         type: shiftForm.type!,
         start: `${shiftForm.date}T${shiftForm.start}:00`,
-        end: `${shiftForm.date}T${shiftForm.end}:00`,
+        end: `${endDateStr}T${shiftForm.end}:00`,
         allowed_provider_types: shiftForm.allowed_provider_types || [],
       };
       dispatch({

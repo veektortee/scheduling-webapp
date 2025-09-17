@@ -124,7 +124,27 @@ class AdvancedSchedulingSolver:
         )
         
         return result
-    
+        def _sanitize_shifts(self, shifts: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """
+        Ensure shift end times are after start times, handling overnight shifts.
+        """
+        for shift in shifts:
+            try:
+                start_str = shift.get("start")
+                end_str = shift.get("end")
+                if not start_str or not end_str:
+                    continue
+
+                start_dt = datetime.fromisoformat(start_str)
+                end_dt = datetime.fromisoformat(end_str)
+
+                if end_dt <= start_dt:
+                    logger.warning(f"Correcting overnight shift {shift.get('id')}: start={start_str}, end={end_str}")
+                    end_dt += timedelta(days=1)
+                    shift["end"] = end_dt.isoformat()
+            except (ValueError, TypeError) as e:
+                logger.warning(f"Could not parse datetime for shift {shift.get('id', 'N/A')}: {e}")
+        return shifts
     def _solve_with_ortools(self, case_data: Dict[str, Any], run_id: str) -> Dict[str, Any]:
         """
         Integrated OR-Tools solver logic adapted from your testcase_gui.py
@@ -168,7 +188,13 @@ class AdvancedSchedulingSolver:
                 case_data['calendar'] = calendar_data
             except Exception as e:
                 logger.warning(f"Calendar sanitization failed: {e}")
-            shifts = case_data.get('shifts', [])
+            shifts = case_data.get('shifts', [])            
+            try:
+                shifts = self._sanitize_shifts(shifts)
+                case_data['shifts'] = shifts  # Propagate sanitized shifts back to the case data
+                logger.info("Shift times sanitized to handle overnight cases.")
+            except Exception as e:
+                logger.warning(f"Shift sanitization failed: {e}")
             providers = case_data.get('providers', [])
             run_config = case_data.get('run', {})
 

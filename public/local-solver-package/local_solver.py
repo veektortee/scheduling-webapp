@@ -6,7 +6,7 @@ Download this file and double-click 'start_local_solver.bat' to run.
 
 import json
 import time
-from datetime import datetime
+from datetime import datetime, timedelta # Import timedelta
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import urllib.parse
 import sys
@@ -20,7 +20,30 @@ except ImportError:
     ORTOOLS_AVAILABLE = False
     print("[INFO] OR-Tools not available - using basic solver (pip install ortools for better performance)")
 
+# --- ADD THIS FUNCTION ---
+def sanitize_shifts(shifts):
+    """Ensure shift end times are after start times, handling overnight shifts."""
+    for shift in shifts:
+        try:
+            start_str = shift.get("start")
+            end_str = shift.get("end")
+            if not start_str or not end_str:
+                continue
+
+            start_dt = datetime.fromisoformat(start_str)
+            end_dt = datetime.fromisoformat(end_str)
+
+            if end_dt <= start_dt:
+                print(f"[INFO] Correcting overnight shift '{shift.get('id')}': end time adjusted to next day.")
+                end_dt += timedelta(days=1)
+                shift["end"] = end_dt.isoformat()
+        except (ValueError, TypeError):
+            # Ignore shifts with malformed date strings
+            continue
+    return shifts
+
 class SchedulingHandler(BaseHTTPRequestHandler):
+    # ... (rest of the class is unchanged) ...
     def do_OPTIONS(self):
         """Handle CORS preflight"""
         self.send_response(200)
@@ -91,11 +114,14 @@ class SchedulingHandler(BaseHTTPRequestHandler):
             self.send_response(404)
             self.end_headers()
 
+# --- UPDATE THIS FUNCTION ---
 def solve_scheduling_case(case_data):
     """Main solver function - uses OR-Tools if available, otherwise basic algorithm"""
     start_time = time.time()
     
     shifts = case_data.get('shifts', [])
+    shifts = sanitize_shifts(shifts)  # Sanitize the shifts
+    
     providers = case_data.get('providers', [])
     days = case_data.get('calendar', {}).get('days', [])
     run_config = case_data.get('run', {})
@@ -105,6 +131,7 @@ def solve_scheduling_case(case_data):
     else:
         return solve_with_basic_algorithm(shifts, providers, days, run_config, start_time)
 
+# ... (rest of the file is unchanged) ...
 def solve_with_ortools(shifts, providers, days, run_config, start_time):
     """High-performance OR-Tools solver"""
     model = cp_model.CpModel()
