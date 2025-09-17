@@ -51,6 +51,7 @@ except ImportError:
 # Import the solver logic from your existing code
 try:
     import testcase_gui as original_solver
+    from testcase_gui import run_diag
     HAVE_ORIGINAL_SOLVER = True
     print("[Done] Successfully imported testcase_gui.py as the solver engine.")
 except ImportError:
@@ -279,7 +280,18 @@ class AdvancedSchedulingSolver:
                     os.chdir(current_cwd)
                 except Exception:
                     pass
-            
+            try:
+                # The main output schedule is hospital_schedule.xlsx
+                schedule_path = self.output_dir / run_config['out'] / "hospital_schedule.xlsx"
+                if schedule_path.exists():
+                        logger.info(f"Running diagnosis on schedule: {schedule_path}")
+                        # Use the temp case file and the output schedule path
+                        run_diag(case=tmp_path, schedule=str(schedule_path), no_color=True)
+                        logger.info("Diagnosis complete. Report saved to output folder.")
+                else:
+                        logger.warning(f"Could not find schedule file for diagnosis: {schedule_path}")
+            except Exception as e:
+                        logger.error(f"Failed to run diagnosis step: {e}")       
             if isinstance(solver_result, dict) and 'error' in solver_result:
                 error_message = solver_result.get('error', 'Unknown solver script error')
                 logger.error(f"testcase_gui.py returned an error: {error_message}")
@@ -826,7 +838,7 @@ async def solve_schedule(case: SchedulingCase, background_tasks: BackgroundTasks
         case_dict = case.dict()
 
         active_runs[run_id] = {
-            "status": "running",
+            "status": "queued",
             "progress": 0,
             "message": "Optimization started",
             "created_at": datetime.now().isoformat(),
@@ -834,17 +846,17 @@ async def solve_schedule(case: SchedulingCase, background_tasks: BackgroundTasks
         }
 
         # Run optimization synchronously for local usage
-        result = await solver.solve_async(case_dict, run_id)
-        active_runs[run_id].update({
-            "status": result.get("status", "success"),
-            "progress": 100 if result.get("status") == "success" else -1,
-            "message": "Completed" if result.get("status") == "success" else result.get("message", "Failed"),
-            "result": result,
-            "completed_at": datetime.now().isoformat()
-        })
+        # result = await solver.solve_async(case_dict, run_id)
+        # active_runs[run_id].update({
+        #     "status": result.get("status", "success"),
+        #     "progress": 100 if result.get("status") == "success" else -1,
+        #     "message": "Completed" if result.get("status") == "success" else result.get("message", "Failed"),
+        #     "result": result,
+        #     "completed_at": datetime.now().isoformat()
+        # })
         background_tasks.add_task(run_optimization, case_dict, run_id)
         # Normalize to the shape expected by the web app/tests
-        model_result = result.get("result", {})
+        # model_result = result.get("result", {})
         return JSONResponse(
             status_code=202, # HTTP 202 Accepted
             content={
