@@ -593,7 +593,7 @@ export default function RunTab() {
   addLog('[RUN] Starting optimization (auto-detect mode)...', 'info');
         break;
     }
-
+    
   // Build payload that will be sent to the solver. If the user applied a Month selection,
   // restrict calendar.days and shifts to that month and trim any provider date-based fields
   const buildCasePayload = (): SchedulingCase => {
@@ -603,7 +603,30 @@ export default function RunTab() {
         const { start, end, days } = getMonthRange(appliedYear, appliedMonth);
         const inMonth = (d: string) => typeof d === 'string' && d >= start && d <= end;
 
-        const filteredShifts = (schedulingCase.shifts || []).filter(s => typeof s.date === 'string' && inMonth(s.date));
+        const filteredShifts = (schedulingCase.shifts || [])
+          .filter(s => typeof s.date === 'string' && inMonth(s.date))
+          .map(shift => {
+            // Sanitize shift times for overnight cases
+            if (shift.start && shift.end) {
+              try {
+                const startDate = new Date(shift.start);
+                const endDate = new Date(shift.end);
+
+                if (endDate <= startDate) {
+                  const correctedEndDate = new Date(endDate);
+                  correctedEndDate.setDate(correctedEndDate.getDate() + 1);
+                  
+                  addLog(`[INFO] Correcting overnight shift '${shift.id}' to end on the next day.`, 'info');
+
+                  return { ...shift, end: correctedEndDate.toISOString() };
+                }
+              } catch (e) {
+                // Ignore shifts with malformed date strings, similar to Python implementation
+                return shift;
+              }
+            }
+            return shift;
+          });
 
         const trimmedProviders = (schedulingCase.providers || []).map((p) => {
           const np: Provider = { ...p } as Provider;
