@@ -35,6 +35,9 @@ import calendar as pycalendar
 import shutil
 from ortools.sat.python import cp_model
 import tempfile
+from openpyxl import Workbook
+import csv
+
 
 try:
     from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, BackgroundTasks
@@ -202,11 +205,12 @@ class AdvancedSchedulingSolver:
             
             # Generate Excel outputs (optional)
             try:
-                # Coerce falsy/non-dict results to empty dict to avoid downstream errors
+                # Ensure model_result is a dict
                 if not isinstance(model_result, dict):
                     logger.warning(f"Model result is not a dict (type={type(model_result)}). Coercing to dict for output generation.")
                     model_result = model_result or {}
 
+                # **PASS THE CORRECT DATA TO THE FUNCTION**
                 self._generate_excel_outputs(model_result, run_output_dir)
             except Exception as e:
                 logger.warning(f"Failed to generate Excel outputs: {e}")
@@ -280,18 +284,49 @@ class AdvancedSchedulingSolver:
                     os.chdir(current_cwd)
                 except Exception:
                     pass
+            # try:
+            #     # The main output schedule is hospital_schedule.xlsx
+            #     schedule_path = self.output_dir / run_config['out'] / "hospital_schedule.xlsx"
+            #     if schedule_path.exists():
+            #             logger.info(f"Running diagnosis on schedule: {schedule_path}")
+            #             # Use the temp case file and the output schedule path
+            #             run_diag(case=tmp_path, schedule=str(schedule_path), no_color=True)
+            #             logger.info("Diagnosis complete. Report saved to output folder.")
+            #     else:
+            #             logger.warning(f"Could not find schedule file for diagnosis: {schedule_path}")
+            # except Exception as e:
+            #             logger.error(f"Failed to run diagnosis step: {e}")  
             try:
-                # The main output schedule is hospital_schedule.xlsx
-                schedule_path = self.output_dir / run_config['out'] / "hospital_schedule.xlsx"
-                if schedule_path.exists():
-                        logger.info(f"Running diagnosis on schedule: {schedule_path}")
-                        # Use the temp case file and the output schedule path
-                        run_diag(case=tmp_path, schedule=str(schedule_path), no_color=True)
+                tables, meta = solver_result
+                if tables and tables[0].get('assignment'):
+                    run_output_dir = self.output_dir / run_config['out']
+                    diag_schedule_path = run_output_dir / "diagnosis_schedule.csv"
+                # Create a new, correctly formatted CSV file for diagnosis
+                    with open(diag_schedule_path, 'w', newline='', encoding='utf-8') as csvfile:
+                        writer = csv.writer(csvfile)
+                        writer.writerow(['ShiftID', 'Provider']) # Write headers
+
+                # Populate with data from the first solution
+                        first_solution = tables[0]
+                        for s_idx, p_idx in first_solution['assignment']:
+                            shift_id = first_solution['shifts'][s_idx]['id']
+                            provider_name = first_solution['providers'][p_idx]['name']
+                            writer.writerow([shift_id, provider_name])
+
+                        logger.info(f"Created '{diag_schedule_path.name}' for diagnosis.")
+
+            # Run diagnosis on the new, correctly formatted CSV file
+                        run_diag(case=tmp_path, schedule=str(diag_schedule_path), no_color=True)
                         logger.info("Diagnosis complete. Report saved to output folder.")
+    
                 else:
-                        logger.warning(f"Could not find schedule file for diagnosis: {schedule_path}")
+                    logger.warning("No assignments found in the solution, skipping diagnosis.")
+
             except Exception as e:
-                        logger.error(f"Failed to run diagnosis step: {e}")       
+                logger.error(f"Failed to create file or run diagnosis step: {e}")
+
+                logger.error(f"Failed to create file or run diagnosis step: {e}")
+
             if isinstance(solver_result, dict) and 'error' in solver_result:
                 error_message = solver_result.get('error', 'Unknown solver script error')
                 logger.error(f"testcase_gui.py returned an error: {error_message}")
