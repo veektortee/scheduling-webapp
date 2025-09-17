@@ -1,13 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useScheduling } from '@/context/SchedulingContext';
-import { 
+import {
   IoSettingsSharp,
   IoStatsChartSharp,
   IoSpeedometerSharp,
-  IoTimerSharp
+  IoTimerSharp,
+  IoDownloadOutline,
+  IoCloudUploadOutline
 } from 'react-icons/io5';
+import { SchedulingCase } from '@/types/scheduling';
 
 export default function ConfigTab() {
   const { state, dispatch } = useScheduling();
@@ -18,6 +21,9 @@ export default function ConfigTab() {
   const [objectiveJson, setObjectiveJson] = useState(
     JSON.stringify(schedulingCase.constants.objective, null, 2)
   );
+
+  // Ref for the hidden file input element
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const updateSolverConfig = (field: string, value: number) => {
     dispatch({
@@ -64,7 +70,7 @@ export default function ConfigTab() {
 
       alert('Configuration applied successfully!');
     } catch { // Fixed ESLint unused error variable
-      alert('Invalid JSON format. Please check your configuration.'); 
+      alert('Invalid JSON format. Please check your configuration.');
     }
   };
 
@@ -113,6 +119,73 @@ export default function ConfigTab() {
 
     setWeightsJson(JSON.stringify(correctDefaults.constants.weights, null, 2));
     setObjectiveJson(JSON.stringify(correctDefaults.constants.objective, null, 2));
+  };
+
+  /**
+   * Handles downloading the current schedulingCase as a JSON file.
+   */
+  const handleDownloadCase = () => {
+    try {
+      const dataStr = JSON.stringify(schedulingCase, null, 2);
+      const blob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.download = 'case.json';
+      link.href = url;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Failed to download configuration:', error);
+      alert('An error occurred while preparing the download.');
+    }
+  };
+
+  /**
+   * Handles the file upload event, reads the file, parses it,
+   * and dispatches an action to update the entire application state.
+   */
+  const handleUploadCase = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const text = e.target?.result;
+        if (typeof text !== 'string') {
+          throw new Error('File could not be read as text.');
+        }
+        const newCase = JSON.parse(text) as SchedulingCase;
+
+        // Basic validation to ensure it looks like a case file
+        if (!newCase.constants || !newCase.providers || !newCase.shifts) {
+            throw new Error('Invalid case file structure. Missing required fields.');
+        }
+
+        // Dispatch an action to replace the entire case
+        dispatch({
+          type: 'UPDATE_CASE', // Or a more specific 'REPLACE_CASE' if you have one
+          payload: newCase,
+        });
+
+        // Update local textareas to reflect the new state
+        setWeightsJson(JSON.stringify(newCase.constants.weights, null, 2));
+        setObjectiveJson(JSON.stringify(newCase.constants.objective, null, 2));
+
+        alert('Case configuration uploaded and applied successfully!');
+      } catch (error) {
+        console.error('Failed to upload configuration:', error);
+        alert(`Failed to upload file. Please ensure it is a valid case.json file.\nError: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      } finally {
+        // Reset file input value to allow re-uploading the same file
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+      }
+    };
+    reader.readAsText(file);
   };
 
   return (
@@ -195,7 +268,7 @@ export default function ConfigTab() {
         </div>
       </div>
 
- 
+
 
       {/* Advanced Configuration */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
@@ -228,20 +301,46 @@ export default function ConfigTab() {
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row sm:space-x-4 space-y-3 sm:space-y-0 mt-6">
+        <div className="flex flex-col sm:flex-row sm:space-x-4 space-y-3 sm:space-y-0 mt-6 flex-wrap gap-3">
           <button
             onClick={applyAdvancedConfig}
             className="w-full sm:w-auto px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transform hover:scale-[1.02] transition-all duration-200 font-medium shadow-lg text-center"
           >
-            Apply Configuration
+            Apply JSON
           </button>
-          
+
           <button
             onClick={resetToDefaults}
             className="w-full sm:w-auto px-6 py-2 bg-gradient-to-r from-gray-500 to-slate-600 text-white rounded-lg hover:from-gray-600 hover:to-slate-700 transform hover:scale-[1.02] transition-all duration-200 font-medium shadow-lg text-center"
           >
             Reset to Defaults
           </button>
+
+          {/* --- NEW BUTTONS --- */}
+          <button
+            onClick={handleDownloadCase}
+            className="w-full sm:w-auto px-6 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:from-green-600 hover:to-emerald-700 transform hover:scale-[1.02] transition-all duration-200 font-medium shadow-lg text-center flex items-center justify-center space-x-2"
+          >
+            <IoDownloadOutline className="w-5 h-5" />
+            <span>Download Case</span>
+          </button>
+
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="w-full sm:w-auto px-6 py-2 bg-gradient-to-r from-teal-500 to-cyan-600 text-white rounded-lg hover:from-teal-600 hover:to-cyan-700 transform hover:scale-[1.02] transition-all duration-200 font-medium shadow-lg text-center flex items-center justify-center space-x-2"
+          >
+            <IoCloudUploadOutline className="w-5 h-5" />
+            <span>Upload Case</span>
+          </button>
+
+          {/* Hidden file input for the upload functionality */}
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleUploadCase}
+            accept="application/json,.json"
+            className="hidden"
+          />
         </div>
       </div>
 
@@ -304,7 +403,7 @@ export default function ConfigTab() {
             </div>
           </div>
         </div>
-        
+
         <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl shadow-lg border border-purple-200/50 dark:border-purple-800/50 p-6 hover-glow hover:scale-105 transition-all duration-300">
           <div className="flex items-center space-x-3">
             <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
@@ -318,7 +417,7 @@ export default function ConfigTab() {
             </div>
           </div>
         </div>
-        
+
         <div className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 rounded-xl shadow-lg border border-orange-200/50 dark:border-orange-800/50 p-6 hover-glow hover:scale-105 transition-all duration-300">
           <div className="flex items-center space-x-3">
             <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-500 rounded-lg flex items-center justify-center">
