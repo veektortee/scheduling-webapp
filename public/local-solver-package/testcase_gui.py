@@ -375,7 +375,7 @@ def diagnose(case, schedule_map, stream=sys.stdout, preview_limit=8, banner=None
         p = providers_by_name.get(prov)
         if not p: continue
         ptype = p.get("type","MD")
-    for d, sids in by_day.items():
+        for d, sids in by_day.items():
             for sid in sids:
                 allowed = shift_allowed_types.get(sid) or set()
                 if allowed and ptype not in allowed:
