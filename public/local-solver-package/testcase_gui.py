@@ -2817,7 +2817,7 @@ class TestcaseGUI:
             return
         _sanitize_provider_identity_defaults(p)
         lines = []
-            lines.append(f"Provider: {p.get('name','?')}  (type={p.get('type','MD')})")
+        lines.append(f"Provider: {p.get('name','?')}  (type={p.get('type','MD')})")
         lim = p.get("limits", {})
         lines.append(f"Limits: min_total={lim.get('min_total',0)} max_total={lim.get('max_total',IDENTITY_MAX)}")
         lines.append(f"max_consecutive_days: {p.get('max_consecutive_days', IDENTITY_MAX)}")
