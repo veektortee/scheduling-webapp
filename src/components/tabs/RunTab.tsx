@@ -917,6 +917,7 @@ export default function RunTab() {
         // Otherwise, it was already correctly set to 'finished' or 'error'.
         return currentState;
     });
+}
   };
 
   const stopSolver = () => {
