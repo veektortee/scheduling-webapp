@@ -29,19 +29,21 @@ def sanitize_shifts(shifts):
             end_str = shift.get("end")
             if not start_str or not end_str:
                 continue
-
-            start_dt = datetime.fromisoformat(start_str)
-            end_dt = datetime.fromisoformat(end_str)
+            
+            # FIX: Handle potential 'Z' or timezone info from frontend
+            start_dt = datetime.fromisoformat(start_str.replace('Z', '+00:00'))
+            end_dt = datetime.fromisoformat(end_str.replace('Z', '+00:00'))
 
             if end_dt <= start_dt:
                 print(f"[INFO] Correcting overnight shift '{shift.get('id')}': end time adjusted to next day.")
                 end_dt += timedelta(days=1)
-                shift["end"] = end_dt.isoformat()
+                # FIX: Use strftime for precise YYYY-MM-DDTHH:MM:SS format
+                shift["start"] = start_dt.strftime("%Y-%m-%dT%H:%M:%S")
+                shift["end"] = end_dt.strftime("%Y-%m-%dT%H:%M:%S")
         except (ValueError, TypeError):
             # Ignore shifts with malformed date strings
             continue
     return shifts
-
 class SchedulingHandler(BaseHTTPRequestHandler):
     # ... (rest of the class is unchanged) ...
     def do_OPTIONS(self):

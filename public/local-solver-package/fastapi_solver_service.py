@@ -130,18 +130,30 @@ class AdvancedSchedulingSolver:
         """
         for shift in shifts:
             try:
-                start_str = shift.get("start")
-                end_str = shift.get("end")
-                if not start_str or not end_str:
+                start_str_orig = shift.get("start")
+                end_str_orig = shift.get("end")
+                if not start_str_orig or not end_str_orig:
                     continue
+                
+                # Make datetimes timezone-naive for safe comparison
+                start_str_naive = start_str_orig.replace('Z', '').split('+')[0]
+                end_str_naive = end_str_orig.replace('Z', '').split('+')[0]
 
-                start_dt = datetime.fromisoformat(start_str)
-                end_dt = datetime.fromisoformat(end_str)
+                start_dt = datetime.fromisoformat(start_str_naive)
+                end_dt = datetime.fromisoformat(end_str_naive)
 
                 if end_dt <= start_dt:
-                    logger.warning(f"Correcting overnight shift {shift.get('id')}: start={start_str}, end={end_str}")
-                    end_dt += timedelta(days=1)
-                    shift["end"] = end_dt.isoformat()
+                    logger.warning(f"Correcting overnight shift {shift.get('id')}: start={start_str_orig}, end={end_str_orig}")
+                    
+                    # Use the original end string to preserve timezone if present
+                    original_end_dt = datetime.fromisoformat(end_str_orig)
+                    from datetime import timedelta
+                    corrected_end_dt = original_end_dt + timedelta(days=1)
+                    
+                    # FIX: Use strftime for precise YYYY-MM-DDTHH:MM:SS format
+                    shift["start"] = start_dt.strftime("%Y-%m-%dT%H:%M:%S")
+                    shift["end"] = corrected_end_dt.strftime("%Y-%m-%dT%H:%M:%S")
+
             except (ValueError, TypeError) as e:
                 logger.warning(f"Could not parse datetime for shift {shift.get('id', 'N/A')}: {e}")
         return shifts
@@ -322,36 +334,20 @@ class AdvancedSchedulingSolver:
             #             logger.warning(f"Could not find schedule file for diagnosis: {schedule_path}")
             # except Exception as e:
             #             logger.error(f"Failed to run diagnosis step: {e}")  
+            
             try:
-                tables, meta = solver_result
-                if tables and tables[0].get('assignment'):
-                    run_output_dir = self.output_dir / run_config['out']
-                    diag_schedule_path = run_output_dir / "diagnosis_schedule.csv"
-                # Create a new, correctly formatted CSV file for diagnosis
-                    with open(diag_schedule_path, 'w', newline='', encoding='utf-8') as csvfile:
-                        writer = csv.writer(csvfile)
-                        writer.writerow(['ShiftID', 'Provider']) # Write headers
-
-                # Populate with data from the first solution
-                        first_solution = tables[0]
-                        for s_idx, p_idx in first_solution['assignment']:
-                            shift_id = first_solution['shifts'][s_idx]['id']
-                            provider_name = first_solution['providers'][p_idx]['name']
-                            writer.writerow([shift_id, provider_name])
-
-                        logger.info(f"Created '{diag_schedule_path.name}' for diagnosis.")
-
-            # Run diagnosis on the new, correctly formatted CSV file
-                        run_diag(case=tmp_path, schedule=str(diag_schedule_path), no_color=True)
+                schedule_path = self.output_dir / run_config['out'] / "hospital_schedule.xlsx"
+                if schedule_path.exists():
+                        logger.info(f"Running diagnosis on schedule: {schedule_path}")
+                        # Use the temp case file and the final schedule path.
+                        # run_diag is designed to read the .xlsx and will write its
+                        # detailed report to a .txt file automatically.
+                        run_diag(case=tmp_path, schedule=str(schedule_path), no_color=True)
                         logger.info("Diagnosis complete. Report saved to output folder.")
-    
                 else:
-                    logger.warning("No assignments found in the solution, skipping diagnosis.")
-
+                        logger.warning(f"Could not find schedule file for diagnosis: {schedule_path}")
             except Exception as e:
-                logger.error(f"Failed to create file or run diagnosis step: {e}")
-
-                logger.error(f"Failed to create file or run diagnosis step: {e}")
+                        logger.error(f"Failed to run diagnosis step: {e}")
 
             if isinstance(solver_result, dict) and 'error' in solver_result:
                 error_message = solver_result.get('error', 'Unknown solver script error')

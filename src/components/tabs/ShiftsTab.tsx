@@ -11,25 +11,30 @@ import {
 } from 'react-icons/io5';
 import SchedulingCalendar from '@/components/SchedulingCalendar';
 
-function getCorrectedEndDateString(dateStr: string, startTime: string, endTime: string): string {
-  // If end time is on the next day (e.g., 20:00 to 08:00)
-  if (endTime <= startTime) {
-    // Create a date object safely from YYYY-MM-DD to avoid timezone issues
-    const [year, month, day] = dateStr.split('-').map(Number);
-    const date = new Date(year, month - 1, day);
+// function getCorrectedEndDateString(dateStr: string, startTime: string, endTime: string): string {
+//   // If end time is on the next day (e.g., 20:00 to 08:00)
+//   if (endTime <= startTime) {
+//     // Create a date object safely from YYYY-MM-DD to avoid timezone issues
+//     const [year, month, day] = dateStr.split('-').map(Number);
+//     const date = new Date(year, month - 1, day);
     
-    // Increment the day by one
-    date.setDate(date.getDate() + 1);
+//     // Increment the day by one
+//     date.setDate(date.getDate() + 1);
     
-    // Format back to YYYY-MM-DD
-    const nextYear = date.getFullYear();
-    const nextMonth = String(date.getMonth() + 1).padStart(2, '0');
-    const nextDay = String(date.getDate()).padStart(2, '0');
+//     // Format back to YYYY-MM-DD
+//     const nextYear = date.getFullYear();
+//     const nextMonth = String(date.getMonth() + 1).padStart(2, '0');
+//     const nextDay = String(date.getDate()).padStart(2, '0');
     
-    return `${nextYear}-${nextMonth}-${nextDay}`;
-  }
-  // Otherwise, the end date is the same as the start date
-  return dateStr;
+//     return `${nextYear}-${nextMonth}-${nextDay}`;
+//   }
+//   // Otherwise, the end date is the same as the start date
+//   return dateStr;
+// }
+function formatToLocalISO(date: Date): string {
+  const pad = (num: number) => num.toString().padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}` +
+         `T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
 }
 
 export default function ShiftsTab() {
@@ -77,7 +82,7 @@ export default function ShiftsTab() {
     return `${date}_${type}`;
   };
 
-  const addShift = () => {
+const addShift = () => {
    if (!shiftForm.type || !shiftForm.start || !shiftForm.end) { // Ensure end time is also present
       alert('Please fill in all required fields (type, start time, and end time)');
       return;
@@ -93,7 +98,7 @@ export default function ShiftsTab() {
     // When adding across "month", only include calendar days that fall in the
     // same month and year as the chosen date. This prevents unintentionally
     // spanning multiple months when the calendar contains days from other months.
-    const dateRange = addToAllDays
+     const dateRange = addToAllDays
       ? schedulingCase.calendar.days.filter((d) => {
           try {
             const candidate = new Date(d);
@@ -108,21 +113,27 @@ export default function ShiftsTab() {
         })
       : [date];
     
-    dateRange.forEach((currentDate) => {
-      // Use the helper to determine the correct end date
-      const endDateStr = getCorrectedEndDateString(currentDate, shiftForm.start!, shiftForm.end!);
-      
+        dateRange.forEach((currentDate) => {
+      const initialStartDate = new Date(`${currentDate}T${shiftForm.start!}:00`);
+      // Initially, create the end date on the same day as the start date
+      const finalEndDate = new Date(`${currentDate}T${shiftForm.end!}:00`);
+
+      // If the end time is on or before the start time, it's an overnight shift.
+      // Add one day to the end date.
+      if (finalEndDate <= initialStartDate) {
+        finalEndDate.setDate(finalEndDate.getDate() + 1);
+      }
+
       const newShift: Shift = {
         id: generateShiftId(currentDate, shiftForm.type!),
-        date: currentDate,
+        date: currentDate, // The 'date' of a shift is always its start date
         type: shiftForm.type!,
-        start: `${currentDate}T${shiftForm.start}:00`,
-        end: `${endDateStr}T${shiftForm.end}:00`,
+        start: formatToLocalISO(initialStartDate), // FIX: Use new helper function
+        end: formatToLocalISO(finalEndDate),       // FIX: Use new helper function
         allowed_provider_types: shiftForm.allowed_provider_types || [],
       };
       dispatch({ type: 'ADD_SHIFT', payload: newShift });
     });
-
 
     // Reset form
     setShiftForm({
@@ -167,13 +178,19 @@ export default function ShiftsTab() {
       });
 
       // Dispatch an update for each matching shift
-      shiftsToUpdate.forEach((shift) => {
-        const endDateStr = getCorrectedEndDateString(shift.date, shiftForm.start!, shiftForm.end!);
+           shiftsToUpdate.forEach((shift) => {
+        const initialStartDate = new Date(`${shift.date}T${shiftForm.start!}:00`);
+        const finalEndDate = new Date(`${shift.date}T${shiftForm.end!}:00`);
+
+        if (finalEndDate <= initialStartDate) {
+            finalEndDate.setDate(finalEndDate.getDate() + 1);
+        }
+        
         const updatedShift: Shift = {
           ...shift,
           type: shiftForm.type!,
-          start: `${shift.date}T${shiftForm.start}:00`,
-          end: `${endDateStr}T${shiftForm.end}:00`,
+          start: formatToLocalISO(initialStartDate), // FIX: Use new helper function
+          end: formatToLocalISO(finalEndDate),       // FIX: Use new helper function
           allowed_provider_types: shiftForm.allowed_provider_types || [],
         };
         dispatch({
@@ -182,14 +199,20 @@ export default function ShiftsTab() {
         });
       });
     } else {
-      // Original logic for updating a single shift
-      const endDateStr = getCorrectedEndDateString(shiftForm.date!, shiftForm.start!, shiftForm.end!);
+      // Logic for updating a single shift
+      const initialStartDate = new Date(`${shiftForm.date}T${shiftForm.start!}:00`);
+      const finalEndDate = new Date(`${shiftForm.date}T${shiftForm.end!}:00`);
+
+      if (finalEndDate <= initialStartDate) {
+        finalEndDate.setDate(finalEndDate.getDate() + 1);
+      }
+      
       const updatedShift: Shift = {
         id: selectedShiftId,
         date: shiftForm.date!,
         type: shiftForm.type!,
-        start: `${shiftForm.date}T${shiftForm.start}:00`,
-        end: `${endDateStr}T${shiftForm.end}:00`,
+        start: formatToLocalISO(initialStartDate), // FIX: Use new helper function
+        end: formatToLocalISO(finalEndDate),       // FIX: Use new helper function
         allowed_provider_types: shiftForm.allowed_provider_types || [],
       };
       dispatch({

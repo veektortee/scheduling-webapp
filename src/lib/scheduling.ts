@@ -3,7 +3,7 @@ import { SchedulingCase } from '@/types/scheduling';
 export const DEFAULT_CASE: SchedulingCase = {
   constants: {
     solver: {
-      max_time_in_seconds: 125999.99999999999,
+      max_time_in_seconds: 126000.0,
       phase1_fraction: 0.4,
       relative_gap: 0.00001,
       num_threads: 16

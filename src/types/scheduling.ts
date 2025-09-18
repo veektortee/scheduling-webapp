@@ -54,6 +54,8 @@ export interface Provider {
   id?: string;
   name?: string;
   type?: string;
+  weekday_pref?: { [key: string]: number }; // Already included
+  type_pref?: { [key: string]: number };
   forbidden_days_hard?: string[];
   forbidden_days_soft: string[];
   preferred_days_hard?: { [key: string]: string[] };
@@ -61,10 +63,12 @@ export interface Provider {
   limits?: {
     min_total?: number;
     max_total?: number | null;
-    type_ranges?: { [key: string]: { min: number; max: number } }; // Fixed ESLint any type
+    // This structure supports the required ["MD_N": [0, 50]] format
+    type_ranges?: { [key: string]: [number | null, number | null] };
   };
   max_consecutive_days?: number | null;
 }
+
 
 export interface SchedulingCase {
   constants: Constants;

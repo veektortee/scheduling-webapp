@@ -19,7 +19,7 @@ import {
   IoStopSharp,
   IoDownloadSharp,
   IoDesktopSharp,
-  IoServerSharp,
+  // IoServerSharp,
   IoCodeSlash
 } from 'react-icons/io5';
 import { 
@@ -45,6 +45,7 @@ interface SolverResult {
   error?: string;
   instructions?: Record<string, unknown>;
   output_directory?: string;
+  packaged_files?: unknown; // Added to make type explicit
 }
 
 // Minimal shapes for solver/health metadata used by this component
@@ -592,50 +593,66 @@ export default function RunTab() {
   addLog('[RUN] Starting optimization (auto-detect mode)...', 'info');
         break;
     }
-
+    
   // Build payload that will be sent to the solver. If the user applied a Month selection,
   // restrict calendar.days and shifts to that month and trim any provider date-based fields
   const buildCasePayload = (): SchedulingCase => {
+    // Start with a copy of the current scheduling case
+    let payload: SchedulingCase = { ...schedulingCase };
+
     try {
       if (isMonthSelectionLocked && appliedMonth !== null && appliedYear !== null) {
-        // Validate month/year and compute clear start/end/days
         const { start, end, days } = getMonthRange(appliedYear, appliedMonth);
         const inMonth = (d: string) => typeof d === 'string' && d >= start && d <= end;
 
-        const filteredShifts = (schedulingCase.shifts || []).filter(s => typeof s.date === 'string' && inMonth(s.date));
+        const filteredShifts = (schedulingCase.shifts || [])
+          .filter(s => typeof s.date === 'string' && inMonth(s.date))
+          .map(shift => {
+            if (shift.start && shift.end) {
+              try {
+                const startDate = new Date(shift.start);
+                const endDate = new Date(shift.end);
+
+                if (endDate <= startDate) {
+                  const correctedEndDate = new Date(endDate);
+                  correctedEndDate.setDate(correctedEndDate.getDate() + 1);
+                  addLog(`[INFO] Correcting overnight shift '${shift.id}' to end on the next day.`, 'info');
+                  const pad = (num: number) => num.toString().padStart(2, '0');
+                  const formatToLocalISO = (date: Date) => 
+                    `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}` +
+                    `T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+                  return { ...shift, start: formatToLocalISO(startDate), end: formatToLocalISO(correctedEndDate) };
+                }
+              } catch (e) {
+                return shift;
+              }
+            }
+            return shift;
+          });
 
         const trimmedProviders = (schedulingCase.providers || []).map((p) => {
           const np: Provider = { ...p } as Provider;
-
           if (Array.isArray(p.forbidden_days_hard)) np.forbidden_days_hard = p.forbidden_days_hard.filter(d => typeof d === 'string' && inMonth(d));
           if (Array.isArray(p.forbidden_days_soft)) np.forbidden_days_soft = p.forbidden_days_soft.filter(d => typeof d === 'string' && inMonth(d));
-
           if (p.preferred_days_hard && typeof p.preferred_days_hard === 'object') {
             const map: Record<string, string[]> = {};
-            Object.entries(p.preferred_days_hard).forEach(([k, v]) => {
-              if (Array.isArray(v)) {
-                const filtered = v.filter((d) => typeof d === 'string' && inMonth(d));
-                if (filtered.length) map[k] = filtered;
-              }
+            Object.entries(p.preferred_days_hard).forEach(([dateKey, shiftTypes]) => {
+              if (inMonth(dateKey)) { map[dateKey] = shiftTypes; }
             });
             np.preferred_days_hard = map;
           }
-
           if (p.preferred_days_soft && typeof p.preferred_days_soft === 'object') {
             const map: Record<string, string[]> = {};
-            Object.entries(p.preferred_days_soft).forEach(([k, v]) => {
-              if (Array.isArray(v)) {
-                const filtered = v.filter((d) => typeof d === 'string' && inMonth(d));
-                if (filtered.length) map[k] = filtered;
-              }
+            Object.entries(p.preferred_days_soft).forEach(([dateKey, shiftTypes]) => {
+              if (inMonth(dateKey)) { map[dateKey] = shiftTypes; }
             });
             np.preferred_days_soft = map;
           }
-
           return np;
         });
 
-        return {
+        // Update the payload with the month-filtered data
+        payload = {
           ...schedulingCase,
           calendar: { ...schedulingCase.calendar, days },
           shifts: filteredShifts,
@@ -643,14 +660,31 @@ export default function RunTab() {
         };
       }
     } catch (err) {
-      // If anything goes wrong, fall back to full case
       console.warn('Failed to build month-limited payload, falling back to full case:', err);
+      // Ensure payload is a fresh copy if filtering fails
+      payload = { ...schedulingCase };
     }
-    return schedulingCase;
+
+    // --- CHANGE ---
+    // Force every provider's type to "MD" and their type_ranges to use "MD" as the key.
+    payload.providers = (payload.providers || []).map(provider => ({
+      ...provider,
+      type: 'MD', // Force the main type
+      limits: {
+        ...provider.limits, // Keep existing min/max totals
+        type_ranges: {
+          "MD": [0, 50] // Force the type_ranges key to "MD"
+        }
+      }
+    }));
+    
+    addLog(`[INFO] Processing ${payload.shifts.length} shifts and ${payload.providers.length} providers (dataset sent to solver)`, 'info');
+
+    return payload;
   };
 
   const payload = buildCasePayload();
-  addLog(`[INFO] Processing ${payload.shifts.length} shifts and ${payload.providers.length} providers (dataset sent to solver)`, 'info');
+ // addLog(`[INFO] Processing ${payload.shifts.length} shifts and ${payload.providers.length} providers (dataset sent to solver)`, 'info');
 
     try {
       const startTime = Date.now();
@@ -758,16 +792,16 @@ export default function RunTab() {
           addLog(`[OK] Generated ${solutions.length} solution(s)`, 'success');
           addLog(`[SOLVER] Solver: ${stats.solver_type || 'serverless'} (${stats.status || 'completed'})`, 'info');
           
-          let finalOutputDirectory = (result as any).output_directory;
+          let finalOutputDirectory = result.output_directory;
 
           // If local solver was used, upload the packaged results to Vercel Blob
-          if (actualSolver === 'local' && (result as any).packaged_files) {
+          if (actualSolver === 'local' && result.packaged_files) {
             addLog('[INFO] Uploading local solver results to persistent storage...', 'info');
             try {
               const uploadResponse = await fetch('/api/upload-packaged-results', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ packaged_files: (result as any).packaged_files }),
+                body: JSON.stringify({ packaged_files: result.packaged_files }),
               });
 
               if (uploadResponse.ok) {
@@ -790,7 +824,7 @@ export default function RunTab() {
           // Store last run results for output folder functionality
           const runResultsPayload = {
             run_id: result.run_id || `serverless_${Date.now()}`,
-            output_directory: finalOutputDirectory,
+            output_directory: finalOutputDirectory || generateResultFolderName(),
             timestamp: new Date().toISOString(),
             solver_type: actualSolver,
             results: result.results,
@@ -798,7 +832,7 @@ export default function RunTab() {
             caseSnapshot: schedulingCase,
             statistics: result.statistics
           };
-          
+                    
           dispatch({
             type: 'SET_RESULTS',
             payload: runResultsPayload
@@ -867,19 +901,31 @@ export default function RunTab() {
           
           addLog('[INFO] Results saved and ready for export', 'success');
         }
-        
+
+        setIsRunning(false);
+
       } else if (result.status === 'error') {
         throw new Error(result.error || result.message);
       }
       
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-  addLog(`[ERROR] Optimization failed: ${errorMessage}`, 'error');
-      setSolverState('error');
-      setProgress(0);
-    } finally {
-      setIsRunning(false);
-    }
+    } 
+    catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    addLog(`[ERROR] Optimization failed: ${errorMessage}`, 'error');
+    setSolverState('error');
+    setProgress(0);
+} finally {
+    setIsRunning(false);
+    setSolverState((currentState) => {
+        // If the state is still 'running' when the function is done,
+        // it means the success path didn't update it. Force it to 'finished'.
+        if (currentState === 'running' || currentState === 'connecting') {
+            return 'finished';
+        }
+        // Otherwise, it was already correctly set to 'finished' or 'error'.
+        return currentState;
+    });
+}
   };
 
   const stopSolver = () => {
