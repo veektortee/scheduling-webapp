@@ -1880,7 +1880,7 @@ def compute_capacity_diag(case: Dict[str,Any]) -> List[Dict[str,Any]]:
         day_to_shifts[sh['date']].append(s)
     out = []
     for i,p in enumerate(providers):
-            ptype = p.get('type','MD')
+        ptype = p.get('type','MD')
         forb = set(p.get('forbidden_days_hard', []))
         ok_days = 0
         for d in days:
