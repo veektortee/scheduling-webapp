@@ -1694,7 +1694,7 @@ def write_excel_hospital_multi(path, tables):
     for idx, table in enumerate(tables, start=1):
         days=table['days']; providers=table['providers']; shifts=table['shifts']; assign=set(table['assignment'])
         ws=wb.create_sheet(f"Hospital_{idx}")
-        ws.append(['Date','Role','Code','Start','End','Assignee','ShiftID'])
+        ws.append(['Date','Role','Code','Start','End','Provider','ID'])
         for s,sh in enumerate(shifts):
             assignee='UNFILLED'
             for i in range(len(providers)):
@@ -1702,11 +1702,11 @@ def write_excel_hospital_multi(path, tables):
             role,code=(sh['type'].split('_',1)+[''])[:2] if '_' in sh['type'] else ('', sh['type'])
             ws.append([sh['date'], role, code, sh['start'], sh['end'], assignee, sh.get('id', f'S{s:04d}')])
     if not tables:
-        ws=wb.create_sheet("Hospital_1"); ws.append(['Date','Role','Code','Start','End','Assignee','ShiftID'])
+        ws=wb.create_sheet("Hospital_1"); ws.append(['Date','Role','Code','Start','End','Provider','ID'])
     global CHOSPITAL
     CHOSPITAL = path
     wb.save(path)
-
+    
 def write_excel_calendar_multi(path, tables):
     """
     New calendar export:

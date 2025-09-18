@@ -331,36 +331,20 @@ class AdvancedSchedulingSolver:
             #             logger.warning(f"Could not find schedule file for diagnosis: {schedule_path}")
             # except Exception as e:
             #             logger.error(f"Failed to run diagnosis step: {e}")  
+            
             try:
-                tables, meta = solver_result
-                if tables and tables[0].get('assignment'):
-                    run_output_dir = self.output_dir / run_config['out']
-                    diag_schedule_path = run_output_dir / "diagnosis_schedule.csv"
-                # Create a new, correctly formatted CSV file for diagnosis
-                    with open(diag_schedule_path, 'w', newline='', encoding='utf-8') as csvfile:
-                        writer = csv.writer(csvfile)
-                        writer.writerow(['ShiftID', 'Provider']) # Write headers
-
-                # Populate with data from the first solution
-                        first_solution = tables[0]
-                        for s_idx, p_idx in first_solution['assignment']:
-                            shift_id = first_solution['shifts'][s_idx]['id']
-                            provider_name = first_solution['providers'][p_idx]['name']
-                            writer.writerow([shift_id, provider_name])
-
-                        logger.info(f"Created '{diag_schedule_path.name}' for diagnosis.")
-
-            # Run diagnosis on the new, correctly formatted CSV file
-                        run_diag(case=tmp_path, schedule=str(diag_schedule_path), no_color=True)
+                schedule_path = self.output_dir / run_config['out'] / "hospital_schedule.xlsx"
+                if schedule_path.exists():
+                        logger.info(f"Running diagnosis on schedule: {schedule_path}")
+                        # Use the temp case file and the final schedule path.
+                        # run_diag is designed to read the .xlsx and will write its
+                        # detailed report to a .txt file automatically.
+                        run_diag(case=tmp_path, schedule=str(schedule_path), no_color=True)
                         logger.info("Diagnosis complete. Report saved to output folder.")
-    
                 else:
-                    logger.warning("No assignments found in the solution, skipping diagnosis.")
-
+                        logger.warning(f"Could not find schedule file for diagnosis: {schedule_path}")
             except Exception as e:
-                logger.error(f"Failed to create file or run diagnosis step: {e}")
-
-                logger.error(f"Failed to create file or run diagnosis step: {e}")
+                        logger.error(f"Failed to run diagnosis step: {e}")
 
             if isinstance(solver_result, dict) and 'error' in solver_result:
                 error_message = solver_result.get('error', 'Unknown solver script error')
