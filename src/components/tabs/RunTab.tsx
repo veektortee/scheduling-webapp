@@ -902,12 +902,21 @@ export default function RunTab() {
       
     } 
     catch (error: unknown) {
-  const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-  addLog(`[ERROR] Optimization failed: ${errorMessage}`, 'error');
-  setSolverState('error');
-  setProgress(0);
-  setIsRunning(false); // <-- MOVE setIsRunning(false) HERE
-}
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    addLog(`[ERROR] Optimization failed: ${errorMessage}`, 'error');
+    setSolverState('error');
+    setProgress(0);
+} finally {
+    setIsRunning(false);
+    setSolverState((currentState) => {
+        // If the state is still 'running' when the function is done,
+        // it means the success path didn't update it. Force it to 'finished'.
+        if (currentState === 'running' || currentState === 'connecting') {
+            return 'finished';
+        }
+        // Otherwise, it was already correctly set to 'finished' or 'error'.
+        return currentState;
+    });
   };
 
   const stopSolver = () => {
