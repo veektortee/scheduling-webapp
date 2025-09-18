@@ -1121,18 +1121,31 @@ def build_model(consts: Dict[str,Any], case: Dict[str,Any]) -> Dict[str,Any]:
     # 12 hrs apart
     for iter1 in S:
         for iter2 in S:
-            if(shifts[iter1]["id"] == shifts[iter2]["id"]): continue
-            s1 = dt.datetime.fromisoformat(shifts[iter1]["start"])
-            s2 = dt.datetime.fromisoformat(shifts[iter2]["start"])
-            e1 = dt.datetime.fromisoformat(shifts[iter1]["end"])
-            e2 = dt.datetime.fromisoformat(shifts[iter1]["end"])
-            
-            if(s1 > s2): continue
-            bad = 0
-            if(s2 <= e1): bad = 1
+            if shifts[iter1]["id"] == shifts[iter2]["id"]:
+                continue
 
-            diff = abs(dt.datetime.fromisoformat(shifts[iter2]["start"]) - dt.datetime.fromisoformat(shifts[iter1]["end"]))
-            if(bad or diff.total_seconds() < 12 * 60 * 60): 
+            # Remove timezone info for safe comparison
+            s1_str = shifts[iter1]["start"].replace('Z', '').split('+')[0]
+            s2_str = shifts[iter2]["start"].replace('Z', '').split('+')[0]
+            e1_str = shifts[iter1]["end"].replace('Z', '').split('+')[0]
+            
+            s1 = dt.datetime.fromisoformat(s1_str)
+            s2 = dt.datetime.fromisoformat(s2_str)
+            e1 = dt.datetime.fromisoformat(e1_str)
+
+            if s1 > s2:
+                continue
+            
+            # Check if shifts overlap or are less than 12 hours apart
+            is_too_close = False
+            if s2 < e1:  # Direct overlap
+                is_too_close = True
+            else:
+                diff = s2 - e1
+                if diff.total_seconds() < 12 * 3600:
+                    is_too_close = True
+
+            if is_too_close:
                 for j in P:
                     model.AddAtMostOne([x[iter1, j], x[iter2, j]])
     
