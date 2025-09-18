@@ -893,19 +893,21 @@ export default function RunTab() {
           
           addLog('[INFO] Results saved and ready for export', 'success');
         }
-        
+
+        setIsRunning(false);
+
       } else if (result.status === 'error') {
         throw new Error(result.error || result.message);
       }
       
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    } 
+    catch (error: unknown) {
+  const errorMessage = error instanceof Error ? error.message : 'Unknown error';
   addLog(`[ERROR] Optimization failed: ${errorMessage}`, 'error');
-      setSolverState('error');
-      setProgress(0);
-    } finally {
-      setIsRunning(false);
-    }
+  setSolverState('error');
+  setProgress(0);
+  setIsRunning(false); // <-- MOVE setIsRunning(false) HERE
+}
   };
 
   const stopSolver = () => {
