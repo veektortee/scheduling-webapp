@@ -31,6 +31,11 @@ import SchedulingCalendar from '@/components/SchedulingCalendar';
 //   // Otherwise, the end date is the same as the start date
 //   return dateStr;
 // }
+function formatToLocalISO(date: Date): string {
+  const pad = (num: number) => num.toString().padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}` +
+         `T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+}
 
 export default function ShiftsTab() {
   const { state, dispatch } = useScheduling();
@@ -77,7 +82,7 @@ export default function ShiftsTab() {
     return `${date}_${type}`;
   };
 
-  const addShift = () => {
+const addShift = () => {
    if (!shiftForm.type || !shiftForm.start || !shiftForm.end) { // Ensure end time is also present
       alert('Please fill in all required fields (type, start time, and end time)');
       return;
@@ -93,7 +98,7 @@ export default function ShiftsTab() {
     // When adding across "month", only include calendar days that fall in the
     // same month and year as the chosen date. This prevents unintentionally
     // spanning multiple months when the calendar contains days from other months.
-    const dateRange = addToAllDays
+     const dateRange = addToAllDays
       ? schedulingCase.calendar.days.filter((d) => {
           try {
             const candidate = new Date(d);
@@ -123,13 +128,12 @@ export default function ShiftsTab() {
         id: generateShiftId(currentDate, shiftForm.type!),
         date: currentDate, // The 'date' of a shift is always its start date
         type: shiftForm.type!,
-        start: initialStartDate.toISOString(),
-        end: finalEndDate.toISOString(),
+        start: formatToLocalISO(initialStartDate), // FIX: Use new helper function
+        end: formatToLocalISO(finalEndDate),       // FIX: Use new helper function
         allowed_provider_types: shiftForm.allowed_provider_types || [],
       };
       dispatch({ type: 'ADD_SHIFT', payload: newShift });
     });
-
 
     // Reset form
     setShiftForm({
@@ -174,7 +178,7 @@ export default function ShiftsTab() {
       });
 
       // Dispatch an update for each matching shift
-          shiftsToUpdate.forEach((shift) => {
+           shiftsToUpdate.forEach((shift) => {
         const initialStartDate = new Date(`${shift.date}T${shiftForm.start!}:00`);
         const finalEndDate = new Date(`${shift.date}T${shiftForm.end!}:00`);
 
@@ -185,8 +189,8 @@ export default function ShiftsTab() {
         const updatedShift: Shift = {
           ...shift,
           type: shiftForm.type!,
-          start: initialStartDate.toISOString(),
-          end: finalEndDate.toISOString(),
+          start: formatToLocalISO(initialStartDate), // FIX: Use new helper function
+          end: formatToLocalISO(finalEndDate),       // FIX: Use new helper function
           allowed_provider_types: shiftForm.allowed_provider_types || [],
         };
         dispatch({
@@ -207,8 +211,8 @@ export default function ShiftsTab() {
         id: selectedShiftId,
         date: shiftForm.date!,
         type: shiftForm.type!,
-        start: initialStartDate.toISOString(),
-        end: finalEndDate.toISOString(),
+        start: formatToLocalISO(initialStartDate), // FIX: Use new helper function
+        end: formatToLocalISO(finalEndDate),       // FIX: Use new helper function
         allowed_provider_types: shiftForm.allowed_provider_types || [],
       };
       dispatch({

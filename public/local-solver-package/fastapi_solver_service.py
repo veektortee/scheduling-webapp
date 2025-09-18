@@ -149,7 +149,10 @@ class AdvancedSchedulingSolver:
                     original_end_dt = datetime.fromisoformat(end_str_orig)
                     from datetime import timedelta
                     corrected_end_dt = original_end_dt + timedelta(days=1)
-                    shift["end"] = corrected_end_dt.isoformat()
+                    
+                    # FIX: Use strftime for precise YYYY-MM-DDTHH:MM:SS format
+                    shift["start"] = start_dt.strftime("%Y-%m-%dT%H:%M:%S")
+                    shift["end"] = corrected_end_dt.strftime("%Y-%m-%dT%H:%M:%S")
 
             except (ValueError, TypeError) as e:
                 logger.warning(f"Could not parse datetime for shift {shift.get('id', 'N/A')}: {e}")

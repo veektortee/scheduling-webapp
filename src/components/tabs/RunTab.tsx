@@ -603,7 +603,7 @@ export default function RunTab() {
         const { start, end, days } = getMonthRange(appliedYear, appliedMonth);
         const inMonth = (d: string) => typeof d === 'string' && d >= start && d <= end;
 
-        const filteredShifts = (schedulingCase.shifts || [])
+       const filteredShifts = (schedulingCase.shifts || [])
           .filter(s => typeof s.date === 'string' && inMonth(s.date))
           .map(shift => {
             // Sanitize shift times for overnight cases
@@ -618,7 +618,17 @@ export default function RunTab() {
                   
                   addLog(`[INFO] Correcting overnight shift '${shift.id}' to end on the next day.`, 'info');
 
-                  return { ...shift, end: correctedEndDate.toISOString() };
+                  // FIX: Manually format the date to YYYY-MM-DDTHH:mm:ss
+                  const pad = (num: number) => num.toString().padStart(2, '0');
+                  const formatToLocalISO = (date: Date) => 
+                    `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}` +
+                    `T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+
+                  return { 
+                    ...shift, 
+                    start: formatToLocalISO(startDate),
+                    end: formatToLocalISO(correctedEndDate)
+                  };
                 }
               } catch (e) {
                 // Ignore shifts with malformed date strings, similar to Python implementation
@@ -627,6 +637,7 @@ export default function RunTab() {
             }
             return shift;
           });
+
 
         const trimmedProviders = (schedulingCase.providers || []).map((p) => {
           const np: Provider = { ...p } as Provider;
