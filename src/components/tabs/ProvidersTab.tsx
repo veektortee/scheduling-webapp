@@ -120,21 +120,35 @@ export default function ProvidersTab() {
       },
     }));
   };
-  const addProvider = () => {
+    const addProvider = () => {
     // Validate required fields
     if (!providerForm.name || providerForm.name.trim() === '') {
       alert('Provider name is required');
       return;
     }
+    const providerType = (providerForm.type as string) || 'Staff';
 
     const newProvider: Provider = {
       id: (providerForm.id as string) || `p_${Date.now()}`,
       name: providerForm.name?.trim(),
-      type: (providerForm.type as string) || 'Staff',
+      type: providerType,
+      weekday_pref: {},
+      type_pref: {
+        "MD_D": 0.4,
+        "MD_S1": 0.15,
+        "MD_S2": 0.15,
+        "MD_S3": 0.15,
+        "MD_N": 0.15,
+        "MD_PEDS": 0.2
+      },
       max_consecutive_days: providerForm.max_consecutive_days || 5,
-            limits: {
+      limits: {
         min_total: providerForm.limits?.min_total || 0,
-        max_total: providerForm.limits?.max_total || 4, // Default to 4
+        max_total: providerForm.limits?.max_total || 4,
+        // --- CHANGE: Use the dynamic providerType as the key ---
+        type_ranges: {
+            [providerType]: [0, 50] as [number | null, number | null]
+        }
       },
       forbidden_days_soft: providerForm.forbidden_days_soft || [],
       forbidden_days_hard: providerForm.forbidden_days_hard || [],
@@ -142,28 +156,40 @@ export default function ProvidersTab() {
       preferred_days_soft: providerForm.preferred_days_soft || {},
     };
 
-    dispatch({ type: 'ADD_PROVIDER', payload: newProvider });
-    // Reset UI form and selection
+     dispatch({ type: 'ADD_PROVIDER', payload: newProvider });
     resetForm();
   };
 
   const updateProvider = () => {
     if (selectedProvider === null) return;
 
-    // Merge with existing provider to avoid losing fields not present in the form
     const existing = schedulingCase.providers[selectedProvider] || {};
+    
+    // --- CHANGE: Determine provider type for dynamic key ---
+    const providerType = (providerForm.type as string) || existing.type || 'Staff';
+
     const newLimits = {
       min_total: providerForm.limits?.min_total ?? existing.limits?.min_total ?? 0,
-      // --- CHANGE: Enforce mandatory default on update ---
-      max_total: providerForm.limits?.max_total ?? existing.limits?.max_total ?? 4, // Default to 4 if null/undefined
+      max_total: providerForm.limits?.max_total ?? existing.limits?.max_total ?? 4,
+      // --- CHANGE: Use the dynamic providerType as the key ---
+      type_ranges: {
+          [providerType]: [0, 50] as [number | null, number | null]
+      }
     };
     const updatedProvider: Provider = {
       ...existing,
       ...(providerForm as Provider),
-      type: (providerForm.type as string) || existing.type || 'Staff',
-      
-      // --- CHANGE: Enforce mandatory default on update ---
-      max_consecutive_days: providerForm.max_consecutive_days ?? existing.max_consecutive_days ?? 5, // Default to 5
+      type: providerType,
+      max_consecutive_days: providerForm.max_consecutive_days ?? existing.max_consecutive_days ?? 5,
+      weekday_pref: {},
+      type_pref: {
+        "MD_D": 0.4,
+        "MD_S1": 0.15,
+        "MD_S2": 0.15,
+        "MD_S3": 0.15,
+        "MD_N": 0.15,
+        "MD_PEDS": 0.2
+      },
       limits: newLimits,
     };
 
@@ -176,9 +202,7 @@ export default function ProvidersTab() {
     });
 
     // Keep provider selected and refresh local form to reflect saved values
-    setProviderForm({
-      ...updatedProvider,
-    });
+    setProviderForm({ ...updatedProvider });
     dispatch({ type: 'SELECT_PROVIDER', payload: selectedProvider });
   };
 
