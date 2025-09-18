@@ -1148,7 +1148,6 @@ def build_model(consts: Dict[str,Any], case: Dict[str,Any]) -> Dict[str,Any]:
             if is_too_close:
                 for j in P:
                     model.AddAtMostOne([x[iter1, j], x[iter2, j]])
-    
     # cant because type
     for s in S:
         for p in P:

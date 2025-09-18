@@ -130,18 +130,27 @@ class AdvancedSchedulingSolver:
         """
         for shift in shifts:
             try:
-                start_str = shift.get("start")
-                end_str = shift.get("end")
-                if not start_str or not end_str:
+                start_str_orig = shift.get("start")
+                end_str_orig = shift.get("end")
+                if not start_str_orig or not end_str_orig:
                     continue
+                
+                # Make datetimes timezone-naive for safe comparison
+                start_str_naive = start_str_orig.replace('Z', '').split('+')[0]
+                end_str_naive = end_str_orig.replace('Z', '').split('+')[0]
 
-                start_dt = datetime.fromisoformat(start_str)
-                end_dt = datetime.fromisoformat(end_str)
+                start_dt = datetime.fromisoformat(start_str_naive)
+                end_dt = datetime.fromisoformat(end_str_naive)
 
                 if end_dt <= start_dt:
-                    logger.warning(f"Correcting overnight shift {shift.get('id')}: start={start_str}, end={end_str}")
-                    end_dt += timedelta(days=1)
-                    shift["end"] = end_dt.isoformat()
+                    logger.warning(f"Correcting overnight shift {shift.get('id')}: start={start_str_orig}, end={end_str_orig}")
+                    
+                    # Use the original end string to preserve timezone if present
+                    original_end_dt = datetime.fromisoformat(end_str_orig)
+                    from datetime import timedelta
+                    corrected_end_dt = original_end_dt + timedelta(days=1)
+                    shift["end"] = corrected_end_dt.isoformat()
+
             except (ValueError, TypeError) as e:
                 logger.warning(f"Could not parse datetime for shift {shift.get('id', 'N/A')}: {e}")
         return shifts
