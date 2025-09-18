@@ -597,16 +597,17 @@ export default function RunTab() {
   // Build payload that will be sent to the solver. If the user applied a Month selection,
   // restrict calendar.days and shifts to that month and trim any provider date-based fields
   const buildCasePayload = (): SchedulingCase => {
+    // Start with a copy of the current scheduling case
+    let payload: SchedulingCase = { ...schedulingCase };
+
     try {
       if (isMonthSelectionLocked && appliedMonth !== null && appliedYear !== null) {
-        // Validate month/year and compute clear start/end/days
         const { start, end, days } = getMonthRange(appliedYear, appliedMonth);
         const inMonth = (d: string) => typeof d === 'string' && d >= start && d <= end;
 
-       const filteredShifts = (schedulingCase.shifts || [])
+        const filteredShifts = (schedulingCase.shifts || [])
           .filter(s => typeof s.date === 'string' && inMonth(s.date))
           .map(shift => {
-            // Sanitize shift times for overnight cases
             if (shift.start && shift.end) {
               try {
                 const startDate = new Date(shift.start);
@@ -615,64 +616,43 @@ export default function RunTab() {
                 if (endDate <= startDate) {
                   const correctedEndDate = new Date(endDate);
                   correctedEndDate.setDate(correctedEndDate.getDate() + 1);
-                  
                   addLog(`[INFO] Correcting overnight shift '${shift.id}' to end on the next day.`, 'info');
-
-                  // FIX: Manually format the date to YYYY-MM-DDTHH:mm:ss
                   const pad = (num: number) => num.toString().padStart(2, '0');
                   const formatToLocalISO = (date: Date) => 
                     `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}` +
                     `T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
-
-                  return { 
-                    ...shift, 
-                    start: formatToLocalISO(startDate),
-                    end: formatToLocalISO(correctedEndDate)
-                  };
+                  return { ...shift, start: formatToLocalISO(startDate), end: formatToLocalISO(correctedEndDate) };
                 }
               } catch (e) {
-                // Ignore shifts with malformed date strings, similar to Python implementation
                 return shift;
               }
             }
             return shift;
           });
 
-
         const trimmedProviders = (schedulingCase.providers || []).map((p) => {
           const np: Provider = { ...p } as Provider;
-
           if (Array.isArray(p.forbidden_days_hard)) np.forbidden_days_hard = p.forbidden_days_hard.filter(d => typeof d === 'string' && inMonth(d));
           if (Array.isArray(p.forbidden_days_soft)) np.forbidden_days_soft = p.forbidden_days_soft.filter(d => typeof d === 'string' && inMonth(d));
-
           if (p.preferred_days_hard && typeof p.preferred_days_hard === 'object') {
             const map: Record<string, string[]> = {};
             Object.entries(p.preferred_days_hard).forEach(([dateKey, shiftTypes]) => {
-    // FIX: Check if the dateKey is within the selected month.
-          if (inMonth(dateKey)) {
-            // If it is, add the original entry to the new map.
-            map[dateKey] = shiftTypes;
+              if (inMonth(dateKey)) { map[dateKey] = shiftTypes; }
+            });
+            np.preferred_days_hard = map;
           }
-  });
-  np.preferred_days_hard = map;
-}
-
           if (p.preferred_days_soft && typeof p.preferred_days_soft === 'object') {
-  const map: Record<string, string[]> = {};
-  Object.entries(p.preferred_days_soft).forEach(([dateKey, shiftTypes]) => {
-    // FIX: Check if the dateKey is within the selected month.
-    if (inMonth(dateKey)) {
-      // If it is, add the original entry to the new map.
-      map[dateKey] = shiftTypes;
-    }
-  });
-  np.preferred_days_soft = map;
-}
-
+            const map: Record<string, string[]> = {};
+            Object.entries(p.preferred_days_soft).forEach(([dateKey, shiftTypes]) => {
+              if (inMonth(dateKey)) { map[dateKey] = shiftTypes; }
+            });
+            np.preferred_days_soft = map;
+          }
           return np;
         });
 
-        return {
+        // Update the payload with the month-filtered data
+        payload = {
           ...schedulingCase,
           calendar: { ...schedulingCase.calendar, days },
           shifts: filteredShifts,
@@ -680,14 +660,31 @@ export default function RunTab() {
         };
       }
     } catch (err) {
-      // If anything goes wrong, fall back to full case
       console.warn('Failed to build month-limited payload, falling back to full case:', err);
+      // Ensure payload is a fresh copy if filtering fails
+      payload = { ...schedulingCase };
     }
-    return schedulingCase;
+
+    // --- CHANGE ---
+    // Force every provider's type to "MD" and their type_ranges to use "MD" as the key.
+    payload.providers = (payload.providers || []).map(provider => ({
+      ...provider,
+      type: 'MD', // Force the main type
+      limits: {
+        ...provider.limits, // Keep existing min/max totals
+        type_ranges: {
+          "MD": [0, 50] // Force the type_ranges key to "MD"
+        }
+      }
+    }));
+    
+    addLog(`[INFO] Processing ${payload.shifts.length} shifts and ${payload.providers.length} providers (dataset sent to solver)`, 'info');
+
+    return payload;
   };
 
   const payload = buildCasePayload();
-  addLog(`[INFO] Processing ${payload.shifts.length} shifts and ${payload.providers.length} providers (dataset sent to solver)`, 'info');
+ // addLog(`[INFO] Processing ${payload.shifts.length} shifts and ${payload.providers.length} providers (dataset sent to solver)`, 'info');
 
     try {
       const startTime = Date.now();

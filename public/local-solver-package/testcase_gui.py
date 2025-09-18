@@ -375,7 +375,7 @@ def diagnose(case, schedule_map, stream=sys.stdout, preview_limit=8, banner=None
         p = providers_by_name.get(prov)
         if not p: continue
         ptype = p.get("type","MD")
-        for d, sids in by_day.items():
+    for d, sids in by_day.items():
             for sid in sids:
                 allowed = shift_allowed_types.get(sid) or set()
                 if allowed and ptype not in allowed:
@@ -1880,7 +1880,7 @@ def compute_capacity_diag(case: Dict[str,Any]) -> List[Dict[str,Any]]:
         day_to_shifts[sh['date']].append(s)
     out = []
     for i,p in enumerate(providers):
-        ptype = p.get('type','MD')
+            ptype = p.get('type','MD')
         forb = set(p.get('forbidden_days_hard', []))
         ok_days = 0
         for d in days:
@@ -2817,7 +2817,7 @@ class TestcaseGUI:
             return
         _sanitize_provider_identity_defaults(p)
         lines = []
-        lines.append(f"Provider: {p.get('name','?')}  (type={p.get('type','MD')})")
+            lines.append(f"Provider: {p.get('name','?')}  (type={p.get('type','MD')})")
         lim = p.get("limits", {})
         lines.append(f"Limits: min_total={lim.get('min_total',0)} max_total={lim.get('max_total',IDENTITY_MAX)}")
         lines.append(f"max_consecutive_days: {p.get('max_consecutive_days', IDENTITY_MAX)}")
