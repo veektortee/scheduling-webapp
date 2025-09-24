@@ -667,16 +667,16 @@ export default function RunTab() {
 
     // --- CHANGE ---
     // Force every provider's type to "MD" and their type_ranges to use "MD" as the key.
-    payload.providers = (payload.providers || []).map(provider => ({
-      ...provider,
-      type: 'MD', // Force the main type
-      limits: {
-        ...provider.limits, // Keep existing min/max totals
-        type_ranges: {
-          "MD": [0, 50] // Force the type_ranges key to "MD"
-        }
-      }
-    }));
+    // payload.providers = (payload.providers || []).map(provider => ({
+    //   ...provider,
+    //   type: 'MD', // Force the main type
+    //   limits: {
+    //     ...provider.limits, // Keep existing min/max totals
+    //     type_ranges: {
+    //       "MD": [0, 50] // Force the type_ranges key to "MD"
+    //     }
+    //   }
+    // }));
     
     addLog(`[INFO] Processing ${payload.shifts.length} shifts and ${payload.providers.length} providers (dataset sent to solver)`, 'info');
 
